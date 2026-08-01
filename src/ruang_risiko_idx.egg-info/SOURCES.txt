@@ -7,6 +7,10 @@ src/ruang_risiko_idx.egg-info/SOURCES.txt
 src/ruang_risiko_idx.egg-info/dependency_links.txt
 src/ruang_risiko_idx.egg-info/requires.txt
 src/ruang_risiko_idx.egg-info/top_level.txt
+src/ruang_risiko_idx/analytics/__init__.py
+src/ruang_risiko_idx/analytics/drawdown.py
+src/ruang_risiko_idx/analytics/returns.py
+src/ruang_risiko_idx/analytics/volatility.py
 src/ruang_risiko_idx/data/__init__.py
 src/ruang_risiko_idx/data/repository.py
 src/ruang_risiko_idx/data/update_window.py
@@ -14,6 +18,8 @@ src/ruang_risiko_idx/data/validation.py
 src/ruang_risiko_idx/data/providers/__init__.py
 src/ruang_risiko_idx/data/providers/base.py
 src/ruang_risiko_idx/data/providers/yahoo_finance.py
+tests/test_drawdown.py
 tests/test_repository.py
+tests/test_returns.py
 tests/test_validation.py
 tests/test_yahoo_normalization.py
