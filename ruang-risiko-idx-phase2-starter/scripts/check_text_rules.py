@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 TEXT_SUFFIXES = {".py", ".md", ".toml", ".yaml", ".yml", ".txt"}
 FORBIDDEN = {"\u2014": "em dash"}

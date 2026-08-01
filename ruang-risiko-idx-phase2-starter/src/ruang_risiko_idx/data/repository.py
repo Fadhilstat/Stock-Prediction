@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
+
 KEY_COLUMNS = ["ticker", "trade_date"]
 AUDITED_COLUMNS = [
     "open",

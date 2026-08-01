@@ -1,13 +1,18 @@
 """Simple dashboard shell for the first Phase 2 milestone."""
 
 from pathlib import Path
+import sys
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
 from ruang_risiko_idx.config import ProjectSettings
+
 
 st.set_page_config(
     page_title="Ruang Risiko IDX",
@@ -127,8 +132,7 @@ st.plotly_chart(make_price_figure(selected_data, selected_ticker), use_container
 with st.expander("Cara membaca grafik"):
     st.write(
         "Grafik memakai adjusted close agar perubahan akibat aksi korporasi tidak langsung "
-        "terbaca sebagai return pasar. "
-        "Hasil ini belum merupakan prediksi dan bukan rekomendasi transaksi."
+        "terbaca sebagai return pasar. Hasil ini belum merupakan prediksi dan bukan rekomendasi transaksi."
     )
 
 st.caption("Sumber data: Yahoo Finance melalui yfinance. Frekuensi pembaruan: harian.")

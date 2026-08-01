@@ -1,8 +1,10 @@
 """Yahoo Finance adapter built on top of yfinance."""
 
 from datetime import UTC, datetime
+from typing import Any
 
 import pandas as pd
+
 
 COLUMN_MAP = {
     "Open": "open",
@@ -45,8 +47,7 @@ class YahooFinanceProvider:
             actions=True,
             repair=True,
             group_by="ticker",
-            threads=False,
-            keepna=True,
+            threads=True,
             progress=False,
             timeout=30,
         )
