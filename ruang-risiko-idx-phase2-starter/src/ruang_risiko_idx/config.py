@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
+
 DEFAULT_TICKERS = (
     "BBCA.JK",
     "BBRI.JK",

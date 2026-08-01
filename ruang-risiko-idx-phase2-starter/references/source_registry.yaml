@@ -1,0 +1,50 @@
+checked_at: "2026-08-01"
+sources:
+  - id: yfinance_docs
+    title: "yfinance documentation"
+    url: "https://ranaroussi.github.io/yfinance/"
+    status: "verified_live"
+    role:
+      - "market data ingestion"
+      - "usage limitations"
+  - id: yfinance_download_api
+    title: "yfinance.download API reference"
+    url: "https://ranaroussi.github.io/yfinance/reference/api/yfinance.download.html"
+    status: "verified_live"
+    role:
+      - "download parameter contract"
+  - id: kronos_official_repo
+    title: "Kronos official repository"
+    url: "https://github.com/shiyu-coder/Kronos"
+    status: "verified_live"
+    role:
+      - "Kronos-small integration"
+      - "custom CSV fine-tuning"
+  - id: ttm_r2_model_card
+    title: "Granite Time Series TTM R2 model card"
+    url: "https://huggingface.co/ibm-granite/granite-timeseries-ttm-r2"
+    status: "verified_live"
+    role:
+      - "TTM R2.1 integration"
+      - "daily multivariate forecasting"
+  - id: yfinance_pypi
+    title: "yfinance on PyPI"
+    url: "https://pypi.org/project/yfinance/"
+    status: "verified_live"
+    checked_version: "1.5.2"
+    role:
+      - "dependency version check"
+  - id: streamlit_pypi
+    title: "Streamlit on PyPI"
+    url: "https://pypi.org/project/streamlit/"
+    status: "verified_live"
+    checked_version: "1.60.0"
+    role:
+      - "dashboard dependency version check"
+  - id: pyarrow_pypi
+    title: "PyArrow on PyPI"
+    url: "https://pypi.org/project/pyarrow/"
+    status: "verified_live"
+    checked_version: "25.0.0"
+    role:
+      - "Parquet dependency version check"

@@ -1,0 +1,17 @@
+duckdb<2,>=1.1
+numpy<3,>=2.0
+pandas<3,>=2.2
+plotly<7,>=5.24
+pyarrow<25,>=24
+pyyaml<7,>=6
+streamlit<2,>=1.60
+yfinance<2,>=1.5
+
+[dev]
+pytest<9,>=8
+ruff<1,>=0.9
+
+[models]
+arch<9,>=7
+scikit-learn<2,>=1.6
+xgboost<4,>=2.1
