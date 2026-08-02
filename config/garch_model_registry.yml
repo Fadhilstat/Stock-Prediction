@@ -1,0 +1,43 @@
+metadata:
+  project: Ruang Risiko IDX
+  status: provisional_out_of_sample_selection
+  evaluation_method: daily_expanding_walk_forward
+  forecast_horizon: one_trading_day
+  evaluation_observations: 252
+  primary_volatility_metric: mean_qlike
+  var_confidence_levels:
+  - 95
+  - 99
+  selection_note: Volatility models are selected primarily by QLIKE. VaR models also
+    consider Kupiec, Christoffersen independence, and conditional coverage tests.
+tickers:
+  ANTM.JK:
+    volatility_model: egarch_normal
+    var_model: egarch_student_t
+    note: EGARCH Normal had the lowest QLIKE. Student-t was selected for VaR because
+      the Normal model failed 99 percent unconditional coverage.
+  ASII.JK:
+    volatility_model: egarch_student_t
+    var_model: egarch_student_t
+    note: EGARCH Student-t had the lowest QLIKE and passed the reported VaR backtests.
+  BBCA.JK:
+    volatility_model: gjr_garch_student_t
+    var_model: gjr_garch_student_t
+    note: GJR-GARCH Student-t had the lowest QLIKE and the strongest 99 percent VaR
+      calibration among the tested specifications.
+  BBRI.JK:
+    volatility_model: gjr_garch_normal
+    var_model: gjr_garch_normal
+    note: GJR-GARCH Normal ranked first for both QLIKE and volatility MAE, while its
+      reported VaR tests remained acceptable.
+  TLKM.JK:
+    volatility_model: egarch_student_t
+    var_model: egarch_student_t
+    note: EGARCH Student-t had the lowest QLIKE and well-calibrated 95 and 99 percent
+      VaR results.
+  ^JKSE:
+    volatility_model: gjr_garch_normal
+    var_model: gjr_garch_student_t
+    note: GJR-GARCH Normal had the lowest QLIKE. GJR-GARCH Student-t was selected
+      for tail risk, although its 95 percent Kupiec result was close to the rejection
+      threshold.
