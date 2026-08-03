@@ -63,3 +63,7 @@ logs/
 Thumbs.db
 # Generated Python package metadata
 *.egg-info/
+
+# Generated risk snapshot outputs
+reports/risk/*.parquet
+reports/risk/*.json
