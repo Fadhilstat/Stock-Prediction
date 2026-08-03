@@ -1,0 +1,10 @@
+{
+  "rows":16309,
+  "tickers":6,
+  "first_feature_date":"2015-04-02T00:00:00.000",
+  "last_feature_date":"2026-07-31T00:00:00.000",
+  "first_target_date":"2015-04-06T00:00:00.000",
+  "last_target_date":"2026-08-03T00:00:00.000",
+  "positive_target_rate":0.4531240419,
+  "missing_feature_values":0
+}
