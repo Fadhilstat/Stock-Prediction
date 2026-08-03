@@ -67,3 +67,7 @@ Thumbs.db
 # Generated risk snapshot outputs
 reports/risk/*.parquet
 reports/risk/*.json
+
+# Generated machine learning outputs
+data/processed/ml_features.parquet
+reports/ml/*.parquet
