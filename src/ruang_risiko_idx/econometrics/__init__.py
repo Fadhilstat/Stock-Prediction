@@ -20,6 +20,12 @@ from ruang_risiko_idx.econometrics.losses import (
     build_volatility_loss_table,
     summarize_volatility_losses,
 )
+from ruang_risiko_idx.econometrics.risk_snapshot import (
+    RiskModelAssignment,
+    build_latest_risk_snapshot,
+    build_ticker_risk_snapshot,
+    load_garch_model_registry,
+)
 from ruang_risiko_idx.econometrics.selection import (
     rank_in_sample_models,
 )
@@ -45,9 +51,12 @@ from ruang_risiko_idx.econometrics.walk_forward import (
 __all__ = [
     "DEFAULT_MODEL_SPECS",
     "FittedVolatilityModel",
+    "RiskModelAssignment",
     "VolatilityModelSpec",
     "WalkForwardConfig",
     "WalkForwardRun",
+    "build_latest_risk_snapshot",
+    "build_ticker_risk_snapshot",
     "build_var_forecasts",
     "build_volatility_loss_table",
     "calculate_half_life",
@@ -59,6 +68,7 @@ __all__ = [
     "fit_volatility_model",
     "forecast_one_day",
     "kupiec_unconditional_coverage_test",
+    "load_garch_model_registry",
     "rank_in_sample_models",
     "run_walk_forward_forecasts",
     "select_training_returns",
