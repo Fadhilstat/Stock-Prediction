@@ -10,6 +10,22 @@ from ruang_risiko_idx.ml.features import (
     build_ticker_ml_features,
     validate_ml_dataset,
 )
+from ruang_risiko_idx.ml.logistic import (
+    LogisticSearchConfig,
+    LogisticTickerResult,
+    build_logistic_pipeline,
+    extract_logistic_coefficients,
+    select_logistic_regularization,
+    train_logistic_for_ticker,
+)
+from ruang_risiko_idx.ml.random_forest import (
+    RandomForestSearchConfig,
+    RandomForestTickerResult,
+    build_random_forest_model,
+    extract_random_forest_importances,
+    select_random_forest_parameters,
+    train_random_forest_for_ticker,
+)
 from ruang_risiko_idx.ml.splitting import (
     ChronologicalSplitConfig,
     TickerDatasetSplit,
@@ -18,6 +34,12 @@ from ruang_risiko_idx.ml.splitting import (
 )
 
 __all__ = [
+    "train_random_forest_for_ticker",
+    "select_random_forest_parameters",
+    "extract_random_forest_importances",
+    "build_random_forest_model",
+    "RandomForestTickerResult",
+    "RandomForestSearchConfig",
     "FEATURE_COLUMNS",
     "ChronologicalSplitConfig",
     "TickerDatasetSplit",
