@@ -32,6 +32,13 @@ from ruang_risiko_idx.ml.splitting import (
     build_split_summary,
     split_ticker_dataset,
 )
+from ruang_risiko_idx.ml.xgboost_model import (
+    XGBoostSearchConfig,
+    XGBoostTickerResult,
+    build_xgboost_model,
+    select_xgboost_parameters,
+    train_xgboost_for_ticker,
+)
 
 __all__ = [
     "FEATURE_COLUMNS",
@@ -41,19 +48,24 @@ __all__ = [
     "RandomForestSearchConfig",
     "RandomForestTickerResult",
     "TickerDatasetSplit",
+    "XGBoostSearchConfig",
+    "XGBoostTickerResult",
     "build_constant_probability_baseline",
     "build_logistic_pipeline",
     "build_ml_feature_dataset",
     "build_random_forest_model",
     "build_split_summary",
     "build_ticker_ml_features",
+    "build_xgboost_model",
     "evaluate_probability_predictions",
     "extract_logistic_coefficients",
     "extract_random_forest_importances",
     "select_logistic_regularization",
     "select_random_forest_parameters",
+    "select_xgboost_parameters",
     "split_ticker_dataset",
     "train_logistic_for_ticker",
     "train_random_forest_for_ticker",
+    "train_xgboost_for_ticker",
     "validate_ml_dataset",
 ]
