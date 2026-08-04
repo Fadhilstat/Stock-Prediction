@@ -1,0 +1,12 @@
+{
+  "primary_metric": "log_loss",
+  "selected_model_counts": {
+    "constant_probability": 2,
+    "logistic_regression": 1,
+    "random_forest": 3
+  },
+  "selection_basis": "validation",
+  "test_used_for_selection": false,
+  "ticker_count": 6,
+  "tie_breaker": "brier_score"
+}

@@ -1,0 +1,104 @@
+[
+  {
+    "selected_model": "logistic_regression",
+    "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+    "test": {
+      "balanced_accuracy": 0.4959677419354839,
+      "brier_score": 0.26117455349248453,
+      "log_loss": 0.7160752103759601,
+      "roc_auc": 0.5223034274193549
+    },
+    "ticker": "ANTM.JK",
+    "validation": {
+      "balanced_accuracy": 0.504,
+      "brier_score": 0.25232597288743064,
+      "log_loss": 0.6978902394321811,
+      "roc_auc": 0.551748031496063
+    }
+  },
+  {
+    "selected_model": "random_forest",
+    "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+    "test": {
+      "balanced_accuracy": 0.5285815102328864,
+      "brier_score": 0.25003753482175034,
+      "log_loss": 0.6951354692506132,
+      "roc_auc": 0.5436581766856996
+    },
+    "ticker": "ASII.JK",
+    "validation": {
+      "balanced_accuracy": 0.5136752136752136,
+      "brier_score": 0.24284327775858436,
+      "log_loss": 0.6783856663300102,
+      "roc_auc": 0.6328584995251662
+    }
+  },
+  {
+    "selected_model": "random_forest",
+    "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+    "test": {
+      "balanced_accuracy": 0.5987335228741277,
+      "brier_score": 0.2470990948896679,
+      "log_loss": 0.6872323802452381,
+      "roc_auc": 0.6166968208839494
+    },
+    "ticker": "BBCA.JK",
+    "validation": {
+      "balanced_accuracy": 0.6258928571428571,
+      "brier_score": 0.23609314714880653,
+      "log_loss": 0.6659814786144941,
+      "roc_auc": 0.6366071428571428
+    }
+  },
+  {
+    "selected_model": "constant_probability",
+    "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+    "test": {
+      "balanced_accuracy": 0.5,
+      "brier_score": 0.24712572808910063,
+      "log_loss": 0.6873894907247411,
+      "roc_auc": 0.5
+    },
+    "ticker": "BBRI.JK",
+    "validation": {
+      "balanced_accuracy": 0.5,
+      "brier_score": 0.24875902932876406,
+      "log_loss": 0.6906635028530973,
+      "roc_auc": 0.5
+    }
+  },
+  {
+    "selected_model": "random_forest",
+    "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+    "test": {
+      "balanced_accuracy": 0.4901785714285714,
+      "brier_score": 0.2463241810857678,
+      "log_loss": 0.6855708967466154,
+      "roc_auc": 0.530484693877551
+    },
+    "ticker": "TLKM.JK",
+    "validation": {
+      "balanced_accuracy": 0.543343653250774,
+      "brier_score": 0.2469394455133125,
+      "log_loss": 0.6871785050025896,
+      "roc_auc": 0.5630883932520376
+    }
+  },
+  {
+    "selected_model": "constant_probability",
+    "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+    "test": {
+      "balanced_accuracy": 0.5,
+      "brier_score": 0.25054032740199655,
+      "log_loss": 0.6942308534722925,
+      "roc_auc": 0.5
+    },
+    "ticker": "^JKSE",
+    "validation": {
+      "balanced_accuracy": 0.5,
+      "brier_score": 0.24801576039581338,
+      "log_loss": 0.6891748761968067,
+      "roc_auc": 0.5
+    }
+  }
+]
