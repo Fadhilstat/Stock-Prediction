@@ -1,0 +1,29 @@
+{
+  "amount_definition": "closing price multiplied by volume proxy",
+  "cutoff_date": "2026-07-31",
+  "device": "cpu",
+  "evaluation": {
+    "absolute_close_error": 110.30908203125,
+    "absolute_percentage_error": 0.01750937810019841,
+    "actual_close": 6300.0,
+    "actual_log_return": -0.003960401216096905,
+    "direction_correct": true,
+    "last_close": 6325.0,
+    "ohlc_is_valid": true,
+    "predicted_close": 6189.69091796875,
+    "predicted_log_return": -0.021624881640523824,
+    "target_date": "2026-08-03",
+    "volume_is_nonnegative": true
+  },
+  "lookback": 400,
+  "max_context": 512,
+  "model_name": "NeoQuasar/Kronos-small",
+  "pred_len": 1,
+  "sample_count": 1,
+  "seed": 42,
+  "temperature": 1.0,
+  "ticker": "BBCA.JK",
+  "tokenizer_name": "NeoQuasar/Kronos-Tokenizer-base",
+  "top_k": 0,
+  "top_p": 0.9
+}

@@ -41,6 +41,11 @@ from ruang_risiko_idx.ml.xgboost_model import (
 )
 
 __all__ = [
+    "train_xgboost_for_ticker",
+    "select_xgboost_parameters",
+    "build_xgboost_model",
+    "XGBoostTickerResult",
+    "XGBoostSearchConfig",
     "FEATURE_COLUMNS",
     "ChronologicalSplitConfig",
     "LogisticSearchConfig",
