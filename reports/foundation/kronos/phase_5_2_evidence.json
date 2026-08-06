@@ -1,0 +1,492 @@
+{
+  "configuration": {
+    "evaluation_size_per_ticker": 252,
+    "lookback": 400,
+    "max_context": 512,
+    "pred_len": 1,
+    "sample_count": 1,
+    "stride": 1,
+    "temperature": 1.0,
+    "top_k": 0,
+    "top_p": 0.9
+  },
+  "decision": {
+    "directional_result": "Kronos showed limited directional value for selected series, but the result was not consistent across all tickers.",
+    "model_role": "experimental_benchmark",
+    "postprocessing": "Raw forecasts are retained without OHLC clipping or correction.",
+    "production_selection": "not_selected",
+    "reason": "Random walk produced the lowest close MAE and log-return MAE for all six evaluated market series.",
+    "structural_result": "Raw Kronos forecasts had valid OHLC relationships in about 90 percent of the evaluated windows.",
+    "tuning_policy": "No Kronos hyperparameters will be tuned using this evaluation set."
+  },
+  "device": "cpu",
+  "evaluation_scope": "full_252",
+  "experiment": "rolling_zero_shot_kronos_backtest",
+  "forecast_count": 1512,
+  "metric_winners": {
+    "balanced_accuracy": [
+      {
+        "balanced_accuracy": 0.5198412698,
+        "model_name": "kronos",
+        "ticker": "ANTM.JK"
+      },
+      {
+        "balanced_accuracy": 0.5,
+        "model_name": "random_walk",
+        "ticker": "ASII.JK"
+      },
+      {
+        "balanced_accuracy": 0.5166666667,
+        "model_name": "kronos",
+        "ticker": "BBCA.JK"
+      },
+      {
+        "balanced_accuracy": 0.505787037,
+        "model_name": "return_persistence",
+        "ticker": "BBRI.JK"
+      },
+      {
+        "balanced_accuracy": 0.5149804324,
+        "model_name": "return_persistence",
+        "ticker": "TLKM.JK"
+      },
+      {
+        "balanced_accuracy": 0.5559685039,
+        "model_name": "kronos",
+        "ticker": "^JKSE"
+      }
+    ],
+    "close_mae": [
+      {
+        "close_mae": 87.8968253968,
+        "model_name": "random_walk",
+        "ticker": "ANTM.JK"
+      },
+      {
+        "close_mae": 108.9285714286,
+        "model_name": "random_walk",
+        "ticker": "ASII.JK"
+      },
+      {
+        "close_mae": 110.3174603175,
+        "model_name": "random_walk",
+        "ticker": "BBCA.JK"
+      },
+      {
+        "close_mae": 52.5793650794,
+        "model_name": "random_walk",
+        "ticker": "BBRI.JK"
+      },
+      {
+        "close_mae": 61.626984127,
+        "model_name": "random_walk",
+        "ticker": "TLKM.JK"
+      },
+      {
+        "close_mae": 77.1575869606,
+        "model_name": "random_walk",
+        "ticker": "^JKSE"
+      }
+    ],
+    "log_return_mae": [
+      {
+        "log_return_mae": 0.0258333758,
+        "model_name": "random_walk",
+        "ticker": "ANTM.JK"
+      },
+      {
+        "log_return_mae": 0.0184672554,
+        "model_name": "random_walk",
+        "ticker": "ASII.JK"
+      },
+      {
+        "log_return_mae": 0.0157038398,
+        "model_name": "random_walk",
+        "ticker": "BBCA.JK"
+      },
+      {
+        "log_return_mae": 0.0151459148,
+        "model_name": "random_walk",
+        "ticker": "BBRI.JK"
+      },
+      {
+        "log_return_mae": 0.019744479,
+        "model_name": "random_walk",
+        "ticker": "TLKM.JK"
+      },
+      {
+        "log_return_mae": 0.010592456,
+        "model_name": "random_walk",
+        "ticker": "^JKSE"
+      }
+    ],
+    "roc_auc": [
+      {
+        "model_name": "kronos",
+        "roc_auc": 0.5449105568,
+        "ticker": "ANTM.JK"
+      },
+      {
+        "model_name": "random_walk",
+        "roc_auc": 0.5,
+        "ticker": "ASII.JK"
+      },
+      {
+        "model_name": "kronos",
+        "roc_auc": 0.5654248366,
+        "ticker": "BBCA.JK"
+      },
+      {
+        "model_name": "return_persistence",
+        "roc_auc": 0.5317965535,
+        "ticker": "BBRI.JK"
+      },
+      {
+        "model_name": "return_persistence",
+        "roc_auc": 0.5206903189,
+        "ticker": "TLKM.JK"
+      },
+      {
+        "model_name": "return_persistence",
+        "roc_auc": 0.5506141732,
+        "ticker": "^JKSE"
+      }
+    ]
+  },
+  "metrics": [
+    {
+      "balanced_accuracy": 0.5198412698,
+      "close_mae": 144.7447461325,
+      "close_mape": 0.0425929437,
+      "close_rmse": 191.0473719478,
+      "direction_accuracy": 0.5198412698,
+      "log_return_bias": -0.0182245181,
+      "log_return_mae": 0.0434739305,
+      "model_name": "kronos",
+      "nonnegative_volume_rate": 1.0,
+      "observations": 252,
+      "ohlc_valid_rate": 0.9047619048,
+      "roc_auc": 0.5449105568,
+      "ticker": "ANTM.JK"
+    },
+    {
+      "balanced_accuracy": 0.5,
+      "close_mae": 87.8968253968,
+      "close_mape": 0.0258514659,
+      "close_rmse": 121.061770931,
+      "direction_accuracy": 0.5,
+      "log_return_bias": -6.49483e-05,
+      "log_return_mae": 0.0258333758,
+      "model_name": "random_walk",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5,
+      "ticker": "ANTM.JK"
+    },
+    {
+      "balanced_accuracy": 0.4563492063,
+      "close_mae": 133.40883003,
+      "close_mape": 0.0393323958,
+      "close_rmse": 179.3457064552,
+      "direction_accuracy": 0.4563492063,
+      "log_return_bias": -2.59799e-05,
+      "log_return_mae": 0.0393232472,
+      "model_name": "return_persistence",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.451845553,
+      "ticker": "ANTM.JK"
+    },
+    {
+      "balanced_accuracy": 0.4784181959,
+      "close_mae": 329.2580721416,
+      "close_mape": 0.0529881265,
+      "close_rmse": 499.1007058169,
+      "direction_accuracy": 0.5079365079,
+      "log_return_bias": -0.0384393561,
+      "log_return_mae": 0.0559386369,
+      "model_name": "kronos",
+      "nonnegative_volume_rate": 1.0,
+      "observations": 252,
+      "ohlc_valid_rate": 0.9444444444,
+      "roc_auc": 0.489596795,
+      "ticker": "ASII.JK"
+    },
+    {
+      "balanced_accuracy": 0.5,
+      "close_mae": 108.9285714286,
+      "close_mape": 0.0184433145,
+      "close_rmse": 156.6286681375,
+      "direction_accuracy": 0.5793650794,
+      "log_return_bias": -3.90964e-05,
+      "log_return_mae": 0.0184672554,
+      "model_name": "random_walk",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5,
+      "ticker": "ASII.JK"
+    },
+    {
+      "balanced_accuracy": 0.3730938227,
+      "close_mae": 182.412645881,
+      "close_mape": 0.030834842,
+      "close_rmse": 247.7467404928,
+      "direction_accuracy": 0.3888888889,
+      "log_return_bias": 2.05777e-05,
+      "log_return_mae": 0.0307902966,
+      "model_name": "return_persistence",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.3412703541,
+      "ticker": "ASII.JK"
+    },
+    {
+      "balanced_accuracy": 0.5166666667,
+      "close_mae": 167.9798506479,
+      "close_mape": 0.0247063716,
+      "close_rmse": 229.2867310622,
+      "direction_accuracy": 0.4880952381,
+      "log_return_bias": 0.0131084279,
+      "log_return_mae": 0.0242735177,
+      "model_name": "kronos",
+      "nonnegative_volume_rate": 1.0,
+      "observations": 252,
+      "ohlc_valid_rate": 0.9365079365,
+      "roc_auc": 0.5654248366,
+      "ticker": "BBCA.JK"
+    },
+    {
+      "balanced_accuracy": 0.5,
+      "close_mae": 110.3174603175,
+      "close_mape": 0.0157091346,
+      "close_rmse": 147.330747661,
+      "direction_accuracy": 0.5952380952,
+      "log_return_bias": 0.0011571879,
+      "log_return_mae": 0.0157038398,
+      "model_name": "random_walk",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5,
+      "ticker": "BBCA.JK"
+    },
+    {
+      "balanced_accuracy": 0.4366666667,
+      "close_mae": 162.9817045263,
+      "close_mape": 0.0230226224,
+      "close_rmse": 208.2023189296,
+      "direction_accuracy": 0.4563492063,
+      "log_return_bias": 9.71746e-05,
+      "log_return_mae": 0.0230047794,
+      "model_name": "return_persistence",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.4352287582,
+      "ticker": "BBCA.JK"
+    },
+    {
+      "balanced_accuracy": 0.4594907407,
+      "close_mae": 94.2015351795,
+      "close_mape": 0.0277983444,
+      "close_rmse": 121.9452596628,
+      "direction_accuracy": 0.4642857143,
+      "log_return_bias": 0.0049189206,
+      "log_return_mae": 0.02752137,
+      "model_name": "kronos",
+      "nonnegative_volume_rate": 1.0,
+      "observations": 252,
+      "ohlc_valid_rate": 0.8531746032,
+      "roc_auc": 0.4705504115,
+      "ticker": "BBRI.JK"
+    },
+    {
+      "balanced_accuracy": 0.5,
+      "close_mae": 52.5793650794,
+      "close_mape": 0.0151466359,
+      "close_rmse": 68.9921780706,
+      "direction_accuracy": 0.5714285714,
+      "log_return_bias": 0.0010391193,
+      "log_return_mae": 0.0151459148,
+      "model_name": "random_walk",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5,
+      "ticker": "BBRI.JK"
+    },
+    {
+      "balanced_accuracy": 0.505787037,
+      "close_mae": 74.0144868599,
+      "close_mape": 0.0212461118,
+      "close_rmse": 97.2415232261,
+      "direction_accuracy": 0.5158730159,
+      "log_return_bias": 0.0001274358,
+      "log_return_mae": 0.0212496778,
+      "model_name": "return_persistence",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5317965535,
+      "ticker": "BBRI.JK"
+    },
+    {
+      "balanced_accuracy": 0.4697504331,
+      "close_mae": 88.4285656157,
+      "close_mape": 0.0284938619,
+      "close_rmse": 118.129316031,
+      "direction_accuracy": 0.4761904762,
+      "log_return_bias": -0.0020061607,
+      "log_return_mae": 0.0284645286,
+      "model_name": "kronos",
+      "nonnegative_volume_rate": 1.0,
+      "observations": 252,
+      "ohlc_valid_rate": 0.9166666667,
+      "roc_auc": 0.4664784757,
+      "ticker": "TLKM.JK"
+    },
+    {
+      "balanced_accuracy": 0.5,
+      "close_mae": 61.626984127,
+      "close_mape": 0.0197724443,
+      "close_rmse": 87.8964939619,
+      "direction_accuracy": 0.5674603175,
+      "log_return_bias": 0.0002747794,
+      "log_return_mae": 0.019744479,
+      "model_name": "random_walk",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5,
+      "ticker": "TLKM.JK"
+    },
+    {
+      "balanced_accuracy": 0.5149804324,
+      "close_mae": 86.6334189279,
+      "close_mape": 0.0276031205,
+      "close_rmse": 124.4741716996,
+      "direction_accuracy": 0.5238095238,
+      "log_return_bias": 7.4897e-05,
+      "log_return_mae": 0.0276206218,
+      "model_name": "return_persistence",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5206903189,
+      "ticker": "TLKM.JK"
+    },
+    {
+      "balanced_accuracy": 0.5559685039,
+      "close_mae": 127.186984592,
+      "close_mape": 0.0174261314,
+      "close_rmse": 169.3629948096,
+      "direction_accuracy": 0.5555555556,
+      "log_return_bias": 0.0017195965,
+      "log_return_mae": 0.017303597,
+      "model_name": "kronos",
+      "nonnegative_volume_rate": 1.0,
+      "observations": 252,
+      "ohlc_valid_rate": 0.8492063492,
+      "roc_auc": 0.5394645669,
+      "ticker": "^JKSE"
+    },
+    {
+      "balanced_accuracy": 0.5,
+      "close_mae": 77.1575869606,
+      "close_mape": 0.0106186192,
+      "close_rmse": 110.4029192608,
+      "direction_accuracy": 0.496031746,
+      "log_return_bias": 0.0005636559,
+      "log_return_mae": 0.010592456,
+      "model_name": "random_walk",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5,
+      "ticker": "^JKSE"
+    },
+    {
+      "balanced_accuracy": 0.5118425197,
+      "close_mae": 109.8723054763,
+      "close_mape": 0.0149356161,
+      "close_rmse": 152.4085836353,
+      "direction_accuracy": 0.5119047619,
+      "log_return_bias": 1.81773e-05,
+      "log_return_mae": 0.0149559954,
+      "model_name": "return_persistence",
+      "nonnegative_volume_rate": null,
+      "observations": 252,
+      "ohlc_valid_rate": null,
+      "roc_auc": 0.5506141732,
+      "ticker": "^JKSE"
+    }
+  ],
+  "model_name": "NeoQuasar/Kronos-small",
+  "phase": "5.2",
+  "relative_error": [
+    {
+      "kronos_close_mae_vs_random_walk": 1.6467573826,
+      "kronos_return_mae_vs_random_walk": 1.6828590566,
+      "ticker": "ANTM.JK"
+    },
+    {
+      "kronos_close_mae_vs_random_walk": 3.0226970557,
+      "kronos_return_mae_vs_random_walk": 3.0290714998,
+      "ticker": "ASII.JK"
+    },
+    {
+      "kronos_close_mae_vs_random_walk": 1.522695049,
+      "kronos_return_mae_vs_random_walk": 1.5457058952,
+      "ticker": "BBCA.JK"
+    },
+    {
+      "kronos_close_mae_vs_random_walk": 1.7916065559,
+      "kronos_return_mae_vs_random_walk": 1.8170820525,
+      "ticker": "BBRI.JK"
+    },
+    {
+      "kronos_close_mae_vs_random_walk": 1.4349000989,
+      "kronos_return_mae_vs_random_walk": 1.4416449615,
+      "ticker": "TLKM.JK"
+    },
+    {
+      "kronos_close_mae_vs_random_walk": 1.6484054207,
+      "kronos_return_mae_vs_random_walk": 1.6335774254,
+      "ticker": "^JKSE"
+    }
+  ],
+  "status": "complete",
+  "technical_audit": {
+    "all_closes_positive": true,
+    "all_numeric_finite": true,
+    "duplicate_windows": 0,
+    "forecast_count_by_ticker": {
+      "ANTM.JK": 252,
+      "ASII.JK": 252,
+      "BBCA.JK": 252,
+      "BBRI.JK": 252,
+      "TLKM.JK": 252,
+      "^JKSE": 252
+    },
+    "forecast_rows": 1512,
+    "invalid_ohlc_by_ticker": {
+      "ANTM.JK": 24,
+      "ASII.JK": 14,
+      "BBCA.JK": 16,
+      "BBRI.JK": 37,
+      "TLKM.JK": 21,
+      "^JKSE": 38
+    },
+    "invalid_ohlc_count": 150,
+    "metric_rows": 18,
+    "nonnegative_volume_rate": 1.0,
+    "ohlc_valid_rate": 0.9007936507936508,
+    "target_after_cutoff": true
+  },
+  "ticker_count": 6,
+  "tokenizer_name": "NeoQuasar/Kronos-Tokenizer-base"
+}
