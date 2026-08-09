@@ -1,0 +1,68 @@
+metadata:
+  project: Ruang Risiko IDX
+  phase: "6.2"
+  status: deployment_configuration
+  task: direction_probability
+  forecast_horizon: next_trading_day
+  source_model_registry: reports/ml/classical_model_registry.json
+  phase_4_registry_commit: 1baab7c
+  phase_4_frozen_last_feature_date: "2026-07-31"
+  phase_4_frozen_last_target_date: "2026-08-03"
+  exact_metric_reproduction_claimed: false
+  provenance_note: >-
+    Original Phase 4 raw market data and exact dependency lock were not
+    versioned. Deployment hyperparameters were reconstructed using the
+    Phase 4 code, search space, and frozen cutoff. Model-family decisions
+    remain sourced from the committed classical model registry.
+  production_refit_rule: >-
+    Refit the frozen model configuration using all currently available
+    labeled observations before producing the latest probability estimate.
+  educational_use_only: true
+
+tickers:
+  ANTM.JK:
+    model: logistic_regression
+    parameters:
+      C: 0.01
+      maximum_iterations: 2000
+      random_state: 42
+
+  ASII.JK:
+    model: random_forest
+    parameters:
+      n_estimators: 400
+      max_depth: null
+      min_samples_leaf: 10
+      max_features: sqrt
+      random_state: 42
+      n_jobs: -1
+
+  BBCA.JK:
+    model: random_forest
+    parameters:
+      n_estimators: 400
+      max_depth: null
+      min_samples_leaf: 10
+      max_features: sqrt
+      random_state: 42
+      n_jobs: -1
+
+  BBRI.JK:
+    model: constant_probability
+    parameters:
+      probability_rule: full_labeled_history_positive_rate
+
+  TLKM.JK:
+    model: random_forest
+    parameters:
+      n_estimators: 400
+      max_depth: null
+      min_samples_leaf: 25
+      max_features: sqrt
+      random_state: 42
+      n_jobs: -1
+
+  ^JKSE:
+    model: constant_probability
+    parameters:
+      probability_rule: full_labeled_history_positive_rate
