@@ -72,3 +72,5 @@ reports/risk/*.json
 data/processed/ml_features.parquet
 reports/ml/*.parquet
 reports/foundation/kronos/**/*.parquet
+reports/foundation/granite/rolling_backtest_pilot/
+reports/foundation/granite/rolling_backtest_full_252/
