@@ -74,3 +74,6 @@ reports/ml/*.parquet
 reports/foundation/kronos/**/*.parquet
 reports/foundation/granite/rolling_backtest_pilot/
 reports/foundation/granite/rolling_backtest_full_252/
+
+# Generated direction snapshot outputs
+reports/ml/latest_direction_snapshot.json
