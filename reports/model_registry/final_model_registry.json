@@ -1,0 +1,248 @@
+{
+  "deployment_roles": {
+    "direction_probability": {
+      "decision": "use_classical_validation_registry",
+      "purpose": "Probability-oriented daily direction analytics."
+    },
+    "ohlcv_forecasting": {
+      "benchmark": "kronos",
+      "decision": "no_production_model_selected"
+    },
+    "return_forecasting": {
+      "benchmark": "granite_ttm",
+      "decision": "no_production_model_selected"
+    },
+    "risk_and_volatility": {
+      "decision": "use_provisional_garch_registry",
+      "purpose": "One-day volatility and VaR estimation."
+    }
+  },
+  "direction_probability": {
+    "primary_metric": "log_loss",
+    "role": "selected_direction_model_registry",
+    "selected_model_counts": {
+      "constant_probability": 2,
+      "logistic_regression": 1,
+      "random_forest": 3
+    },
+    "selection_basis": "validation",
+    "source": "reports/ml/classical_model_registry.json",
+    "task": "direction_probability",
+    "test_used_for_selection": false,
+    "tickers": [
+      {
+        "selected_model": "logistic_regression",
+        "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+        "test": {
+          "balanced_accuracy": 0.4959677419354839,
+          "brier_score": 0.26117455349248453,
+          "log_loss": 0.7160752103759601,
+          "roc_auc": 0.5223034274193549
+        },
+        "ticker": "ANTM.JK",
+        "validation": {
+          "balanced_accuracy": 0.504,
+          "brier_score": 0.25232597288743064,
+          "log_loss": 0.6978902394321811,
+          "roc_auc": 0.551748031496063
+        }
+      },
+      {
+        "selected_model": "random_forest",
+        "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+        "test": {
+          "balanced_accuracy": 0.5285815102328864,
+          "brier_score": 0.25003753482175034,
+          "log_loss": 0.6951354692506132,
+          "roc_auc": 0.5436581766856996
+        },
+        "ticker": "ASII.JK",
+        "validation": {
+          "balanced_accuracy": 0.5136752136752136,
+          "brier_score": 0.24284327775858436,
+          "log_loss": 0.6783856663300102,
+          "roc_auc": 0.6328584995251662
+        }
+      },
+      {
+        "selected_model": "random_forest",
+        "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+        "test": {
+          "balanced_accuracy": 0.5987335228741277,
+          "brier_score": 0.2470990948896679,
+          "log_loss": 0.6872323802452381,
+          "roc_auc": 0.6166968208839494
+        },
+        "ticker": "BBCA.JK",
+        "validation": {
+          "balanced_accuracy": 0.6258928571428571,
+          "brier_score": 0.23609314714880653,
+          "log_loss": 0.6659814786144941,
+          "roc_auc": 0.6366071428571428
+        }
+      },
+      {
+        "selected_model": "constant_probability",
+        "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+        "test": {
+          "balanced_accuracy": 0.5,
+          "brier_score": 0.24712572808910063,
+          "log_loss": 0.6873894907247411,
+          "roc_auc": 0.5
+        },
+        "ticker": "BBRI.JK",
+        "validation": {
+          "balanced_accuracy": 0.5,
+          "brier_score": 0.24875902932876406,
+          "log_loss": 0.6906635028530973,
+          "roc_auc": 0.5
+        }
+      },
+      {
+        "selected_model": "random_forest",
+        "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+        "test": {
+          "balanced_accuracy": 0.4901785714285714,
+          "brier_score": 0.2463241810857678,
+          "log_loss": 0.6855708967466154,
+          "roc_auc": 0.530484693877551
+        },
+        "ticker": "TLKM.JK",
+        "validation": {
+          "balanced_accuracy": 0.543343653250774,
+          "brier_score": 0.2469394455133125,
+          "log_loss": 0.6871785050025896,
+          "roc_auc": 0.5630883932520376
+        }
+      },
+      {
+        "selected_model": "constant_probability",
+        "selection_rule": "lowest validation log loss, then lowest validation Brier score",
+        "test": {
+          "balanced_accuracy": 0.5,
+          "brier_score": 0.25054032740199655,
+          "log_loss": 0.6942308534722925,
+          "roc_auc": 0.5
+        },
+        "ticker": "^JKSE",
+        "validation": {
+          "balanced_accuracy": 0.5,
+          "brier_score": 0.24801576039581338,
+          "log_loss": 0.6891748761968067,
+          "roc_auc": 0.5
+        }
+      }
+    ],
+    "tie_breaker": "brier_score"
+  },
+  "foundation_benchmarks": {
+    "granite_ttm": {
+      "comparison": {
+        "granite_return_mae_wins_vs_persistence": 5,
+        "granite_return_mae_wins_vs_random_walk": 0
+      },
+      "context_length": 512,
+      "evaluation_size_per_ticker": 252,
+      "experiment": "granite_ttm_r2_1_zero_shot",
+      "forecast_rows": 1260,
+      "model_name": "ibm-granite/granite-timeseries-ttm-r2",
+      "model_revision": "512-48-ft-r2.1",
+      "prediction_length": 1,
+      "price_basis": "adjusted_close",
+      "production_selection": "not_selected",
+      "reason": "Granite TTM did not beat the zero-return random-walk baseline on return MAE for any of the five evaluated stocks.",
+      "role": "experimental_benchmark",
+      "selection_rule": "No fine-tuning or configuration changes are made using the frozen 252-day evaluation results.",
+      "source": "reports/foundation/granite/phase_5_3_evidence.json",
+      "target": "log_return",
+      "task": "return_forecasting"
+    },
+    "kronos": {
+      "configuration": {
+        "evaluation_size_per_ticker": 252,
+        "lookback": 400,
+        "max_context": 512,
+        "pred_len": 1,
+        "sample_count": 1,
+        "stride": 1,
+        "temperature": 1.0,
+        "top_k": 0,
+        "top_p": 0.9
+      },
+      "directional_result": "Kronos showed limited directional value for selected series, but the result was not consistent across all tickers.",
+      "evaluation_scope": "full_252",
+      "experiment": "rolling_zero_shot_kronos_backtest",
+      "forecast_count": 1512,
+      "postprocessing": "Raw forecasts are retained without OHLC clipping or correction.",
+      "production_selection": "not_selected",
+      "reason": "Random walk produced the lowest close MAE and log-return MAE for all six evaluated market series.",
+      "role": "experimental_benchmark",
+      "source": "reports/foundation/kronos/phase_5_2_evidence.json",
+      "structural_result": "Raw Kronos forecasts had valid OHLC relationships in about 90 percent of the evaluated windows.",
+      "task": "ohlcv_forecasting",
+      "tuning_policy": "No Kronos hyperparameters will be tuned using this evaluation set."
+    }
+  },
+  "metadata": {
+    "generated_at_utc": "2026-08-09T15:58:44.171723+00:00",
+    "hyperparameter_tuning_performed": false,
+    "phase": "5.4",
+    "project": "Ruang Risiko IDX",
+    "registry_principle": "Models are assigned by analytical task. Metrics from different prediction targets are not combined into one leaderboard.",
+    "retraining_performed": false,
+    "status": "final_task_specific_model_registry"
+  },
+  "risk_and_volatility": {
+    "evaluation_method": "daily_expanding_walk_forward",
+    "evaluation_observations": 252,
+    "forecast_horizon": "one_trading_day",
+    "primary_volatility_metric": "mean_qlike",
+    "role": "selected_risk_model_registry",
+    "selection_note": "Volatility models are selected primarily by QLIKE. VaR models also consider Kupiec, Christoffersen independence, and conditional coverage tests.",
+    "selection_status": "provisional_out_of_sample_selection",
+    "source": "config/garch_model_registry.yml",
+    "task": "risk_and_volatility",
+    "tickers": [
+      {
+        "note": "EGARCH Normal had the lowest QLIKE. Student-t was selected for VaR because the Normal model failed 99 percent unconditional coverage.",
+        "ticker": "ANTM.JK",
+        "var_model": "egarch_student_t",
+        "volatility_model": "egarch_normal"
+      },
+      {
+        "note": "EGARCH Student-t had the lowest QLIKE and passed the reported VaR backtests.",
+        "ticker": "ASII.JK",
+        "var_model": "egarch_student_t",
+        "volatility_model": "egarch_student_t"
+      },
+      {
+        "note": "GJR-GARCH Student-t had the lowest QLIKE and the strongest 99 percent VaR calibration among the tested specifications.",
+        "ticker": "BBCA.JK",
+        "var_model": "gjr_garch_student_t",
+        "volatility_model": "gjr_garch_student_t"
+      },
+      {
+        "note": "GJR-GARCH Normal ranked first for both QLIKE and volatility MAE, while its reported VaR tests remained acceptable.",
+        "ticker": "BBRI.JK",
+        "var_model": "gjr_garch_normal",
+        "volatility_model": "gjr_garch_normal"
+      },
+      {
+        "note": "EGARCH Student-t had the lowest QLIKE and well-calibrated 95 and 99 percent VaR results.",
+        "ticker": "TLKM.JK",
+        "var_model": "egarch_student_t",
+        "volatility_model": "egarch_student_t"
+      },
+      {
+        "note": "GJR-GARCH Normal had the lowest QLIKE. GJR-GARCH Student-t was selected for tail risk, although its 95 percent Kupiec result was close to the rejection threshold.",
+        "ticker": "^JKSE",
+        "var_model": "gjr_garch_student_t",
+        "volatility_model": "gjr_garch_normal"
+      }
+    ],
+    "var_confidence_levels": [
+      95,
+      99
+    ]
+  }
+}
