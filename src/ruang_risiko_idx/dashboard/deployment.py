@@ -23,6 +23,18 @@ DEPLOYMENT_FILENAMES = (
     "latest_direction_snapshot.json",
 )
 
+CANONICAL_RUNTIME_PATHS = (
+    Path("data/processed/analytics_daily.parquet"),
+    Path("reports/risk/latest_risk_snapshot.json"),
+    Path("reports/ml/latest_direction_snapshot.json"),
+)
+
+
+def canonical_runtime_available(project_root: Path) -> bool:
+    """Return True only when all canonical runtime artifacts are available."""
+
+    return all((project_root / path).exists() for path in CANONICAL_RUNTIME_PATHS)
+
 
 def deployment_bundle_available(project_root: Path) -> bool:
     """Return True only when the three runtime deployment artifacts are present."""
