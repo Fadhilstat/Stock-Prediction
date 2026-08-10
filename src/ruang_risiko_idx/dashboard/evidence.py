@@ -17,9 +17,9 @@ def summarize_kronos_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
         "forecast_count": int(evidence.get("forecast_count", 0)),
         "ticker_count": int(evidence.get("ticker_count", 0)),
         "evaluation_size": int(configuration.get("evaluation_size_per_ticker", 0)),
-        "reason": str(decision.get("reason", "Decision reason is not available.")),
+        "reason": str(decision.get("reason", "Alasan keputusan tidak tersedia.")),
         "structural_result": str(
-            decision.get("structural_result", "Structural audit is not available.")
+            decision.get("structural_result", "Hasil audit struktur tidak tersedia.")
         ),
     }
 
@@ -40,8 +40,8 @@ def summarize_granite_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
         "wins_vs_random_walk": int(
             comparison.get("granite_return_mae_wins_vs_random_walk", 0)
         ),
-        "model_revision": str(evidence.get("model_revision", "not available")),
-        "target": str(evidence.get("target", "not available")),
+        "model_revision": str(evidence.get("model_revision", "tidak tersedia")),
+        "target": str(evidence.get("target", "tidak tersedia")),
     }
 
 
@@ -85,42 +85,45 @@ def build_learn_topics() -> tuple[dict[str, str], ...]:
             "title": "Volatilitas",
             "question": "Seberapa besar perubahan return cenderung berfluktuasi?",
             "explanation": (
-                "Volatilitas membahas besarnya variasi, bukan arah. Volatilitas tinggi tidak berarti "
-                "harga pasti turun, dan volatilitas rendah tidak berarti investasi menjadi aman."
+                "Volatilitas membahas besarnya variasi, bukan arah. Nilai yang tinggi tidak "
+                "berarti harga pasti turun. Nilai yang rendah juga tidak membuat investasi "
+                "menjadi aman."
             ),
         },
         {
             "title": "Drawdown",
             "question": "Seberapa jauh posisi berada di bawah puncak sebelumnya?",
             "explanation": (
-                "Drawdown membantu melihat pengalaman kerugian dari sudut pandang perjalanan nilai. "
-                "Angka yang lebih negatif berarti jarak dari puncak sebelumnya semakin besar."
+                "Drawdown melihat pengalaman kerugian dari perjalanan nilai. Angka yang semakin "
+                "negatif menunjukkan jarak yang semakin besar dari puncak sebelumnya."
             ),
         },
         {
             "title": "Value at Risk",
-            "question": "Berapa ambang kerugian yang diperkirakan pada tingkat keyakinan tertentu?",
+            "question": (
+                "Berapa ambang kerugian yang diperkirakan pada tingkat keyakinan tertentu?"
+            ),
             "explanation": (
-                "VaR adalah ukuran berbasis model dan horizon tertentu. VaR bukan kerugian maksimum, "
-                "karena hasil yang lebih buruk dari ambang tersebut tetap dapat terjadi."
+                "VaR memakai model dan horizon tertentu. VaR bukan kerugian maksimum. Hasil yang "
+                "lebih buruk dari ambang tersebut tetap dapat terjadi."
             ),
         },
         {
             "title": "Walk-forward",
             "question": "Apakah model diuji dengan urutan waktu yang menyerupai penggunaan nyata?",
             "explanation": (
-                "Walk-forward menjaga masa depan tetap di luar data pelatihan pada saat prediksi "
-                "dibuat. Pendekatan ini membantu mengurangi evaluasi yang terlalu optimistis akibat "
-                "informasi masa depan bocor ke proses training."
+                "Walk-forward menjaga masa depan di luar data pelatihan saat prediksi dibuat. "
+                "Cara ini membantu mengurangi evaluasi yang terlalu optimistis karena informasi "
+                "masa depan bocor ke proses training."
             ),
         },
         {
             "title": "Baseline",
             "question": "Apakah model yang rumit benar-benar memberi nilai tambah?",
             "explanation": (
-                "Baseline sederhana memberi pembanding yang penting. Model yang lebih canggih belum "
-                "layak dipilih hanya karena teknologinya menarik. Ia perlu mengalahkan pembanding "
-                "yang relevan pada target yang sama."
+                "Baseline sederhana memberi pembanding yang penting. Model yang lebih canggih "
+                "belum layak dipilih hanya karena teknologinya menarik. Ia perlu mengalahkan "
+                "pembanding yang relevan pada target yang sama."
             ),
         },
     )
