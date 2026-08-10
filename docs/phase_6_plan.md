@@ -60,9 +60,13 @@ Precomputed artifacts remain cached, charts use the available container width, a
 
 ## 6.7 Deployment readiness
 
-Status: planned.
+Status: complete.
 
-Prepare Streamlit Community Cloud deployment, define runtime artifact provisioning, document update operations, and run final acceptance checks.
+The public dashboard now has a dedicated deployment bundle instead of depending on ignored local runtime files. The bundle contains only the analytics columns used by the interface, the latest risk snapshot, the latest direction snapshot, and an integrity manifest. Raw market data remains outside the repository.
+
+The deployment loader verifies file checksums, manifest counts, ticker alignment, date alignment, and committed model governance before returning data to Streamlit. Local canonical runtime data still has priority during development, while Community Cloud can fall back to the committed bundle.
+
+GitHub Actions rebuilds the runtime pipeline on relevant changes to `main` and on weekday evenings in the Asia/Jakarta timezone. Only a fully validated bundle is committed. Streamlit Community Cloud dependency and entrypoint requirements are documented separately in `docs/deployment.md`.
 
 ## Governance guardrails
 

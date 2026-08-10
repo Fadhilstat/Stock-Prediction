@@ -37,6 +37,9 @@ data/audit/
 *.sqlite
 *.sqlite3
 
+# The public bundle is intentionally versioned after offline validation
+!deployment/*.parquet
+
 # Models and generated artifacts
 artifacts/
 models/

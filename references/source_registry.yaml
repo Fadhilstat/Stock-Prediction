@@ -59,6 +59,46 @@ sources:
       - "Value at Risk definition"
       - "market risk educational context"
 
+  - id: streamlit_community_cloud_deploy
+    title: "Streamlit Community Cloud deployment guide"
+    url: "https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy"
+    status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_documentation"
+    role:
+      - "Community Cloud repository and entrypoint deployment"
+      - "Python version configuration"
+
+  - id: streamlit_community_cloud_dependencies
+    title: "Streamlit Community Cloud app dependencies"
+    url: "https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/app-dependencies"
+    status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_documentation"
+    role:
+      - "requirements.txt deployment contract"
+      - "dependency file precedence"
+
+  - id: github_actions_workflow_syntax
+    title: "GitHub Actions workflow syntax"
+    url: "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax"
+    status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_documentation"
+    role:
+      - "scheduled deployment refresh"
+      - "timezone-aware cron configuration"
+
+  - id: github_actions_token
+    title: "GitHub Actions GITHUB_TOKEN"
+    url: "https://docs.github.com/en/actions/concepts/security/github_token"
+    status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_documentation"
+    role:
+      - "automated deployment bundle commit"
+      - "recursive workflow prevention"
+
   - id: yfinance_pypi
     title: "yfinance on PyPI"
     url: "https://pypi.org/project/yfinance/"
