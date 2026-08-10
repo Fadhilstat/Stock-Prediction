@@ -17,6 +17,7 @@ from ruang_risiko_idx.dashboard.presentation import (
     build_market_snapshot,
     build_risk_overview,
     format_model_name,
+    format_registry_status,
     get_ticker_row,
 )
 
@@ -219,9 +220,9 @@ def render_stock_explorer(data: DashboardData, ticker: str) -> None:
     with st.expander("Cara membaca dua grafik ini"):
         st.write(
             "Harga menunjukkan perjalanan nilai pasar setelah penyesuaian aksi korporasi. "
-            "Drawdown menjawab pertanyaan yang berbeda: seberapa jauh posisi saat ini berada di "
-            "bawah puncak yang pernah dicapai. Nilai drawdown yang lebih negatif berarti jarak dari "
-            "puncak sebelumnya semakin besar."
+            "Drawdown menjawab pertanyaan yang berbeda: seberapa jauh posisi saat ini "
+            "berada di bawah puncak yang pernah dicapai. Nilai drawdown yang lebih negatif "
+            "berarti jarak dari puncak sebelumnya semakin besar."
         )
 
 
@@ -234,6 +235,7 @@ def render_risk_page(data: DashboardData, ticker: str) -> None:
         "selection_status",
         "status tidak tersedia",
     )
+    status_label = format_registry_status(str(status))
 
     st.write(
         "Di sini volatilitas bukan dihitung ulang dari jendela historis saat halaman dibuka. "
@@ -242,17 +244,23 @@ def render_risk_page(data: DashboardData, ticker: str) -> None:
     )
 
     metrics = st.columns(4)
-    metrics[0].metric("Forecast volatilitas 1 hari", f"{float(risk['forecast_volatility']):.2%}")
+    metrics[0].metric(
+        "Forecast volatilitas 1 hari",
+        f"{float(risk['forecast_volatility']):.2%}",
+    )
     metrics[1].metric("VaR 95%", f"{float(risk['var_95']):.2%}")
     metrics[2].metric("VaR 99%", f"{float(risk['var_99']):.2%}")
-    metrics[3].metric("Half-life volatilitas", f"{float(risk['half_life_days']):.1f} hari")
+    metrics[3].metric(
+        "Half-life volatilitas",
+        f"{float(risk['half_life_days']):.1f} hari",
+    )
 
     st.markdown(
         f"""
         <div class="rr-note">
         <strong>Model volatilitas:</strong> {format_model_name(str(risk['volatility_model']))}<br>
         <strong>Model VaR:</strong> {format_model_name(str(risk['var_model']))}<br>
-        <strong>Status registry:</strong> {status}
+        <strong>Status seleksi:</strong> {status_label}
         </div>
         """,
         unsafe_allow_html=True,
@@ -273,6 +281,7 @@ def render_direction_page(data: DashboardData, ticker: str) -> None:
 
     probability_up = float(direction["probability_up"])
     probability_down = float(direction["probability_down"])
+    training_end = pd.Timestamp(direction["training_end_date"]).strftime("%d %b %Y")
 
     metrics = st.columns(3)
     metrics[0].metric("Probabilitas naik", f"{probability_up:.1%}")
@@ -284,15 +293,15 @@ def render_direction_page(data: DashboardData, ticker: str) -> None:
         <div class="rr-note">
         <strong>Model:</strong> {format_model_name(str(direction['selected_model']))}<br>
         <strong>Horizon:</strong> hari perdagangan berikutnya<br>
-        <strong>Data training terakhir:</strong> {pd.Timestamp(direction['training_end_date']).strftime('%d %b %Y')}
+        <strong>Data training terakhir:</strong> {training_end}
         </div>
         """,
         unsafe_allow_html=True,
     )
 
     st.write(
-        "Probabilitas ini tidak dibaca sebagai tombol beli atau jual. Nilai yang dekat 50% berarti "
-        "model melihat ketidakpastian yang cukup besar. Bahkan probabilitas yang lebih tinggi tetap "
+        "Probabilitas ini tidak dibaca sebagai tombol beli atau jual. Nilai yang dekat 50% "
+        "menunjukkan ketidakpastian yang cukup besar. Nilai yang lebih tinggi pun tetap "
         "bisa menghasilkan arah yang salah pada satu hari tertentu."
     )
 
@@ -303,8 +312,8 @@ def render_consolidated_risk(data: DashboardData) -> None:
     st.subheader("Ringkasan risiko lintas ticker")
     st.write(
         "Tabel ini menyatukan beberapa ukuran yang menjawab pertanyaan berbeda. Forecast "
-        "volatilitas dan VaR berbicara tentang besarnya risiko, sedangkan probabilitas naik berbicara "
-        "tentang arah. Keduanya tidak digabung menjadi satu skor karena maknanya memang berbeda."
+        "volatilitas dan VaR berbicara tentang besarnya risiko. Probabilitas naik membahas "
+        "arah. Keduanya tidak digabung menjadi satu skor karena maknanya memang berbeda."
     )
 
     overview = build_risk_overview(data.risk_snapshot, data.direction_snapshot)
@@ -364,7 +373,8 @@ selected_ticker = st.sidebar.selectbox(
 )
 
 st.sidebar.caption(
-    "Gunakan dashboard ini untuk memahami risiko dan ketidakpastian, bukan untuk mencari sinyal transaksi."
+    "Gunakan dashboard ini untuk memahami risiko dan ketidakpastian. "
+    "Dashboard ini bukan tempat mencari sinyal transaksi."
 )
 
 overview_tab, explorer_tab, risk_tab, direction_tab, combined_tab = st.tabs(
