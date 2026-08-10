@@ -44,10 +44,18 @@ class DashboardPaths:
                 project_root / "reports" / "ml" / "classical_model_registry.json"
             ),
             kronos_evidence=(
-                project_root / "reports" / "foundation" / "kronos" / "phase_5_2_evidence.json"
+                project_root
+                / "reports"
+                / "foundation"
+                / "kronos"
+                / "phase_5_2_evidence.json"
             ),
             granite_evidence=(
-                project_root / "reports" / "foundation" / "granite" / "phase_5_3_evidence.json"
+                project_root
+                / "reports"
+                / "foundation"
+                / "granite"
+                / "phase_5_3_evidence.json"
             ),
         )
 
@@ -200,7 +208,6 @@ def load_risk_snapshot(path: Path) -> pd.DataFrame:
         "persistence",
         "half_life_days",
     ]
-
     numeric_values = data[numeric_columns].apply(pd.to_numeric, errors="coerce")
 
     if not np.isfinite(numeric_values.to_numpy(dtype="float64")).all():
@@ -237,7 +244,10 @@ def load_direction_snapshot(path: Path) -> pd.DataFrame:
 
     data = data.copy()
     data["as_of_date"] = pd.to_datetime(data["as_of_date"], errors="coerce")
-    data["training_end_date"] = pd.to_datetime(data["training_end_date"], errors="coerce")
+    data["training_end_date"] = pd.to_datetime(
+        data["training_end_date"],
+        errors="coerce",
+    )
 
     if data[["as_of_date", "training_end_date"]].isna().any().any():
         raise DashboardDataError("Direction snapshot contains invalid dates.")
@@ -247,12 +257,19 @@ def load_direction_snapshot(path: Path) -> pd.DataFrame:
 
     for column in ("probability_up", "probability_down"):
         values = pd.to_numeric(data[column], errors="coerce")
-        if values.isna().any() or not values.between(0.0, 1.0, inclusive="both").all():
-            raise DashboardDataError(f"Direction snapshot contains invalid {column} values.")
+        probability_valid = values.between(0.0, 1.0, inclusive="both").all()
+        if values.isna().any() or not probability_valid:
+            raise DashboardDataError(
+                f"Direction snapshot contains invalid {column} values."
+            )
 
     probability_sum = data["probability_up"] + data["probability_down"]
 
-    if not np.allclose(probability_sum.to_numpy(dtype="float64"), 1.0, atol=1e-12):
+    if not np.allclose(
+        probability_sum.to_numpy(dtype="float64"),
+        1.0,
+        atol=1e-12,
+    ):
         raise DashboardDataError("Direction probabilities do not sum to one.")
 
     if set(data["forecast_horizon"].astype(str)) != {"next_trading_day"}:
@@ -276,7 +293,6 @@ def load_final_registry(path: Path) -> dict[str, Any]:
         "direction_probability",
         "foundation_benchmarks",
     }
-
     missing_keys = required_keys.difference(payload)
 
     if missing_keys:
@@ -363,7 +379,11 @@ def validate_runtime_alignment(
             "Direction snapshot date does not match the latest analytics date."
         )
 
-    if not (direction_snapshot["training_end_date"] < direction_snapshot["as_of_date"]).all():
+    training_before_inference = (
+        direction_snapshot["training_end_date"]
+        < direction_snapshot["as_of_date"]
+    ).all()
+    if not training_before_inference:
         raise DashboardDataError("Direction training period overlaps its inference date.")
 
 
@@ -376,21 +396,33 @@ def validate_registry_alignment(
 
     classical_tickers = {str(row["ticker"]) for row in classical_registry}
     if classical_tickers != runtime_tickers:
-        raise DashboardDataError("Classical model registry ticker universe does not match runtime data.")
+        raise DashboardDataError(
+            "Classical model registry ticker universe does not match runtime data."
+        )
 
     risk_entries = final_registry["risk_and_volatility"].get("tickers", [])
     direction_entries = final_registry["direction_probability"].get("tickers", [])
 
-    risk_tickers = {str(row.get("ticker")) for row in risk_entries if isinstance(row, dict)}
+    risk_tickers = {
+        str(row.get("ticker"))
+        for row in risk_entries
+        if isinstance(row, dict)
+    }
     direction_tickers = {
-        str(row.get("ticker")) for row in direction_entries if isinstance(row, dict)
+        str(row.get("ticker"))
+        for row in direction_entries
+        if isinstance(row, dict)
     }
 
     if risk_tickers != runtime_tickers:
-        raise DashboardDataError("Final risk registry ticker universe does not match runtime data.")
+        raise DashboardDataError(
+            "Final risk registry ticker universe does not match runtime data."
+        )
 
     if direction_tickers != runtime_tickers:
-        raise DashboardDataError("Final direction registry ticker universe does not match runtime data.")
+        raise DashboardDataError(
+            "Final direction registry ticker universe does not match runtime data."
+        )
 
 
 def load_dashboard_data(project_root: Path) -> DashboardData:
