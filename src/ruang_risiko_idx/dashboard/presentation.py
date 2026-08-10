@@ -1,7 +1,8 @@
 """Prepare clear dashboard views from validated analytics artifacts."""
 
-import pandas as pd
+from __future__ import annotations
 
+import pandas as pd
 
 MODEL_LABELS = {
     "constant_probability": "Baseline probabilitas historis",
