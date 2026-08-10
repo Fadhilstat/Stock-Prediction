@@ -1,7 +1,5 @@
 """Prepare clear dashboard views from validated analytics artifacts."""
 
-from __future__ import annotations
-
 import pandas as pd
 
 
@@ -15,11 +13,26 @@ MODEL_LABELS = {
     "gjr_garch_student_t": "GJR-GARCH Student-t",
 }
 
+REGISTRY_STATUS_LABELS = {
+    "provisional_out_of_sample_selection": (
+        "Seleksi provisional berdasarkan evaluasi out-of-sample"
+    ),
+}
+
 
 def format_model_name(model_name: str) -> str:
     """Return a readable model label without hiding its technical name."""
 
     return MODEL_LABELS.get(model_name, model_name.replace("_", " ").title())
+
+
+def format_registry_status(status: str) -> str:
+    """Turn a technical registry status into a readable label."""
+
+    return REGISTRY_STATUS_LABELS.get(
+        status,
+        status.replace("_", " ").capitalize(),
+    )
 
 
 def build_market_snapshot(analytics: pd.DataFrame) -> pd.DataFrame:
@@ -105,9 +118,13 @@ def build_risk_overview(
     if len(joined) != len(risk_snapshot) or len(joined) != len(direction_snapshot):
         raise ValueError("Risk and direction snapshots do not align one-to-one.")
 
-    joined["volatility_model_label"] = joined["volatility_model"].map(format_model_name)
+    joined["volatility_model_label"] = joined["volatility_model"].map(
+        format_model_name
+    )
     joined["var_model_label"] = joined["var_model"].map(format_model_name)
-    joined["direction_model_label"] = joined["selected_model"].map(format_model_name)
+    joined["direction_model_label"] = joined["selected_model"].map(
+        format_model_name
+    )
 
     return joined.sort_values("ticker").reset_index(drop=True)
 
