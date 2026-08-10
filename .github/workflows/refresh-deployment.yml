@@ -1,6 +1,19 @@
 name: Refresh deployment bundle
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/refresh-deployment.yml"
+      - "config/**"
+      - "pyproject.toml"
+      - "scripts/update_market_data.py"
+      - "scripts/build_analytics_dataset.py"
+      - "scripts/build_latest_risk_snapshot.py"
+      - "scripts/build_latest_direction_snapshot.py"
+      - "scripts/build_deployment_bundle.py"
+      - "src/ruang_risiko_idx/**"
   schedule:
     - cron: "0 18 * * 1-5"
       timezone: "Asia/Jakarta"
