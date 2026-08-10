@@ -13,6 +13,12 @@ from ruang_risiko_idx.dashboard.data_access import (
     DashboardDataError,
     load_dashboard_data,
 )
+from ruang_risiko_idx.dashboard.evidence import (
+    build_learn_topics,
+    summarize_direction_registry,
+    summarize_granite_evidence,
+    summarize_kronos_evidence,
+)
 from ruang_risiko_idx.dashboard.presentation import (
     build_market_snapshot,
     build_risk_overview,
@@ -353,6 +359,125 @@ def render_consolidated_risk(data: DashboardData) -> None:
     )
 
 
+def render_model_evidence(data: DashboardData) -> None:
+    """Render why each model family received its current project role."""
+
+    st.subheader("Bukti model, termasuk yang tidak menang")
+    st.write(
+        "Model yang lebih rumit tidak otomatis lebih berguna. Bagian ini menunjukkan keputusan "
+        "model apa adanya, termasuk ketika baseline sederhana justru lebih kuat."
+    )
+
+    st.markdown("#### GARCH untuk risiko")
+    risk_registry = data.final_registry["risk_and_volatility"]
+    st.write(
+        "GARCH, EGARCH, dan GJR-GARCH dinilai untuk tugas volatilitas dan VaR. Pilihan dilakukan "
+        "per ticker, bukan dengan satu model yang dipaksakan untuk seluruh saham. Statusnya masih "
+        "provisional berdasarkan evaluasi out-of-sample."
+    )
+    st.caption(
+        "Metrik utama volatilitas: "
+        f"{risk_registry.get('primary_volatility_metric', 'tidak tersedia')}."
+    )
+
+    st.markdown("#### Model klasik untuk probabilitas arah")
+    direction_rows = pd.DataFrame(
+        summarize_direction_registry(data.classical_registry)
+    )
+    direction_rows["selected_model"] = direction_rows["selected_model"].map(
+        format_model_name
+    )
+    direction_rows = direction_rows.rename(
+        columns={
+            "ticker": "Ticker",
+            "selected_model": "Model terpilih",
+            "validation_log_loss": "Validation log loss",
+            "validation_brier": "Validation Brier",
+            "test_log_loss": "Test log loss",
+        }
+    )
+    st.dataframe(
+        direction_rows.style.format(
+            {
+                "Validation log loss": "{:.4f}",
+                "Validation Brier": "{:.4f}",
+                "Test log loss": "{:.4f}",
+            }
+        ),
+        use_container_width=True,
+        hide_index=True,
+    )
+    st.caption(
+        "Model dipilih memakai validation log loss, lalu Brier score sebagai tie-breaker. "
+        "Hasil test ditampilkan sebagai evaluasi akhir, bukan bahan pemilihan model."
+    )
+
+    kronos = summarize_kronos_evidence(data.kronos_evidence)
+    granite = summarize_granite_evidence(data.granite_evidence)
+
+    left, right = st.columns(2)
+    with left:
+        st.markdown("#### Kronos")
+        st.metric("Forecast evaluasi", f"{kronos['forecast_count']:,}")
+        st.write(
+            "Kronos tetap menjadi benchmark eksperimen. Pada evaluasi yang dibekukan, random walk "
+            "memiliki close MAE dan log-return MAE yang lebih rendah untuk seluruh enam seri pasar."
+        )
+        st.caption(kronos["structural_result"])
+
+    with right:
+        st.markdown("#### Granite TTM R2.1")
+        st.metric("Forecast evaluasi", f"{granite['forecast_rows']:,}")
+        st.write(
+            f"Granite mengalahkan persistence pada {granite['wins_vs_persistence']} dari "
+            f"{granite['ticker_count']} saham untuk return MAE, tetapi mengalahkan random walk "
+            f"pada {granite['wins_vs_random_walk']} saham. Karena itu model tidak dipromosikan "
+            "menjadi model produksi."
+        )
+        st.caption(
+            f"Target: {granite['target']}. Revision: {granite['model_revision']}."
+        )
+
+    st.info(
+        "Hasil model yang tidak mengalahkan baseline tetap berguna. Ia membantu mencegah proyek "
+        "mengklaim kemampuan prediksi hanya karena memakai model yang terdengar lebih canggih."
+    )
+
+
+def render_learn_page() -> None:
+    """Render plain-language concepts and verified reference links."""
+
+    st.subheader("Belajar membaca risiko")
+    st.write(
+        "Bagian ini dibuat untuk pembaca yang belum terbiasa dengan quantitative finance. "
+        "Tujuannya bukan menghafal rumus, tetapi memahami pertanyaan yang dijawab setiap ukuran."
+    )
+
+    for topic in build_learn_topics():
+        with st.expander(topic["title"]):
+            st.markdown(f"**Pertanyaan utama:** {topic['question']}")
+            st.write(topic["explanation"])
+
+    st.markdown("#### Kenapa hasil model perlu diragukan secara sehat?")
+    st.write(
+        "Pasar berubah, data historis terbatas, dan model menyederhanakan kenyataan. Karena itu "
+        "Ruang Risiko IDX memakai urutan waktu saat evaluasi, membandingkan model dengan baseline, "
+        "dan menjaga hasil test agar tidak dipakai untuk memilih model."
+    )
+
+    st.markdown("#### Sumber yang sudah diperiksa")
+    st.markdown(
+        "- [Nobel Prize: Robert F. Engle, Risk and Volatility]"
+        "(https://www.nobelprize.org/prizes/economic-sciences/2003/engle/lecture/)\n"
+        "- [Basel Framework: market risk terminology]"
+        "(https://www.bis.org/basel_framework/chapter/MAR/10.htm)\n"
+        "- [Kronos official repository](https://github.com/shiyu-coder/Kronos)\n"
+        "- [Granite Time Series TTM R2 model card]"
+        "(https://huggingface.co/ibm-granite/granite-timeseries-ttm-r2)"
+    )
+    st.caption("Keempat sumber di atas diperiksa kembali pada 10 Agustus 2026.")
+
+
 try:
     dashboard_data = load_runtime_data(str(PROJECT_ROOT))
 except DashboardDataError as error:
@@ -377,13 +502,23 @@ st.sidebar.caption(
     "Dashboard ini bukan tempat mencari sinyal transaksi."
 )
 
-overview_tab, explorer_tab, risk_tab, direction_tab, combined_tab = st.tabs(
+(
+    overview_tab,
+    explorer_tab,
+    risk_tab,
+    direction_tab,
+    combined_tab,
+    evidence_tab,
+    learn_tab,
+) = st.tabs(
     [
         "Gambaran pasar",
         "Jelajah saham",
         "Risiko dan GARCH",
         "Probabilitas arah",
         "Ringkasan risiko",
+        "Bukti model",
+        "Belajar",
     ]
 )
 
@@ -401,6 +536,12 @@ with direction_tab:
 
 with combined_tab:
     render_consolidated_risk(dashboard_data)
+
+with evidence_tab:
+    render_model_evidence(dashboard_data)
+
+with learn_tab:
+    render_learn_page()
 
 st.divider()
 st.caption(

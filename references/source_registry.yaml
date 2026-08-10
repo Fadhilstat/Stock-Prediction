@@ -39,6 +39,26 @@ sources:
       - "TTM R2.1 integration"
       - "model release and usage guidance"
 
+  - id: engle_nobel_lecture
+    title: "Robert F. Engle III Nobel Prize Lecture"
+    url: "https://www.nobelprize.org/prizes/economic-sciences/2003/engle/lecture/"
+    status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_prize_archive"
+    role:
+      - "ARCH and GARCH educational context"
+      - "volatility and financial risk context"
+
+  - id: basel_var_terminology
+    title: "Basel Framework market risk terminology"
+    url: "https://www.bis.org/basel_framework/chapter/MAR/10.htm"
+    status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_regulatory_framework"
+    role:
+      - "Value at Risk definition"
+      - "market risk educational context"
+
   - id: yfinance_pypi
     title: "yfinance on PyPI"
     url: "https://pypi.org/project/yfinance/"

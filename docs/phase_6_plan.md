@@ -40,9 +40,13 @@ The Streamlit layer does not fit models. Presentation helpers prepare market and
 
 ## 6.5 Model evidence and Learn
 
-Status: planned.
+Status: complete.
 
-Kronos and Granite remain visible as experimental benchmarks, including the evidence explaining why they were not promoted to production forecasting. The Learn page will explain return, volatility, drawdown, VaR, model uncertainty, and evaluation limitations in language that remains accurate without assuming a quantitative finance background.
+The dashboard now presents the evidence behind each model role rather than showing only the models that performed well. GARCH remains provisional and task-specific. Classical direction models show validation metrics separately from test metrics so the selection process stays visible.
+
+Kronos and Granite remain experimental benchmarks. Their frozen results are shown with the baseline comparisons that prevented promotion to production forecasting. Negative results are treated as useful evidence rather than hidden from the user.
+
+The Learn section explains return, volatility, drawdown, VaR, walk-forward evaluation, and baseline comparisons in plain language. External references used for educational context are recorded in the source registry and rechecked for live access before inclusion.
 
 ## 6.6 UX and robustness
 
