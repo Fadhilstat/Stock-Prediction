@@ -13,6 +13,11 @@ from ruang_risiko_idx.dashboard.data_access import (
     DashboardDataError,
     load_dashboard_data,
 )
+from ruang_risiko_idx.dashboard.deployment import (
+    canonical_runtime_available,
+    deployment_bundle_available,
+    load_deployment_dashboard_data,
+)
 from ruang_risiko_idx.dashboard.evidence import (
     build_learn_topics,
     summarize_direction_registry,
@@ -65,9 +70,17 @@ st.markdown(
 
 @st.cache_data(show_spinner=False)
 def load_runtime_data(project_root: str) -> DashboardData:
-    """Load validated precomputed artifacts without running model training."""
+    """Load local runtime first, then use the committed deployment bundle."""
 
-    return load_dashboard_data(Path(project_root))
+    root = Path(project_root)
+
+    if canonical_runtime_available(root):
+        return load_dashboard_data(root)
+
+    if deployment_bundle_available(root):
+        return load_deployment_dashboard_data(root)
+
+    return load_dashboard_data(root)
 
 
 def make_price_figure(data: pd.DataFrame, ticker: str) -> go.Figure:
