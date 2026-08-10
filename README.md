@@ -32,7 +32,7 @@ Ticker awal yang dipakai adalah `BBCA.JK`, `BBRI.JK`, `TLKM.JK`, `ASII.JK`, `ANT
 
 Phase 1 sampai Phase 6 sudah selesai. Dashboard sudah berjalan di Streamlit Community Cloud dan membaca deployment bundle yang dibangun secara offline.
 
-Pipeline deployment melakukan pembaruan pada hari kerja pukul 18.00 Asia/Jakarta. Urutannya adalah pengambilan data pasar, pembangunan analytics, estimasi risiko GARCH dan VaR, direction inference, validasi deployment bundle, lalu commit hasil yang sudah lolos pemeriksaan ke `main`. Streamlit membaca perubahan repository tersebut untuk memperbarui aplikasi publik.
+Pipeline deployment melakukan pembaruan pada hari kerja pukul 18.00 WIB. Urutannya adalah pengambilan data pasar, pembangunan analytics, estimasi risiko GARCH dan VaR, direction inference, validasi deployment bundle, lalu commit hasil yang sudah lolos pemeriksaan ke `main`. Streamlit membaca perubahan repository tersebut untuk memperbarui aplikasi publik.
 
 Dashboard tidak melakukan fitting GARCH, retraining classical model, atau inference foundation model ketika pengguna membuka halaman. Perhitungan model dilakukan sebelum artifact dipublikasikan.
 
