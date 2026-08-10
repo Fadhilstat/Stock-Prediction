@@ -255,8 +255,9 @@ def render_risk_page(data: DashboardData, ticker: str) -> None:
 
     if ticker_has_convergence_warning(data.risk_snapshot, ticker):
         st.warning(
-            "Proses estimasi untuk ticker ini melaporkan convergence warning. Angka tetap "
-            "ditampilkan agar hasil pipeline transparan, tetapi interpretasinya perlu lebih hati-hati."
+            "Proses estimasi untuk ticker ini melaporkan convergence warning. "
+            "Angka tetap ditampilkan agar hasil pipeline transparan. "
+            "Baca estimasinya dengan lebih hati-hati."
         )
 
     metrics = st.columns(4)
