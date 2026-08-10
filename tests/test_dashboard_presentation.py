@@ -7,6 +7,7 @@ from ruang_risiko_idx.dashboard.presentation import (
     build_market_snapshot,
     build_risk_overview,
     format_model_name,
+    format_registry_status,
     get_ticker_row,
 )
 
@@ -108,3 +109,11 @@ def test_format_model_name_has_readable_fallback() -> None:
 
     assert format_model_name("random_forest") == "Random Forest"
     assert format_model_name("custom_model") == "Custom Model"
+
+
+def test_format_registry_status_has_readable_label() -> None:
+    """Technical registry status should remain accurate but readable."""
+
+    status = format_registry_status("provisional_out_of_sample_selection")
+
+    assert status == "Seleksi provisional berdasarkan evaluasi out-of-sample"
