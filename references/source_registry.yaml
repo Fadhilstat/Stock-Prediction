@@ -1,50 +1,70 @@
-checked_at: "2026-08-01"
+checked_at: "2026-08-10"
 sources:
   - id: yfinance_docs
     title: "yfinance documentation"
     url: "https://ranaroussi.github.io/yfinance/"
     status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_documentation"
     role:
       - "market data ingestion"
       - "usage limitations"
+
   - id: yfinance_download_api
     title: "yfinance.download API reference"
     url: "https://ranaroussi.github.io/yfinance/reference/api/yfinance.download.html"
     status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_documentation"
     role:
       - "download parameter contract"
+
   - id: kronos_official_repo
     title: "Kronos official repository"
     url: "https://github.com/shiyu-coder/Kronos"
     status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_repository"
     role:
       - "Kronos-small integration"
-      - "custom CSV fine-tuning"
+      - "Kronos model behavior and examples"
+
   - id: ttm_r2_model_card
     title: "Granite Time Series TTM R2 model card"
     url: "https://huggingface.co/ibm-granite/granite-timeseries-ttm-r2"
     status: "verified_live"
+    verified_at: "2026-08-10"
+    source_type: "official_model_card"
     role:
       - "TTM R2.1 integration"
-      - "daily multivariate forecasting"
+      - "model release and usage guidance"
+
   - id: yfinance_pypi
     title: "yfinance on PyPI"
     url: "https://pypi.org/project/yfinance/"
     status: "verified_live"
+    verified_at: "2026-08-10"
     checked_version: "1.5.2"
+    source_type: "official_package_index"
     role:
-      - "dependency version check"
+      - "dependency availability check"
+
   - id: streamlit_pypi
     title: "Streamlit on PyPI"
     url: "https://pypi.org/project/streamlit/"
     status: "verified_live"
-    checked_version: "1.60.0"
+    verified_at: "2026-08-10"
+    checked_version: "1.61.1"
+    source_type: "official_package_index"
     role:
-      - "dashboard dependency version check"
+      - "dashboard dependency availability check"
+
   - id: pyarrow_pypi
     title: "PyArrow on PyPI"
     url: "https://pypi.org/project/pyarrow/"
     status: "verified_live"
-    checked_version: "25.0.0"
+    verified_at: "2026-08-10"
+    checked_version: "24.0.0"
+    source_type: "official_package_index"
     role:
-      - "Parquet dependency version check"
+      - "Parquet dependency availability check"

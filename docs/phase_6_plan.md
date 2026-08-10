@@ -22,15 +22,11 @@ Exact Phase 4 metric reproduction is not claimed because the original raw market
 
 ## 6.3 Dashboard data access
 
-Status: in progress.
+Status: complete.
 
-Deliverables:
+The dashboard now has one validated loader for analytics, risk snapshots, direction snapshots, model registries, and foundation evidence. Runtime artifacts are checked for ticker alignment, date alignment, duplicate rows, probability validity, and training boundaries before they reach Streamlit.
 
-- one validated loader for analytics, risk snapshot, direction snapshot, model registries, and foundation evidence;
-- ticker and date alignment checks across runtime artifacts;
-- readable errors for missing or invalid runtime artifacts;
-- automated tests for missing files, schema errors, ticker mismatches, stale snapshots, and invalid probabilities;
-- GitHub Actions quality gate for Ruff, pytest, and text rules.
+Readable errors cover missing or invalid artifacts. Synthetic tests protect the core data contract, and GitHub Actions runs Ruff, pytest, and text rules automatically on pull requests and pushes to `main`.
 
 ## 6.4 Main dashboard pages
 
@@ -38,17 +34,21 @@ Status: planned.
 
 Pages will cover market overview, stock explorer, GARCH and tail-risk evidence, direction probability, and a consolidated risk view. Historical volatility remains descriptive while the risk view uses registry-selected GARCH forecasts and VaR.
 
+The page design should help users understand what a metric means before asking them to interpret the number. Avoid visual complexity that does not improve understanding.
+
 ## 6.5 Model evidence and Learn
 
 Status: planned.
 
-Kronos and Granite remain visible as experimental benchmarks, including the evidence explaining why they were not promoted to production forecasting. The Learn page will explain return, volatility, drawdown, VaR, model uncertainty, and evaluation limitations.
+Kronos and Granite remain visible as experimental benchmarks, including the evidence explaining why they were not promoted to production forecasting. The Learn page will explain return, volatility, drawdown, VaR, model uncertainty, and evaluation limitations in language that remains accurate without assuming a quantitative finance background.
 
 ## 6.6 UX and robustness
 
 Status: planned.
 
 Add clear educational disclaimers, friendly missing-data states, consistent labels, caching for precomputed artifacts, responsive charts, and performance checks. The dashboard must not show BUY, SELL, or target-price language.
+
+Error messages should help a user or maintainer understand what needs to happen next. They should not expose unnecessary implementation detail.
 
 ## 6.7 Deployment readiness
 
@@ -63,3 +63,5 @@ The GARCH registry remains `provisional_out_of_sample_selection` until a separat
 Classical model selection remains based on validation log loss with Brier score as the tie-breaker. Test results are not used for selection.
 
 Kronos and Granite remain experimental benchmarks. Frozen evaluation sets must not be reused for tuning decisions.
+
+Project-wide writing, source, and code principles are defined in `docs/project_guidelines.md` and apply to all remaining Phase 6 work.
