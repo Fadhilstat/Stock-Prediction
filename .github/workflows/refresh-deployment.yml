@@ -74,5 +74,5 @@ jobs:
             echo "Deployment bundle is unchanged."
           else
             git commit -m "Refresh dashboard deployment bundle"
-            git push
+            git push origin HEAD:main
           fi
