@@ -8,7 +8,9 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
+from ruang_risiko_idx.dashboard.data_access import DashboardDataError
 from ruang_risiko_idx.dashboard.deployment import (
     deployment_bundle_available,
     load_deployment_dashboard_data,
@@ -147,8 +149,8 @@ def write_governance_artifacts(project_root: Path) -> None:
     )
 
 
-def test_bundle_builder_writes_valid_slim_runtime_artifacts(tmp_path: Path) -> None:
-    """Deployment bundle should be aligned, slim, and loadable by the dashboard."""
+def build_bundle(tmp_path: Path) -> Path:
+    """Build one complete deployment bundle for loader tests."""
 
     analytics_path, risk_path, direction_path = build_runtime_inputs(tmp_path)
     project_root = tmp_path / "project"
@@ -174,6 +176,15 @@ def test_bundle_builder_writes_valid_slim_runtime_artifacts(tmp_path: Path) -> N
     )
 
     assert result.returncode == 0, result.stderr
+    return project_root
+
+
+def test_bundle_builder_writes_valid_slim_runtime_artifacts(tmp_path: Path) -> None:
+    """Deployment bundle should be aligned, slim, and loadable by the dashboard."""
+
+    project_root = build_bundle(tmp_path)
+    deployment_dir = project_root / "deployment"
+
     assert deployment_bundle_available(project_root)
 
     deployed_analytics = pd.read_parquet(
@@ -199,10 +210,23 @@ def test_bundle_builder_writes_valid_slim_runtime_artifacts(tmp_path: Path) -> N
 
 
 def test_incomplete_bundle_is_not_reported_as_available(tmp_path: Path) -> None:
-    """Deployment fallback should require all runtime artifacts before activation."""
+    """Deployment fallback should require all bundle files before activation."""
 
     deployment_dir = tmp_path / "deployment"
     deployment_dir.mkdir(parents=True)
     (deployment_dir / "latest_risk_snapshot.json").write_text("[]\n", encoding="utf-8")
 
     assert not deployment_bundle_available(tmp_path)
+
+
+def test_tampered_bundle_is_rejected_by_checksum(tmp_path: Path) -> None:
+    """Published runtime files must continue to match their manifest checksums."""
+
+    project_root = build_bundle(tmp_path)
+    write_governance_artifacts(project_root)
+
+    risk_path = project_root / "deployment" / "latest_risk_snapshot.json"
+    risk_path.write_text("[]\n", encoding="utf-8")
+
+    with pytest.raises(DashboardDataError, match="checksum"):
+        load_deployment_dashboard_data(project_root)
