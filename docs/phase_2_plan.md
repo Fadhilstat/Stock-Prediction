@@ -1,8 +1,10 @@
 # Phase 2 Implementation Plan
 
+> Historical planning document. Phase 2 through Phase 5 have since been completed. Current dashboard integration work is tracked in `docs/phase_6_plan.md`.
+
 ## Milestone 2.1: Data foundation
 
-Status: started
+Status: complete
 
 Deliverables:
 
@@ -24,17 +26,21 @@ Acceptance criteria:
 
 ## Milestone 2.2: Return and feature layer
 
-Planned deliverables:
+Status: complete
+
+Historical deliverables:
 
 - log return dari adjusted close
 - rolling volatility dan drawdown
 - fitur pasar berbasis IHSG
-- tabel analitik DuckDB
+- processed analytics dataset
 - feature tests yang mencegah look-ahead
 
 ## Milestone 2.3: Econometrics
 
-Planned deliverables:
+Status: complete
+
+Historical deliverables:
 
 - ARCH LM test
 - GARCH, EGARCH, dan GJR-GARCH
@@ -44,20 +50,17 @@ Planned deliverables:
 
 ## Milestone 2.4: Foundation models
 
-Planned deliverables:
+Status: complete
 
-- Kronos-small zero-shot adapter
-- TTM R2.1 multivariate adapter
+Historical deliverables:
+
+- Kronos zero-shot adapter dan rolling evaluation
+- Granite TTM R2.1 zero-shot adapter dan rolling evaluation
 - offline artifact generation
-- evaluation against naive and econometric baselines
+- evaluation against naive baselines
 
 ## Milestone 2.5: Dashboard completion
 
-Planned deliverables:
+Status: superseded by Phase 6
 
-- market overview
-- stock explorer
-- GARCH lab
-- foundation model comparison
-- risk dashboard
-- learning page
+Dashboard integration is now tracked as a dedicated Phase 6 so runtime data access, model evidence, UX, and deployment can be validated separately.
