@@ -26,6 +26,10 @@ from ruang_risiko_idx.dashboard.presentation import (
     format_registry_status,
     get_ticker_row,
 )
+from ruang_risiko_idx.dashboard.ux import (
+    explain_data_error,
+    ticker_has_convergence_warning,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -248,6 +252,13 @@ def render_risk_page(data: DashboardData, ticker: str) -> None:
         "Angkanya berasal dari snapshot GARCH yang sudah dihitung offline memakai model pilihan "
         "untuk masing-masing ticker."
     )
+
+    if ticker_has_convergence_warning(data.risk_snapshot, ticker):
+        st.warning(
+            "Proses estimasi untuk ticker ini melaporkan convergence warning. "
+            "Angka tetap ditampilkan agar hasil pipeline transparan. "
+            "Baca estimasinya dengan lebih hati-hati."
+        )
 
     metrics = st.columns(4)
     metrics[0].metric(
@@ -481,13 +492,11 @@ def render_learn_page() -> None:
 try:
     dashboard_data = load_runtime_data(str(PROJECT_ROOT))
 except DashboardDataError as error:
+    guidance = explain_data_error(error)
     st.title("Ruang Risiko IDX")
-    st.error("Dashboard belum memiliki seluruh artifact runtime yang dibutuhkan.")
-    st.write(
-        "Aplikasi sengaja tidak menjalankan training atau fitting model ketika halaman dibuka. "
-        "Bangun dulu analytics dan snapshot offline, lalu jalankan kembali dashboard."
-    )
-    st.code(str(error))
+    st.error(guidance.title)
+    st.write(guidance.explanation)
+    st.info(guidance.action)
     st.stop()
 
 render_header(dashboard_data)

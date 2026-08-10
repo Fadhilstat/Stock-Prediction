@@ -50,11 +50,13 @@ The Learn section explains return, volatility, drawdown, VaR, walk-forward evalu
 
 ## 6.6 UX and robustness
 
-Status: planned.
+Status: complete.
 
-Add clear educational disclaimers, friendly missing-data states, consistent labels, caching for precomputed artifacts, responsive charts, and performance checks. The dashboard must not show BUY, SELL, or target-price language.
+Runtime errors are translated into public-facing guidance that explains what happened and what to do next without exposing local file paths or unnecessary implementation detail. The application still stops when artifact validation fails, because displaying inconsistent data would be worse than showing a clear error state.
 
-Error messages should help a user or maintainer understand what needs to happen next. They should not expose unnecessary implementation detail.
+GARCH convergence warnings remain visible at ticker level. The dashboard does not hide a warning or discard the output silently. Instead, it keeps the estimate visible and asks the user to interpret it more cautiously.
+
+Precomputed artifacts remain cached, charts use the available container width, and educational disclaimers stay visible throughout the main experience. No buy, sell, target-price, or synthetic trading-score language is introduced.
 
 ## 6.7 Deployment readiness
 
