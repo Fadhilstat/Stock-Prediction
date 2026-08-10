@@ -30,11 +30,13 @@ Readable errors cover missing or invalid artifacts. Synthetic tests protect the 
 
 ## 6.4 Main dashboard pages
 
-Status: planned.
+Status: complete.
 
-Pages will cover market overview, stock explorer, GARCH and tail-risk evidence, direction probability, and a consolidated risk view. Historical volatility remains descriptive while the risk view uses registry-selected GARCH forecasts and VaR.
+The main dashboard now covers market overview, stock exploration, GARCH and tail-risk estimates, direction probability, and a consolidated cross-ticker risk view. Historical volatility remains descriptive, while the risk page reads the precomputed registry-selected GARCH forecast and VaR snapshot.
 
-The page design should help users understand what a metric means before asking them to interpret the number. Avoid visual complexity that does not improve understanding.
+The interface explains what each metric is trying to answer before presenting the number. Direction probability is kept separate from risk magnitude so users are not encouraged to interpret unrelated outputs as one trading score.
+
+The Streamlit layer does not fit models. Presentation helpers prepare market and risk summaries separately from the page code so the transformation logic can be tested without launching the dashboard.
 
 ## 6.5 Model evidence and Learn
 
