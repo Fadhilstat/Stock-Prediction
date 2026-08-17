@@ -4,8 +4,8 @@
   "analytics_rows": 17101,
   "ticker_count": 6,
   "files": {
-    "analytics_daily.parquet": "a720f9ce0dcd1ebc29a228e35e1b50684dbc0d887de193468a8d3b287e391573",
-    "latest_risk_snapshot.json": "b3b567bb1459563e7ec41b3e538df405b583906d5814cf3955526feb1441d9f7",
-    "latest_direction_snapshot.json": "9613ef0b6732ab3e5535e2a00fc87c570914d87d6ffe6e47286b65b7edb6046d"
+    "analytics_daily.parquet": "17aac15c746bb579353b2dd24f8357eedadfc87ff71d41f8f1047f4f864a2195",
+    "latest_risk_snapshot.json": "265a7e2131b161ac897800e7259c703959bc6f6096f9054203ff2d84ee51c70b",
+    "latest_direction_snapshot.json": "7f4c6c0201eb4dc08eb6f9569ed652f27af2ef725398245bfca93b8edf8e3df7"
   }
 }
