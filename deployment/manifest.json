@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "latest_trade_date": "2026-08-18",
-  "analytics_rows": 17107,
+  "latest_trade_date": "2026-08-19",
+  "analytics_rows": 17113,
   "ticker_count": 6,
   "files": {
-    "analytics_daily.parquet": "2f7ffdf1a27456f66f3ed0dcd1afb6a1f299e5e3b9b9335d2ccb2e307d9cd248",
-    "latest_risk_snapshot.json": "c4779ee4d6f3830ffcf4383b82f9621676a09cd2985b66827d08adf6675cc0fc",
-    "latest_direction_snapshot.json": "7722783fa472b9c4bf9a63888025f781fcb3f3ef065b05268b6499c981dd7dab"
+    "analytics_daily.parquet": "fda5da7d60d2ff622c60e0e1cd60c4f5146422426eca43946bebbd41bae59060",
+    "latest_risk_snapshot.json": "aba2d26062fcf7c5d9e2accd759c10687c529d8d44050b48e40c88e6e4b28a8c",
+    "latest_direction_snapshot.json": "170ebc2ed39e66db246ece09f9f813344a8e1f2f8582cf18d6b705a701a78408"
   }
 }
