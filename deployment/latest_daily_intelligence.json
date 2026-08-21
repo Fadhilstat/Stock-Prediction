@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "2026-08-21T11:56:40.500465+00:00",
+  "generated_at_utc": "2026-08-21T12:31:59.351339+00:00",
   "as_of_date": "2026-08-21",
   "generation_method": "deterministic_rule_based",
   "paid_language_model_api_used": false,
@@ -36,7 +36,7 @@
       "direction": {
         "role": "Analis probabilitas arah",
         "state": "belum menunjukkan kecenderungan yang kuat",
-        "summary": "Probabilitas naik 52.6% dari model random_forest. Pembacaan: belum menunjukkan kecenderungan yang kuat. Nilai ini bukan sinyal transaksi."
+        "summary": "Probabilitas naik 52.9% dari model random_forest. Pembacaan: belum menunjukkan kecenderungan yang kuat. Nilai ini bukan sinyal transaksi."
       }
     },
     "BBCA.JK": {
@@ -53,7 +53,7 @@
       "direction": {
         "role": "Analis probabilitas arah",
         "state": "condong tidak naik, tetapi tetap tidak pasti",
-        "summary": "Probabilitas naik 36.2% dari model random_forest. Pembacaan: condong tidak naik, tetapi tetap tidak pasti. Nilai ini bukan sinyal transaksi."
+        "summary": "Probabilitas naik 35.9% dari model random_forest. Pembacaan: condong tidak naik, tetapi tetap tidak pasti. Nilai ini bukan sinyal transaksi."
       }
     },
     "BBRI.JK": {
@@ -135,8 +135,10 @@
     "provider": "gdelt_doc_2",
     "verified_source_count": 5,
     "failed_domains": [
+      "bps.go.id",
       "astra.co.id",
-      "bca.co.id"
+      "bca.co.id",
+      "telkom.co.id"
     ],
     "article_count": 0
   }
