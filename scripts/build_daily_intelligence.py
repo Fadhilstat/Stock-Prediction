@@ -164,13 +164,15 @@ def fetch_verified_news(config: dict[str, Any]) -> tuple[list[dict[str, Any]], l
     timeout_seconds = int(discovery.get("timeout_seconds", 20))
     timespan = str(discovery.get("lookback", "3d"))
     max_records = int(discovery.get("max_records_per_domain", 20))
+    pause_seconds = float(discovery.get("request_pause_seconds", 0.0))
     ticker_keywords = config.get("ticker_keywords", {})
     macro_keywords = config.get("macro_keywords", {})
+    domain_configs = config["verified_domains"]
 
     articles: list[dict[str, Any]] = []
     failures: list[str] = []
 
-    for domain_config in config["verified_domains"]:
+    for index, domain_config in enumerate(domain_configs):
         domain = str(domain_config["domain"])
         params = {
             "query": f"domain:{domain}",
@@ -186,24 +188,25 @@ def fetch_verified_news(config: dict[str, Any]) -> tuple[list[dict[str, Any]], l
             payload = _fetch_json(url, timeout_seconds=timeout_seconds)
         except RuntimeError:
             failures.append(domain)
-            continue
+        else:
+            raw_articles = payload.get("articles", [])
+            if not isinstance(raw_articles, list):
+                failures.append(domain)
+            else:
+                for raw_item in raw_articles:
+                    if not isinstance(raw_item, dict):
+                        continue
+                    article = _article_from_gdelt(
+                        raw_item,
+                        domain_config=domain_config,
+                        ticker_keywords=ticker_keywords,
+                        macro_keywords=macro_keywords,
+                    )
+                    if article is not None:
+                        articles.append(article)
 
-        raw_articles = payload.get("articles", [])
-        if not isinstance(raw_articles, list):
-            failures.append(domain)
-            continue
-
-        for raw_item in raw_articles:
-            if not isinstance(raw_item, dict):
-                continue
-            article = _article_from_gdelt(
-                raw_item,
-                domain_config=domain_config,
-                ticker_keywords=ticker_keywords,
-                macro_keywords=macro_keywords,
-            )
-            if article is not None:
-                articles.append(article)
+        if pause_seconds > 0 and index < len(domain_configs) - 1:
+            time.sleep(pause_seconds)
 
     return articles, failures
 
