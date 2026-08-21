@@ -80,3 +80,6 @@ reports/foundation/granite/rolling_backtest_full_252/
 
 # Generated direction snapshot outputs
 reports/ml/latest_direction_snapshot.json
+
+# Generated daily intelligence output
+reports/intelligence/*.json
