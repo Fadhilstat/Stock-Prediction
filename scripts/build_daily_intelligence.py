@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 import yaml
@@ -106,6 +106,14 @@ def _match_keywords(title: str, keyword_map: dict[str, list[str]]) -> list[str]:
     return sorted(matches)
 
 
+def _host_matches_domain(hostname: str, domain: str) -> bool:
+    """Allow a verified domain and its subdomains, but no unrelated host."""
+
+    host = hostname.casefold().strip(".")
+    allowed = domain.casefold().strip(".")
+    return host == allowed or host.endswith(f".{allowed}")
+
+
 def _article_from_gdelt(
     item: dict[str, Any],
     domain_config: dict[str, Any],
@@ -116,11 +124,20 @@ def _article_from_gdelt(
 
     title = str(item.get("title", "")).strip()
     url = str(item.get("url", "")).strip()
-    domain = str(item.get("domain", "")).strip().lower()
+    reported_domain = str(item.get("domain", "")).strip().lower()
     seen_date = str(item.get("seendate", "")).strip()
-
     expected_domain = str(domain_config["domain"]).lower()
-    if not title or not url or domain != expected_domain:
+    parsed_url = urlparse(url)
+    hostname = parsed_url.hostname or ""
+
+    metadata_domain_valid = _host_matches_domain(reported_domain, expected_domain)
+    link_domain_valid = _host_matches_domain(hostname, expected_domain)
+    if (
+        not title
+        or parsed_url.scheme != "https"
+        or not metadata_domain_valid
+        or not link_domain_valid
+    ):
         return None
 
     configured_tickers = [str(value) for value in domain_config.get("tickers", [])]
@@ -131,7 +148,7 @@ def _article_from_gdelt(
     return {
         "title": title,
         "url": url,
-        "domain": domain,
+        "domain": expected_domain,
         "source_label": str(domain_config["label"]),
         "published_at": seen_date,
         "tickers": tickers,
