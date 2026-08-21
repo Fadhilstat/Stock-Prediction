@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pandas as pd
 import streamlit as st
 
 from ruang_risiko_idx.dashboard.data_access import DashboardDataError, load_dashboard_data
