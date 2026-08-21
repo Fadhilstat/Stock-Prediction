@@ -9,12 +9,14 @@ metadata:
 news_discovery:
   provider: gdelt_doc_2
   base_url: "https://api.gdeltproject.org/api/v2/doc/doc"
-  timeout_seconds: 20
-  lookback: "3d"
-  max_records_per_domain: 20
+  timeout_seconds: 25
+  lookback: "7d"
+  max_records_per_domain: 30
+  request_pause_seconds: 1.5
   note: >-
     GDELT is used only to discover article metadata and original links. The dashboard
     does not copy full article text and does not treat GDELT as the primary source.
+    Requests are spaced out to reduce avoidable discovery throttling.
 
 verified_domains:
   - domain: bi.go.id
