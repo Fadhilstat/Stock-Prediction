@@ -93,3 +93,20 @@ def test_loader_rejects_non_https_news_url(tmp_path: Path) -> None:
             latest_date=pd.Timestamp("2026-08-20"),
             tickers=("AAA.JK",),
         )
+
+
+def test_loader_rejects_news_url_from_another_domain(tmp_path: Path) -> None:
+    """A source label must not be paired with a link to another host."""
+
+    path = tmp_path / "intelligence.json"
+    write_artifact(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["news_items"][0]["url"] = "https://example.com/fake-bi-story"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(DashboardDataError, match="invalid news URL"):
+        load_daily_intelligence(
+            path,
+            latest_date=pd.Timestamp("2026-08-20"),
+            tickers=("AAA.JK",),
+        )
