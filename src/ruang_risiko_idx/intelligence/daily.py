@@ -256,7 +256,6 @@ def build_daily_intelligence(
     """Build auditable analyst-role output without a paid language-model API."""
 
     latest = _latest_market_rows(analytics)
-    tickers = latest["ticker"].astype(str).tolist()
 
     risk_order = (
         risk_snapshot.assign(
