@@ -31,10 +31,8 @@ from ruang_risiko_idx.dashboard.presentation import (
     format_registry_status,
     get_ticker_row,
 )
-from ruang_risiko_idx.dashboard.ux import (
-    explain_data_error,
-    ticker_has_convergence_warning,
-)
+from ruang_risiko_idx.dashboard.style import apply_app_styles, render_hero
+from ruang_risiko_idx.dashboard.ux import explain_data_error, ticker_has_convergence_warning
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,28 +42,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-st.markdown(
-    """
-    <style>
-    .block-container {max-width: 1240px; padding-top: 1.7rem; padding-bottom: 3rem;}
-    [data-testid="stMetric"] {
-        background: white;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 16px;
-    }
-    .rr-note {
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 0.9rem 1rem;
-        margin: 0.4rem 0 1rem 0;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+apply_app_styles()
 
 
 @st.cache_data(show_spinner=False)
@@ -73,18 +50,15 @@ def load_runtime_data(project_root: str) -> DashboardData:
     """Load local runtime first, then use the committed deployment bundle."""
 
     root = Path(project_root)
-
     if canonical_runtime_available(root):
         return load_dashboard_data(root)
-
     if deployment_bundle_available(root):
         return load_deployment_dashboard_data(root)
-
     return load_dashboard_data(root)
 
 
 def make_price_figure(data: pd.DataFrame, ticker: str) -> go.Figure:
-    """Build an adjusted-close chart for one market series."""
+    """Build a restrained adjusted-close chart for one market series."""
 
     figure = go.Figure()
     figure.add_trace(
@@ -93,17 +67,23 @@ def make_price_figure(data: pd.DataFrame, ticker: str) -> go.Figure:
             y=data["adjusted_close"],
             mode="lines",
             name=ticker,
+            line={"color": "#1F4E79", "width": 2},
             hovertemplate="%{x|%d %b %Y}<br>%{y:,.2f}<extra></extra>",
         )
     )
     figure.update_layout(
-        title="Perjalanan harga yang sudah disesuaikan",
+        title="Harga yang sudah disesuaikan",
         xaxis_title=None,
         yaxis_title="Adjusted close",
         hovermode="x unified",
-        margin=dict(l=10, r=10, t=55, b=10),
-        height=430,
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin={"l": 8, "r": 8, "t": 54, "b": 8},
+        height=410,
     )
+    figure.update_xaxes(showgrid=False)
+    figure.update_yaxes(gridcolor="#E9EEF5", zeroline=False)
     return figure
 
 
@@ -117,33 +97,44 @@ def make_drawdown_figure(data: pd.DataFrame, ticker: str) -> go.Figure:
             y=data["drawdown"],
             mode="lines",
             name=ticker,
+            line={"color": "#9F3A46", "width": 2},
+            fill="tozeroy",
+            fillcolor="rgba(159,58,70,0.08)",
             hovertemplate="%{x|%d %b %Y}<br>%{y:.1%}<extra></extra>",
         )
     )
     figure.update_layout(
-        title="Seberapa jauh harga berada di bawah puncak sebelumnya",
+        title="Jarak dari puncak sebelumnya",
         xaxis_title=None,
         yaxis_title="Drawdown",
         yaxis_tickformat=".0%",
         hovermode="x unified",
-        margin=dict(l=10, r=10, t=55, b=10),
-        height=330,
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin={"l": 8, "r": 8, "t": 54, "b": 8},
+        height=320,
     )
+    figure.update_xaxes(showgrid=False)
+    figure.update_yaxes(gridcolor="#E9EEF5", zeroline=False)
     return figure
 
 
 def render_header(data: DashboardData) -> None:
     """Render the project purpose and current data date."""
 
-    st.title("Ruang Risiko IDX")
-    st.write(
-        "Tempat belajar membaca risiko saham Indonesia dengan data, model statistik, "
-        "dan probabilitas yang disertai batasannya. Fokusnya bukan mencari sinyal transaksi, "
-        "melainkan membantu pengguna memahami ketidakpastian dengan lebih masuk akal."
-    )
-    st.caption(
-        f"Data terakhir yang masuk: {data.latest_date.strftime('%d %b %Y')}. "
-        "Analisis ini bersifat edukatif dan bukan rekomendasi investasi."
+    render_hero(
+        "Ruang Risiko IDX",
+        (
+            "Dashboard edukasi untuk membaca return, volatilitas, drawdown, VaR, dan "
+            "probabilitas arah saham Indonesia tanpa mengubah ketidakpastian menjadi "
+            "sinyal transaksi."
+        ),
+        eyebrow="Risk analytics untuk pasar Indonesia",
+        meta=(
+            f"Data terakhir: {data.latest_date.strftime('%d %b %Y')} | "
+            "Model dihitung offline | Bukan rekomendasi investasi"
+        ),
     )
 
 
@@ -152,31 +143,42 @@ def render_market_overview(data: DashboardData) -> None:
 
     st.subheader("Gambaran pasar")
     st.write(
-        "Bagian ini memberi konteks sebelum melihat model. Return harian, volatilitas historis, "
-        "dan drawdown membantu menunjukkan apakah sebuah saham sedang bergerak tenang atau berada "
-        "dalam periode yang lebih tidak nyaman dari biasanya."
+        "Mulai dari kondisi yang terlihat di data sebelum masuk ke model. Return, volatilitas "
+        "historis, dan drawdown memberi konteks tentang ritme pasar saat ini."
     )
 
     snapshot = build_market_snapshot(data.analytics).copy()
-    snapshot["return_harian"] = snapshot["simple_return"]
-    snapshot["volatilitas_21_hari"] = snapshot["volatility_21d"]
-    snapshot["drawdown_saat_ini"] = snapshot["drawdown"]
+    benchmark = snapshot.loc[snapshot["ticker"].eq("^JKSE")]
+    risk_overview = build_risk_overview(data.risk_snapshot, data.direction_snapshot)
+    highest_risk = risk_overview.sort_values("forecast_volatility", ascending=False).iloc[0]
+
+    if not benchmark.empty:
+        row = benchmark.iloc[0]
+        metric_cols = st.columns(4)
+        metric_cols[0].metric("Return JKSE", f"{float(row['simple_return']):.2%}")
+        metric_cols[1].metric(
+            "Volatilitas JKSE 21 hari",
+            f"{float(row['volatility_21d']):.2%}",
+        )
+        metric_cols[2].metric("Drawdown JKSE", f"{float(row['drawdown']):.2%}")
+        metric_cols[3].metric(
+            "Risiko model tertinggi",
+            str(highest_risk["ticker"]),
+            help=(
+                "Ticker dengan forecast volatilitas satu hari tertinggi pada snapshot model "
+                "terbaru. Ini bukan peringkat kualitas investasi."
+            ),
+        )
 
     display = snapshot[
-        [
-            "ticker",
-            "adjusted_close",
-            "return_harian",
-            "volatilitas_21_hari",
-            "drawdown_saat_ini",
-        ]
+        ["ticker", "adjusted_close", "simple_return", "volatility_21d", "drawdown"]
     ].rename(
         columns={
             "ticker": "Ticker",
             "adjusted_close": "Adjusted close",
-            "return_harian": "Return harian",
-            "volatilitas_21_hari": "Volatilitas 21 hari",
-            "drawdown_saat_ini": "Drawdown saat ini",
+            "simple_return": "Return harian",
+            "volatility_21d": "Volatilitas 21 hari",
+            "drawdown": "Drawdown saat ini",
         }
     )
 
@@ -192,10 +194,9 @@ def render_market_overview(data: DashboardData) -> None:
         use_container_width=True,
         hide_index=True,
     )
-
-    st.info(
-        "Volatilitas 21 hari di sini adalah ukuran historis. Untuk estimasi risiko satu hari ke "
-        "depan, gunakan halaman Risiko dan GARCH."
+    st.caption(
+        "Volatilitas 21 hari adalah ukuran historis. Forecast risiko satu hari tersedia "
+        "di tab Risiko."
     )
 
 
@@ -203,8 +204,11 @@ def render_stock_explorer(data: DashboardData, ticker: str) -> None:
     """Render historical context for one selected ticker."""
 
     st.subheader("Jelajah saham")
-    ticker_data = data.analytics.loc[data.analytics["ticker"].eq(ticker)].copy()
+    st.write(
+        "Lihat perjalanan harga dan tekanan drawdown pada satu ticker dalam periode pilihanmu."
+    )
 
+    ticker_data = data.analytics.loc[data.analytics["ticker"].eq(ticker)].copy()
     min_date = ticker_data["trade_date"].min().date()
     max_date = ticker_data["trade_date"].max().date()
     default_start = max(
@@ -213,13 +217,12 @@ def render_stock_explorer(data: DashboardData, ticker: str) -> None:
     ).date()
 
     selected_range = st.date_input(
-        "Periode yang ingin dilihat",
+        "Periode",
         value=(default_start, max_date),
         min_value=min_date,
         max_value=max_date,
         key="stock_period",
     )
-
     if isinstance(selected_range, tuple) and len(selected_range) == 2:
         start_date, end_date = selected_range
         ticker_data = ticker_data.loc[
@@ -235,115 +238,101 @@ def render_stock_explorer(data: DashboardData, ticker: str) -> None:
     metrics[0].metric("Adjusted close", f"{float(latest['adjusted_close']):,.2f}")
     metrics[1].metric("Return harian", f"{float(latest['simple_return']):.2%}")
     metrics[2].metric("Volatilitas 21 hari", f"{float(latest['volatility_21d']):.2%}")
-    metrics[3].metric("Drawdown saat ini", f"{float(latest['drawdown']):.2%}")
+    metrics[3].metric("Drawdown", f"{float(latest['drawdown']):.2%}")
 
     st.plotly_chart(make_price_figure(ticker_data, ticker), use_container_width=True)
     st.plotly_chart(make_drawdown_figure(ticker_data, ticker), use_container_width=True)
 
-    with st.expander("Cara membaca dua grafik ini"):
+    with st.expander("Cara membaca grafik"):
         st.write(
-            "Harga menunjukkan perjalanan nilai pasar setelah penyesuaian aksi korporasi. "
-            "Drawdown menjawab pertanyaan yang berbeda: seberapa jauh posisi saat ini "
-            "berada di bawah puncak yang pernah dicapai. Nilai drawdown yang lebih negatif "
-            "berarti jarak dari puncak sebelumnya semakin besar."
+            "Harga menunjukkan perjalanan nilai setelah penyesuaian aksi korporasi. Drawdown "
+            "menunjukkan seberapa jauh harga berada di bawah puncak yang pernah dicapai pada "
+            "riwayat yang tersedia."
         )
 
 
 def render_risk_page(data: DashboardData, ticker: str) -> None:
     """Render registry-selected GARCH risk estimates for one ticker."""
 
-    st.subheader("Risiko satu hari dan GARCH")
+    st.subheader("Risiko satu hari")
+    st.write(
+        "Angka di bawah berasal dari snapshot GARCH yang dihitung offline. Model dipilih "
+        "per ticker dan status seleksinya tetap ditampilkan agar keterbatasan tidak hilang "
+        "dari layar."
+    )
+
     risk = get_ticker_row(data.risk_snapshot, ticker)
     status = data.final_registry["risk_and_volatility"].get(
         "selection_status",
         "status tidak tersedia",
     )
-    status_label = format_registry_status(str(status))
-
-    st.write(
-        "Di sini volatilitas bukan dihitung ulang dari jendela historis saat halaman dibuka. "
-        "Angkanya berasal dari snapshot GARCH yang sudah dihitung offline memakai model pilihan "
-        "untuk masing-masing ticker."
-    )
 
     if ticker_has_convergence_warning(data.risk_snapshot, ticker):
         st.warning(
-            "Proses estimasi untuk ticker ini melaporkan convergence warning. "
-            "Angka tetap ditampilkan agar hasil pipeline transparan. "
-            "Baca estimasinya dengan lebih hati-hati."
+            "Estimasi ticker ini melaporkan convergence warning. Angka tetap ditampilkan, "
+            "tetapi perlu dibaca dengan lebih hati-hati."
         )
 
     metrics = st.columns(4)
-    metrics[0].metric(
-        "Forecast volatilitas 1 hari",
-        f"{float(risk['forecast_volatility']):.2%}",
-    )
+    metrics[0].metric("Forecast volatilitas", f"{float(risk['forecast_volatility']):.2%}")
     metrics[1].metric("VaR 95%", f"{float(risk['var_95']):.2%}")
     metrics[2].metric("VaR 99%", f"{float(risk['var_99']):.2%}")
-    metrics[3].metric(
-        "Half-life volatilitas",
-        f"{float(risk['half_life_days']):.1f} hari",
-    )
+    metrics[3].metric("Half-life", f"{float(risk['half_life_days']):.1f} hari")
 
+    volatility_model = format_model_name(str(risk["volatility_model"]))
+    var_model = format_model_name(str(risk["var_model"]))
+    status_label = format_registry_status(str(status))
     st.markdown(
-        f"""
-        <div class="rr-note">
-        <strong>Model volatilitas:</strong> {format_model_name(str(risk['volatility_model']))}<br>
-        <strong>Model VaR:</strong> {format_model_name(str(risk['var_model']))}<br>
-        <strong>Status seleksi:</strong> {status_label}
-        </div>
-        """,
+        (
+            '<div class="rr-note">'
+            f"<strong>Model volatilitas:</strong> {volatility_model}<br>"
+            f"<strong>Model VaR:</strong> {var_model}<br>"
+            f"<strong>Status:</strong> {status_label}"
+            "</div>"
+        ),
         unsafe_allow_html=True,
     )
-
     st.warning(
-        "VaR adalah ambang kerugian berbasis model dan tingkat keyakinan tertentu. Angka ini bukan "
-        "batas kerugian maksimum. Pergerakan yang lebih buruk tetap dapat terjadi, terutama saat "
-        "pasar mengalami kejadian ekstrem."
+        "VaR adalah ambang kerugian berbasis model pada tingkat keyakinan tertentu, bukan "
+        "batas kerugian maksimum. Pergerakan yang lebih buruk tetap dapat terjadi."
     )
 
 
 def render_direction_page(data: DashboardData, ticker: str) -> None:
     """Render the latest classical direction probability estimate."""
 
-    st.subheader("Probabilitas arah hari perdagangan berikutnya")
-    direction = get_ticker_row(data.direction_snapshot, ticker)
-
-    probability_up = float(direction["probability_up"])
-    probability_down = float(direction["probability_down"])
-    training_end = pd.Timestamp(direction["training_end_date"]).strftime("%d %b %Y")
-
-    metrics = st.columns(3)
-    metrics[0].metric("Probabilitas naik", f"{probability_up:.1%}")
-    metrics[1].metric("Probabilitas turun atau tidak naik", f"{probability_down:.1%}")
-    metrics[2].metric("Observasi untuk refit", f"{int(direction['training_observations']):,}")
-
-    st.markdown(
-        f"""
-        <div class="rr-note">
-        <strong>Model:</strong> {format_model_name(str(direction['selected_model']))}<br>
-        <strong>Horizon:</strong> hari perdagangan berikutnya<br>
-        <strong>Data training terakhir:</strong> {training_end}
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.subheader("Probabilitas arah")
+    st.write(
+        "Model memberi probabilitas untuk hari perdagangan berikutnya. Angka ini menunjukkan "
+        "ketidakpastian model dan tidak diterjemahkan menjadi tombol beli atau jual."
     )
 
-    st.write(
-        "Probabilitas ini tidak dibaca sebagai tombol beli atau jual. Nilai yang dekat 50% "
-        "menunjukkan ketidakpastian yang cukup besar. Nilai yang lebih tinggi pun tetap "
-        "bisa menghasilkan arah yang salah pada satu hari tertentu."
+    direction = get_ticker_row(data.direction_snapshot, ticker)
+    metrics = st.columns(3)
+    metrics[0].metric("Probabilitas naik", f"{float(direction['probability_up']):.1%}")
+    metrics[1].metric("Turun atau tidak naik", f"{float(direction['probability_down']):.1%}")
+    metrics[2].metric("Observasi refit", f"{int(direction['training_observations']):,}")
+
+    training_end = pd.Timestamp(direction["training_end_date"]).strftime("%d %b %Y")
+    st.markdown(
+        (
+            '<div class="rr-note">'
+            f"<strong>Model:</strong> {format_model_name(str(direction['selected_model']))}<br>"
+            "<strong>Horizon:</strong> hari perdagangan berikutnya<br>"
+            f"<strong>Training terakhir:</strong> {training_end}"
+            "</div>"
+        ),
+        unsafe_allow_html=True,
     )
 
 
 def render_consolidated_risk(data: DashboardData) -> None:
     """Render a cross-ticker view of precomputed risk and direction estimates."""
 
-    st.subheader("Ringkasan risiko lintas ticker")
+    st.subheader("Ringkasan lintas ticker")
     st.write(
-        "Tabel ini menyatukan beberapa ukuran yang menjawab pertanyaan berbeda. Forecast "
-        "volatilitas dan VaR berbicara tentang besarnya risiko. Probabilitas naik membahas "
-        "arah. Keduanya tidak digabung menjadi satu skor karena maknanya memang berbeda."
+        "Volatilitas, VaR, dan probabilitas arah menjawab pertanyaan yang berbeda. Karena itu "
+        "mereka dibandingkan berdampingan dan tidak dicampur menjadi satu skor sintetis."
     )
 
     overview = build_risk_overview(data.risk_snapshot, data.direction_snapshot)
@@ -368,7 +357,6 @@ def render_consolidated_risk(data: DashboardData) -> None:
             "direction_model_label": "Model arah",
         }
     )
-
     st.dataframe(
         display.style.format(
             {
@@ -386,31 +374,27 @@ def render_consolidated_risk(data: DashboardData) -> None:
 def render_model_evidence(data: DashboardData) -> None:
     """Render why each model family received its current project role."""
 
-    st.subheader("Bukti model, termasuk yang tidak menang")
+    st.subheader("Bukti model")
     st.write(
-        "Model yang lebih rumit tidak otomatis lebih berguna. Bagian ini menunjukkan keputusan "
-        "model apa adanya, termasuk ketika baseline sederhana justru lebih kuat."
+        "Model yang lebih rumit tidak otomatis lebih berguna. Bagian ini menyimpan "
+        "keputusan model, baseline, dan hasil eksperimen yang tidak menang."
     )
 
-    st.markdown("#### GARCH untuk risiko")
     risk_registry = data.final_registry["risk_and_volatility"]
-    st.write(
-        "GARCH, EGARCH, dan GJR-GARCH dinilai untuk tugas volatilitas dan VaR. Pilihan dilakukan "
-        "per ticker, bukan dengan satu model yang dipaksakan untuk seluruh saham. Statusnya masih "
-        "provisional berdasarkan evaluasi out-of-sample."
-    )
-    st.caption(
-        "Metrik utama volatilitas: "
-        f"{risk_registry.get('primary_volatility_metric', 'tidak tersedia')}."
-    )
+    with st.container(border=True):
+        st.markdown("#### GARCH untuk risiko")
+        st.write(
+            "GARCH, EGARCH, dan GJR-GARCH dinilai per ticker untuk volatilitas dan VaR. "
+            "Statusnya masih provisional berdasarkan evaluasi out-of-sample."
+        )
+        st.caption(
+            "Metrik utama volatilitas: "
+            f"{risk_registry.get('primary_volatility_metric', 'tidak tersedia')}."
+        )
 
     st.markdown("#### Model klasik untuk probabilitas arah")
-    direction_rows = pd.DataFrame(
-        summarize_direction_registry(data.classical_registry)
-    )
-    direction_rows["selected_model"] = direction_rows["selected_model"].map(
-        format_model_name
-    )
+    direction_rows = pd.DataFrame(summarize_direction_registry(data.classical_registry))
+    direction_rows["selected_model"] = direction_rows["selected_model"].map(format_model_name)
     direction_rows = direction_rows.rename(
         columns={
             "ticker": "Ticker",
@@ -432,40 +416,30 @@ def render_model_evidence(data: DashboardData) -> None:
         hide_index=True,
     )
     st.caption(
-        "Model dipilih memakai validation log loss, lalu Brier score sebagai tie-breaker. "
-        "Hasil test ditampilkan sebagai evaluasi akhir, bukan bahan pemilihan model."
+        "Pemilihan memakai validation log loss lalu Brier score. Test dipakai untuk "
+        "evaluasi akhir, bukan untuk memilih model."
     )
 
     kronos = summarize_kronos_evidence(data.kronos_evidence)
     granite = summarize_granite_evidence(data.granite_evidence)
-
     left, right = st.columns(2)
     with left:
-        st.markdown("#### Kronos")
-        st.metric("Forecast evaluasi", f"{kronos['forecast_count']:,}")
-        st.write(
-            "Kronos tetap menjadi benchmark eksperimen. Pada evaluasi yang dibekukan, random walk "
-            "memiliki close MAE dan log-return MAE yang lebih rendah untuk seluruh enam seri pasar."
-        )
-        st.caption(kronos["structural_result"])
-
+        with st.container(border=True):
+            st.markdown("#### Kronos")
+            st.metric("Forecast evaluasi", f"{kronos['forecast_count']:,}")
+            st.write(
+                "Random walk memiliki close MAE dan log-return MAE yang lebih rendah pada "
+                "enam seri pasar. Kronos tetap menjadi benchmark eksperimen."
+            )
     with right:
-        st.markdown("#### Granite TTM R2.1")
-        st.metric("Forecast evaluasi", f"{granite['forecast_rows']:,}")
-        st.write(
-            f"Granite mengalahkan persistence pada {granite['wins_vs_persistence']} dari "
-            f"{granite['ticker_count']} saham untuk return MAE, tetapi mengalahkan random walk "
-            f"pada {granite['wins_vs_random_walk']} saham. Karena itu model tidak dipromosikan "
-            "menjadi model produksi."
-        )
-        st.caption(
-            f"Target: {granite['target']}. Revision: {granite['model_revision']}."
-        )
-
-    st.info(
-        "Hasil model yang tidak mengalahkan baseline tetap berguna. Ia membantu mencegah proyek "
-        "mengklaim kemampuan prediksi hanya karena memakai model yang terdengar lebih canggih."
-    )
+        with st.container(border=True):
+            st.markdown("#### Granite TTM R2.1")
+            st.metric("Forecast evaluasi", f"{granite['forecast_rows']:,}")
+            st.write(
+                f"Granite menang melawan persistence pada {granite['wins_vs_persistence']} "
+                f"dari {granite['ticker_count']} saham, tetapi menang melawan random walk "
+                f"pada {granite['wins_vs_random_walk']} saham."
+            )
 
 
 def render_learn_page() -> None:
@@ -473,8 +447,8 @@ def render_learn_page() -> None:
 
     st.subheader("Belajar membaca risiko")
     st.write(
-        "Bagian ini dibuat untuk pembaca yang belum terbiasa dengan quantitative finance. "
-        "Tujuannya bukan menghafal rumus, tetapi memahami pertanyaan yang dijawab setiap ukuran."
+        "Penjelasan singkat untuk pembaca yang belum terbiasa dengan quantitative finance. "
+        "Fokusnya adalah pertanyaan yang dijawab setiap ukuran, bukan menghafal rumus."
     )
 
     for topic in build_learn_topics():
@@ -482,14 +456,14 @@ def render_learn_page() -> None:
             st.markdown(f"**Pertanyaan utama:** {topic['question']}")
             st.write(topic["explanation"])
 
-    st.markdown("#### Kenapa hasil model perlu diragukan secara sehat?")
+    st.markdown("#### Kenapa model perlu diragukan secara sehat?")
     st.write(
-        "Pasar berubah, data historis terbatas, dan model menyederhanakan kenyataan. Karena itu "
-        "Ruang Risiko IDX memakai urutan waktu saat evaluasi, membandingkan model dengan baseline, "
-        "dan menjaga hasil test agar tidak dipakai untuk memilih model."
+        "Pasar berubah, data historis terbatas, dan model menyederhanakan kenyataan. Proyek "
+        "ini menjaga urutan waktu saat evaluasi, membandingkan model dengan baseline, dan "
+        "tidak memakai test set untuk memilih model."
     )
 
-    st.markdown("#### Sumber yang sudah diperiksa")
+    st.markdown("#### Sumber utama")
     st.markdown(
         "- [Nobel Prize: Robert F. Engle, Risk and Volatility]"
         "(https://www.nobelprize.org/prizes/economic-sciences/2003/engle/lecture/)\n"
@@ -499,14 +473,18 @@ def render_learn_page() -> None:
         "- [Granite Time Series TTM R2 model card]"
         "(https://huggingface.co/ibm-granite/granite-timeseries-ttm-r2)"
     )
-    st.caption("Keempat sumber di atas diperiksa kembali pada 10 Agustus 2026.")
+    st.caption("Tanggal verifikasi setiap sumber dicatat di references/source_registry.yaml.")
 
 
 try:
     dashboard_data = load_runtime_data(str(PROJECT_ROOT))
 except DashboardDataError as error:
     guidance = explain_data_error(error)
-    st.title("Ruang Risiko IDX")
+    render_hero(
+        "Ruang Risiko IDX",
+        "Data dashboard belum dapat dibaca dengan aman.",
+        eyebrow="Status data",
+    )
     st.error(guidance.title)
     st.write(guidance.explanation)
     st.info(guidance.action)
@@ -514,14 +492,14 @@ except DashboardDataError as error:
 
 render_header(dashboard_data)
 
+st.sidebar.markdown("### Ruang Risiko IDX")
 selected_ticker = st.sidebar.selectbox(
-    "Ticker yang ingin dipelajari",
+    "Ticker",
     dashboard_data.tickers,
+    help="Pilihan ini dipakai pada tab saham, risiko, dan arah.",
 )
-
 st.sidebar.caption(
-    "Gunakan dashboard ini untuk memahami risiko dan ketidakpastian. "
-    "Dashboard ini bukan tempat mencari sinyal transaksi."
+    "Gunakan dashboard untuk memahami risiko dan ketidakpastian. Tidak ada sinyal transaksi."
 )
 
 (
@@ -532,41 +510,25 @@ st.sidebar.caption(
     combined_tab,
     evidence_tab,
     learn_tab,
-) = st.tabs(
-    [
-        "Gambaran pasar",
-        "Jelajah saham",
-        "Risiko dan GARCH",
-        "Probabilitas arah",
-        "Ringkasan risiko",
-        "Bukti model",
-        "Belajar",
-    ]
-)
+) = st.tabs(["Pasar", "Saham", "Risiko", "Arah", "Ringkasan", "Model", "Belajar"])
 
 with overview_tab:
     render_market_overview(dashboard_data)
-
 with explorer_tab:
     render_stock_explorer(dashboard_data, selected_ticker)
-
 with risk_tab:
     render_risk_page(dashboard_data, selected_ticker)
-
 with direction_tab:
     render_direction_page(dashboard_data, selected_ticker)
-
 with combined_tab:
     render_consolidated_risk(dashboard_data)
-
 with evidence_tab:
     render_model_evidence(dashboard_data)
-
 with learn_tab:
     render_learn_page()
 
 st.divider()
 st.caption(
     "Sumber data pasar: Yahoo Finance melalui yfinance. Model dan snapshot dihitung offline. "
-    "Ruang Risiko IDX adalah proyek edukasi dan tidak memberikan rekomendasi investasi."
+    "Ruang Risiko IDX adalah proyek edukasi dan bukan rekomendasi investasi."
 )
