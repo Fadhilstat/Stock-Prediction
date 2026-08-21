@@ -162,11 +162,6 @@ p, li {
     margin-bottom: 0.55rem;
 }
 
-.rr-source-meta {
-    color: var(--rr-muted);
-    font-size: 0.8rem;
-}
-
 @media (max-width: 768px) {
     .block-container {
         padding-top: 1.15rem;
