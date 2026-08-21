@@ -31,6 +31,14 @@ def intelligence_path(project_root: Path) -> Path | None:
     return None
 
 
+def _host_matches_domain(hostname: str, domain: str) -> bool:
+    """Allow one source domain and its subdomains."""
+
+    host = hostname.casefold().strip(".")
+    allowed = domain.casefold().strip(".")
+    return host == allowed or host.endswith(f".{allowed}")
+
+
 def _validate_news_item(item: Any) -> None:
     """Validate compact article metadata without fetching article content."""
 
@@ -44,7 +52,13 @@ def _validate_news_item(item: Any) -> None:
         raise DashboardDataError(f"Daily intelligence news item is missing: {text}")
 
     parsed = urlparse(str(item["url"]))
-    if parsed.scheme != "https" or not parsed.netloc:
+    domain = str(item["domain"])
+    hostname = parsed.hostname or ""
+    if (
+        parsed.scheme != "https"
+        or not hostname
+        or not _host_matches_domain(hostname, domain)
+    ):
         raise DashboardDataError("Daily intelligence contains an invalid news URL.")
 
 
