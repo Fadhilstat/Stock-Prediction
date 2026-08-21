@@ -81,7 +81,9 @@ def load_daily_intelligence(
         raise DashboardDataError("Daily intelligence is missing ticker briefs.")
 
     if set(ticker_briefs) != set(tickers):
-        raise DashboardDataError("Daily intelligence ticker universe does not match dashboard data.")
+        raise DashboardDataError(
+            "Daily intelligence ticker universe does not match dashboard data."
+        )
 
     for item in payload.get("news_items", []):
         _validate_news_item(item)
