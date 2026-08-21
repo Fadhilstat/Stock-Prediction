@@ -22,6 +22,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ANALYTICS = PROJECT_ROOT / "data" / "processed" / "analytics_daily.parquet"
 DEFAULT_RISK = PROJECT_ROOT / "reports" / "risk" / "latest_risk_snapshot.json"
 DEFAULT_DIRECTION = PROJECT_ROOT / "reports" / "ml" / "latest_direction_snapshot.json"
+DEFAULT_INTELLIGENCE = (
+    PROJECT_ROOT / "reports" / "intelligence" / "latest_daily_intelligence.json"
+)
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "deployment"
 
 ANALYTICS_COLUMNS = (
@@ -48,6 +51,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--analytics", type=Path, default=DEFAULT_ANALYTICS)
     parser.add_argument("--risk", type=Path, default=DEFAULT_RISK)
     parser.add_argument("--direction", type=Path, default=DEFAULT_DIRECTION)
+    parser.add_argument("--intelligence", type=Path, default=DEFAULT_INTELLIGENCE)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     return parser.parse_args()
 
@@ -88,6 +92,7 @@ def build_deployment_bundle(
     risk_path: Path,
     direction_path: Path,
     output_dir: Path,
+    intelligence_path: Path | None = None,
 ) -> dict[str, object]:
     """Validate runtime artifacts and publish the subset needed by Streamlit."""
 
@@ -119,17 +124,24 @@ def build_deployment_bundle(
     copy_atomic(risk_path, risk_output)
     copy_atomic(direction_path, direction_output)
 
+    file_hashes = {
+        analytics_output.name: sha256_file(analytics_output),
+        risk_output.name: sha256_file(risk_output),
+        direction_output.name: sha256_file(direction_output),
+    }
+
+    if intelligence_path is not None and intelligence_path.exists():
+        intelligence_output = output_dir / "latest_daily_intelligence.json"
+        copy_atomic(intelligence_path, intelligence_output)
+        file_hashes[intelligence_output.name] = sha256_file(intelligence_output)
+
     latest_date = pd.Timestamp(analytics["trade_date"].max())
     manifest = {
         "schema_version": 1,
         "latest_trade_date": latest_date.date().isoformat(),
         "analytics_rows": int(len(analytics)),
         "ticker_count": int(analytics["ticker"].nunique()),
-        "files": {
-            analytics_output.name: sha256_file(analytics_output),
-            risk_output.name: sha256_file(risk_output),
-            direction_output.name: sha256_file(direction_output),
-        },
+        "files": file_hashes,
     }
 
     write_json_atomic(manifest, output_dir / "manifest.json")
@@ -144,6 +156,7 @@ def main() -> int:
         analytics_path=args.analytics,
         risk_path=args.risk,
         direction_path=args.direction,
+        intelligence_path=args.intelligence,
         output_dir=args.output_dir,
     )
 
@@ -151,6 +164,7 @@ def main() -> int:
     print(f"Latest trade date: {manifest['latest_trade_date']}")
     print(f"Analytics rows: {manifest['analytics_rows']:,}")
     print(f"Tickers: {manifest['ticker_count']}")
+    print(f"Bundle files: {len(manifest['files'])}")
     return 0
 
 
