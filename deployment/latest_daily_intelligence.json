@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-08-21T11:50:03.706274+00:00",
+  "as_of_date": "2026-08-21",
+  "generation_method": "deterministic_rule_based",
+  "paid_language_model_api_used": false,
+  "ticker_briefs": {
+    "ANTM.JK": {
+      "market": {
+        "role": "Analis pasar",
+        "state": "lebih tenang",
+        "summary": "Return terbaru 0.96%. Volatilitas jangka pendek berada di bawah ritme 63 hari. Jarak dari puncak masih cukup terasa."
+      },
+      "risk": {
+        "role": "Analis risiko",
+        "state": "risiko model tertinggi di universe",
+        "summary": "Forecast volatilitas satu hari 2.72%, VaR 95% 4.36%, dan VaR 99% 7.90%. Posisi saat ini risiko model tertinggi di universe."
+      },
+      "direction": {
+        "role": "Analis probabilitas arah",
+        "state": "belum menunjukkan kecenderungan yang kuat",
+        "summary": "Probabilitas naik 42.9% dari model logistic_regression. Pembacaan: belum menunjukkan kecenderungan yang kuat. Nilai ini bukan sinyal transaksi."
+      }
+    },
+    "ASII.JK": {
+      "market": {
+        "role": "Analis pasar",
+        "state": "lebih tenang",
+        "summary": "Return terbaru -0.21%. Volatilitas jangka pendek berada di bawah ritme 63 hari. Harga masih jauh di bawah puncak historis terdekat."
+      },
+      "risk": {
+        "role": "Analis risiko",
+        "state": "peringkat risiko 2 dari 6",
+        "summary": "Forecast volatilitas satu hari 1.80%, VaR 95% 2.86%, dan VaR 99% 4.73%. Posisi saat ini peringkat risiko 2 dari 6."
+      },
+      "direction": {
+        "role": "Analis probabilitas arah",
+        "state": "belum menunjukkan kecenderungan yang kuat",
+        "summary": "Probabilitas naik 52.7% dari model random_forest. Pembacaan: belum menunjukkan kecenderungan yang kuat. Nilai ini bukan sinyal transaksi."
+      }
+    },
+    "BBCA.JK": {
+      "market": {
+        "role": "Analis pasar",
+        "state": "lebih tenang",
+        "summary": "Return terbaru 0.78%. Volatilitas jangka pendek berada di bawah ritme 63 hari. Harga masih jauh di bawah puncak historis terdekat."
+      },
+      "risk": {
+        "role": "Analis risiko",
+        "state": "peringkat risiko 5 dari 6",
+        "summary": "Forecast volatilitas satu hari 1.22%, VaR 95% 1.81%, dan VaR 99% 3.22%. Posisi saat ini peringkat risiko 5 dari 6."
+      },
+      "direction": {
+        "role": "Analis probabilitas arah",
+        "state": "condong tidak naik, tetapi tetap tidak pasti",
+        "summary": "Probabilitas naik 36.1% dari model random_forest. Pembacaan: condong tidak naik, tetapi tetap tidak pasti. Nilai ini bukan sinyal transaksi."
+      }
+    },
+    "BBRI.JK": {
+      "market": {
+        "role": "Analis pasar",
+        "state": "lebih tenang",
+        "summary": "Return terbaru 2.87%. Volatilitas jangka pendek berada di bawah ritme 63 hari. Harga masih jauh di bawah puncak historis terdekat."
+      },
+      "risk": {
+        "role": "Analis risiko",
+        "state": "peringkat risiko 4 dari 6",
+        "summary": "Forecast volatilitas satu hari 1.56%, VaR 95% 2.52%, dan VaR 99% 3.58%. Posisi saat ini peringkat risiko 4 dari 6."
+      },
+      "direction": {
+        "role": "Analis probabilitas arah",
+        "state": "belum menunjukkan kecenderungan yang kuat",
+        "summary": "Probabilitas naik 45.8% dari model constant_probability. Pembacaan: belum menunjukkan kecenderungan yang kuat. Nilai ini bukan sinyal transaksi."
+      }
+    },
+    "TLKM.JK": {
+      "market": {
+        "role": "Analis pasar",
+        "state": "lebih tenang",
+        "summary": "Return terbaru 0.00%. Volatilitas jangka pendek berada di bawah ritme 63 hari. Jarak dari puncak masih cukup terasa."
+      },
+      "risk": {
+        "role": "Analis risiko",
+        "state": "peringkat risiko 3 dari 6",
+        "summary": "Forecast volatilitas satu hari 1.64%, VaR 95% 2.50%, dan VaR 99% 4.29%. Posisi saat ini peringkat risiko 3 dari 6."
+      },
+      "direction": {
+        "role": "Analis probabilitas arah",
+        "state": "belum menunjukkan kecenderungan yang kuat",
+        "summary": "Probabilitas naik 46.4% dari model random_forest. Pembacaan: belum menunjukkan kecenderungan yang kuat. Nilai ini bukan sinyal transaksi."
+      }
+    },
+    "^JKSE": {
+      "market": {
+        "role": "Analis pasar",
+        "state": "lebih tenang",
+        "summary": "Return terbaru 0.37%. Volatilitas jangka pendek berada di bawah ritme 63 hari. Jarak dari puncak masih cukup terasa."
+      },
+      "risk": {
+        "role": "Analis risiko",
+        "state": "risiko model terendah di universe",
+        "summary": "Forecast volatilitas satu hari 0.95%, VaR 95% 1.49%, dan VaR 99% 2.42%. Posisi saat ini risiko model terendah di universe."
+      },
+      "direction": {
+        "role": "Analis probabilitas arah",
+        "state": "belum menunjukkan kecenderungan yang kuat",
+        "summary": "Probabilitas naik 53.0% dari model constant_probability. Pembacaan: belum menunjukkan kecenderungan yang kuat. Nilai ini bukan sinyal transaksi."
+      }
+    }
+  },
+  "macro_news": {
+    "role": "Analis makro dan berita",
+    "state": "belum ada pembaruan makro baru",
+    "summary": "Belum ada headline baru dari sumber terverifikasi yang masuk pada refresh ini. Kondisi pasar tetap dibaca dari data dan model yang tersedia.",
+    "active_themes": [],
+    "article_count": 0
+  },
+  "model_audit": {
+    "role": "Auditor model dan data",
+    "state": "pipeline selaras",
+    "summary": "Analytics, risk snapshot, dan direction snapshot sama-sama bertanggal 2026-08-21. Tidak ada convergence warning aktif.",
+    "latest_trade_date": "2026-08-21",
+    "convergence_warnings": 0
+  },
+  "news_items": [],
+  "synthesis": [
+    "Return terbaru 0.37%. Volatilitas jangka pendek berada di bawah ritme 63 hari. Jarak dari puncak masih cukup terasa.",
+    "Di universe saat ini, ANTM.JK memiliki forecast volatilitas satu hari tertinggi dari model risk yang aktif.",
+    "Belum ada headline baru dari sumber terverifikasi yang masuk pada refresh ini. Kondisi pasar tetap dibaca dari data dan model yang tersedia.",
+    "Analytics, risk snapshot, dan direction snapshot sama-sama bertanggal 2026-08-21. Tidak ada convergence warning aktif."
+  ],
+  "disclaimer": "Ringkasan ini membantu membaca konteks risiko dan berita. Bukan rekomendasi investasi atau sinyal transaksi.",
+  "news_discovery": {
+    "mode": "gdelt_metadata_discovery",
+    "provider": "gdelt_doc_2",
+    "verified_source_count": 5,
+    "failed_domains": [
+      "bps.go.id",
+      "astra.co.id",
+      "bca.co.id"
+    ],
+    "article_count": 0
+  }
+}

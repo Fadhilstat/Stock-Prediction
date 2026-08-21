@@ -4,8 +4,9 @@
   "analytics_rows": 17125,
   "ticker_count": 6,
   "files": {
-    "analytics_daily.parquet": "b49cfd72b6cc778ffeb73a5b75aafaabd6101e4e09bd8ce3d9d0965a3826c586",
-    "latest_risk_snapshot.json": "0027ae360119e791358d8e95158589032e57ffcccc624146a458df64dc40b131",
-    "latest_direction_snapshot.json": "82762d82e730775cd3fa992580c58f7f4f1bf3e9c12a95b44e50be6ad632035d"
+    "analytics_daily.parquet": "747be0fc564c5db3061f8b4c1029c9c01417c26c74fc678cb5524c27e7f3852b",
+    "latest_risk_snapshot.json": "c198b5bb7e00b4caac588a396bfa4fb16aae14c0d861a34322d93e111d6105d4",
+    "latest_direction_snapshot.json": "f25961b7fdf2f9c0c7da6138176a0ad14fb69144926704f449b7fdb43249e818",
+    "latest_daily_intelligence.json": "1250989ad43aac68dd0a34d7059f2c2f1218000ec43ea4b54d515241aba8c472"
   }
 }
