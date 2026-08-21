@@ -164,9 +164,10 @@ if relevant_news:
         source = str(item["source_label"])
         published = str(item.get("published_at", ""))
         with st.container(border=True):
-            st.markdown(f"**[{title}]({url})**")
+            st.write(title)
             detail = source if not published else f"{source} | {published}"
             st.caption(detail)
+            st.link_button("Buka sumber", url)
 else:
     discovery = intelligence.get("news_discovery", {})
     failed_domains = discovery.get("failed_domains", [])
