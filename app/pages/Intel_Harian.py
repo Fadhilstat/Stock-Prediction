@@ -166,10 +166,7 @@ if relevant_news:
         with st.container(border=True):
             st.markdown(f"**[{title}]({url})**")
             detail = source if not published else f"{source} | {published}"
-            st.markdown(
-                f'<div class="rr-source-meta">{detail}</div>',
-                unsafe_allow_html=True,
-            )
+            st.caption(detail)
 else:
     discovery = intelligence.get("news_discovery", {})
     failed_domains = discovery.get("failed_domains", [])
