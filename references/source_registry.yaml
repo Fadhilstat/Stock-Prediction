@@ -79,6 +79,16 @@ sources:
       - "requirements.txt deployment contract"
       - "dependency file precedence"
 
+  - id: streamlit_theming
+    title: "Streamlit theming overview"
+    url: "https://docs.streamlit.io/develop/concepts/configuration/theming"
+    status: "verified_live"
+    verified_at: "2026-08-21"
+    source_type: "official_documentation"
+    role:
+      - "dashboard theme configuration"
+      - "sidebar visual configuration"
+
   - id: github_actions_workflow_syntax
     title: "GitHub Actions workflow syntax"
     url: "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax"
