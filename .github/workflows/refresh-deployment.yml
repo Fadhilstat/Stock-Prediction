@@ -12,6 +12,7 @@ on:
       - "scripts/build_analytics_dataset.py"
       - "scripts/build_latest_risk_snapshot.py"
       - "scripts/build_latest_direction_snapshot.py"
+      - "scripts/build_daily_intelligence.py"
       - "scripts/build_deployment_bundle.py"
       - "src/ruang_risiko_idx/**"
   schedule:
@@ -58,12 +59,19 @@ jobs:
       - name: Build direction snapshot
         run: python scripts/build_latest_direction_snapshot.py
 
+      - name: Build daily intelligence
+        run: python scripts/build_daily_intelligence.py
+
       - name: Build deployment bundle
         run: python scripts/build_deployment_bundle.py
 
       - name: Validate deployment bundle
         run: |
           python -c "from pathlib import Path; from ruang_risiko_idx.dashboard.deployment import load_deployment_dashboard_data; load_deployment_dashboard_data(Path('.')); print('Deployment bundle validation: PASS')"
+
+      - name: Validate daily intelligence
+        run: |
+          python -c "from pathlib import Path; from ruang_risiko_idx.dashboard.deployment import load_deployment_dashboard_data; from ruang_risiko_idx.dashboard.intelligence import load_runtime_intelligence; data = load_deployment_dashboard_data(Path('.')); intel = load_runtime_intelligence(Path('.'), data.latest_date, data.tickers); assert intel is not None; print('Daily intelligence validation: PASS')"
 
       - name: Commit validated bundle when changed
         run: |
