@@ -1,0 +1,114 @@
+metadata:
+  project: Ruang Risiko IDX
+  phase: 7
+  checked_at: "2026-08-21"
+  purpose: daily_intelligence
+  policy: discovery_metadata_only
+  paid_api_required: false
+
+news_discovery:
+  provider: gdelt_doc_2
+  base_url: "https://api.gdeltproject.org/api/v2/doc/doc"
+  timeout_seconds: 20
+  lookback: "3d"
+  max_records_per_domain: 20
+  note: >-
+    GDELT is used only to discover article metadata and original links. The dashboard
+    does not copy full article text and does not treat GDELT as the primary source.
+
+verified_domains:
+  - domain: bi.go.id
+    label: Bank Indonesia
+    source_type: official_institution
+    verified_url: "https://www.bi.go.id/"
+    verified_at: "2026-08-21"
+    roles:
+      - macro
+      - monetary_policy
+      - rupiah
+
+  - domain: bps.go.id
+    label: Badan Pusat Statistik
+    source_type: official_institution
+    verified_url: "https://www.bps.go.id/"
+    verified_at: "2026-08-21"
+    roles:
+      - macro
+      - inflation
+      - growth
+
+  - domain: astra.co.id
+    label: PT Astra International Tbk
+    source_type: official_issuer
+    verified_url: "https://www.astra.co.id/press-release"
+    verified_at: "2026-08-21"
+    tickers:
+      - ASII.JK
+
+  - domain: bca.co.id
+    label: PT Bank Central Asia Tbk
+    source_type: official_issuer
+    verified_url: "https://www.bca.co.id/id/tentang-bca/hubungan-investor/berita-investor"
+    verified_at: "2026-08-21"
+    tickers:
+      - BBCA.JK
+
+  - domain: telkom.co.id
+    label: PT Telkom Indonesia (Persero) Tbk
+    source_type: official_issuer
+    verified_url: "https://www.telkom.co.id/sites/news-resources/en_US/page/news-about-telkom-124"
+    verified_at: "2026-08-21"
+    tickers:
+      - TLKM.JK
+
+ticker_keywords:
+  ANTM.JK:
+    - antam
+    - aneka tambang
+    - emas
+    - nikel
+  ASII.JK:
+    - astra international
+    - astra
+    - otomotif
+  BBCA.JK:
+    - bank central asia
+    - bca
+  BBRI.JK:
+    - bank rakyat indonesia
+    - bri
+  TLKM.JK:
+    - telkom indonesia
+    - telkom
+    - telekomunikasi
+  ^JKSE:
+    - ihsg
+    - pasar modal
+    - bursa efek indonesia
+    - indeks harga saham gabungan
+
+macro_keywords:
+  monetary_policy:
+    - bi-rate
+    - suku bunga
+    - monetary policy
+    - kebijakan moneter
+  inflation:
+    - inflasi
+    - inflation
+    - harga konsumen
+  rupiah:
+    - rupiah
+    - jis dor
+    - jisdor
+    - nilai tukar
+  growth:
+    - pertumbuhan ekonomi
+    - produk domestik bruto
+    - pdb
+    - gdp
+  financial_stability:
+    - stabilitas sistem keuangan
+    - perbankan
+    - kredit
+    - likuiditas
