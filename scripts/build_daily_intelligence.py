@@ -12,7 +12,6 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-import pandas as pd
 import yaml
 
 from ruang_risiko_idx.dashboard.data_access import (
