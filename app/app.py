@@ -126,8 +126,9 @@ def render_header(data: DashboardData) -> None:
     render_hero(
         "Ruang Risiko IDX",
         (
-            "Dashboard edukasi untuk membaca return, volatilitas, drawdown, VaR, dan probabilitas "
-            "arah saham Indonesia tanpa mengubah ketidakpastian menjadi sinyal transaksi."
+            "Dashboard edukasi untuk membaca return, volatilitas, drawdown, VaR, dan "
+            "probabilitas arah saham Indonesia tanpa mengubah ketidakpastian menjadi "
+            "sinyal transaksi."
         ),
         eyebrow="Risk analytics untuk pasar Indonesia",
         meta=(
@@ -155,7 +156,10 @@ def render_market_overview(data: DashboardData) -> None:
         row = benchmark.iloc[0]
         metric_cols = st.columns(4)
         metric_cols[0].metric("Return JKSE", f"{float(row['simple_return']):.2%}")
-        metric_cols[1].metric("Volatilitas JKSE 21 hari", f"{float(row['volatility_21d']):.2%}")
+        metric_cols[1].metric(
+            "Volatilitas JKSE 21 hari",
+            f"{float(row['volatility_21d']):.2%}",
+        )
         metric_cols[2].metric("Drawdown JKSE", f"{float(row['drawdown']):.2%}")
         metric_cols[3].metric(
             "Risiko model tertinggi",
@@ -191,7 +195,8 @@ def render_market_overview(data: DashboardData) -> None:
         hide_index=True,
     )
     st.caption(
-        "Volatilitas 21 hari adalah ukuran historis. Forecast risiko satu hari tersedia di tab Risiko."
+        "Volatilitas 21 hari adalah ukuran historis. Forecast risiko satu hari tersedia "
+        "di tab Risiko."
     )
 
 
@@ -199,7 +204,9 @@ def render_stock_explorer(data: DashboardData, ticker: str) -> None:
     """Render historical context for one selected ticker."""
 
     st.subheader("Jelajah saham")
-    st.write("Lihat perjalanan harga dan tekanan drawdown pada satu ticker dalam periode pilihanmu.")
+    st.write(
+        "Lihat perjalanan harga dan tekanan drawdown pada satu ticker dalam periode pilihanmu."
+    )
 
     ticker_data = data.analytics.loc[data.analytics["ticker"].eq(ticker)].copy()
     min_date = ticker_data["trade_date"].min().date()
@@ -249,8 +256,9 @@ def render_risk_page(data: DashboardData, ticker: str) -> None:
 
     st.subheader("Risiko satu hari")
     st.write(
-        "Angka di bawah berasal dari snapshot GARCH yang dihitung offline. Model dipilih per ticker "
-        "dan status seleksinya tetap ditampilkan agar keterbatasan tidak hilang dari layar."
+        "Angka di bawah berasal dari snapshot GARCH yang dihitung offline. Model dipilih "
+        "per ticker dan status seleksinya tetap ditampilkan agar keterbatasan tidak hilang "
+        "dari layar."
     )
 
     risk = get_ticker_row(data.risk_snapshot, ticker)
@@ -261,8 +269,8 @@ def render_risk_page(data: DashboardData, ticker: str) -> None:
 
     if ticker_has_convergence_warning(data.risk_snapshot, ticker):
         st.warning(
-            "Estimasi ticker ini melaporkan convergence warning. Angka tetap ditampilkan, tetapi "
-            "perlu dibaca dengan lebih hati-hati."
+            "Estimasi ticker ini melaporkan convergence warning. Angka tetap ditampilkan, "
+            "tetapi perlu dibaca dengan lebih hati-hati."
         )
 
     metrics = st.columns(4)
@@ -271,19 +279,22 @@ def render_risk_page(data: DashboardData, ticker: str) -> None:
     metrics[2].metric("VaR 99%", f"{float(risk['var_99']):.2%}")
     metrics[3].metric("Half-life", f"{float(risk['half_life_days']):.1f} hari")
 
+    volatility_model = format_model_name(str(risk["volatility_model"]))
+    var_model = format_model_name(str(risk["var_model"]))
+    status_label = format_registry_status(str(status))
     st.markdown(
         (
             '<div class="rr-note">'
-            f"<strong>Model volatilitas:</strong> {format_model_name(str(risk['volatility_model']))}<br>"
-            f"<strong>Model VaR:</strong> {format_model_name(str(risk['var_model']))}<br>"
-            f"<strong>Status:</strong> {format_registry_status(str(status))}"
+            f"<strong>Model volatilitas:</strong> {volatility_model}<br>"
+            f"<strong>Model VaR:</strong> {var_model}<br>"
+            f"<strong>Status:</strong> {status_label}"
             "</div>"
         ),
         unsafe_allow_html=True,
     )
     st.warning(
-        "VaR adalah ambang kerugian berbasis model pada tingkat keyakinan tertentu, bukan batas "
-        "kerugian maksimum. Pergerakan yang lebih buruk tetap dapat terjadi."
+        "VaR adalah ambang kerugian berbasis model pada tingkat keyakinan tertentu, bukan "
+        "batas kerugian maksimum. Pergerakan yang lebih buruk tetap dapat terjadi."
     )
 
 
@@ -365,16 +376,16 @@ def render_model_evidence(data: DashboardData) -> None:
 
     st.subheader("Bukti model")
     st.write(
-        "Model yang lebih rumit tidak otomatis lebih berguna. Bagian ini menyimpan keputusan model, "
-        "baseline, dan hasil eksperimen yang tidak menang."
+        "Model yang lebih rumit tidak otomatis lebih berguna. Bagian ini menyimpan "
+        "keputusan model, baseline, dan hasil eksperimen yang tidak menang."
     )
 
     risk_registry = data.final_registry["risk_and_volatility"]
     with st.container(border=True):
         st.markdown("#### GARCH untuk risiko")
         st.write(
-            "GARCH, EGARCH, dan GJR-GARCH dinilai per ticker untuk volatilitas dan VaR. Statusnya "
-            "masih provisional berdasarkan evaluasi out-of-sample."
+            "GARCH, EGARCH, dan GJR-GARCH dinilai per ticker untuk volatilitas dan VaR. "
+            "Statusnya masih provisional berdasarkan evaluasi out-of-sample."
         )
         st.caption(
             "Metrik utama volatilitas: "
@@ -405,8 +416,8 @@ def render_model_evidence(data: DashboardData) -> None:
         hide_index=True,
     )
     st.caption(
-        "Pemilihan memakai validation log loss lalu Brier score. Test dipakai untuk evaluasi akhir, "
-        "bukan untuk memilih model."
+        "Pemilihan memakai validation log loss lalu Brier score. Test dipakai untuk "
+        "evaluasi akhir, bukan untuk memilih model."
     )
 
     kronos = summarize_kronos_evidence(data.kronos_evidence)
@@ -417,17 +428,17 @@ def render_model_evidence(data: DashboardData) -> None:
             st.markdown("#### Kronos")
             st.metric("Forecast evaluasi", f"{kronos['forecast_count']:,}")
             st.write(
-                "Random walk memiliki close MAE dan log-return MAE yang lebih rendah pada enam seri "
-                "pasar. Kronos tetap menjadi benchmark eksperimen."
+                "Random walk memiliki close MAE dan log-return MAE yang lebih rendah pada "
+                "enam seri pasar. Kronos tetap menjadi benchmark eksperimen."
             )
     with right:
         with st.container(border=True):
             st.markdown("#### Granite TTM R2.1")
             st.metric("Forecast evaluasi", f"{granite['forecast_rows']:,}")
             st.write(
-                f"Granite menang melawan persistence pada {granite['wins_vs_persistence']} dari "
-                f"{granite['ticker_count']} saham, tetapi menang melawan random walk pada "
-                f"{granite['wins_vs_random_walk']} saham."
+                f"Granite menang melawan persistence pada {granite['wins_vs_persistence']} "
+                f"dari {granite['ticker_count']} saham, tetapi menang melawan random walk "
+                f"pada {granite['wins_vs_random_walk']} saham."
             )
 
 
@@ -436,8 +447,8 @@ def render_learn_page() -> None:
 
     st.subheader("Belajar membaca risiko")
     st.write(
-        "Penjelasan singkat untuk pembaca yang belum terbiasa dengan quantitative finance. Fokusnya "
-        "adalah pertanyaan yang dijawab setiap ukuran, bukan menghafal rumus."
+        "Penjelasan singkat untuk pembaca yang belum terbiasa dengan quantitative finance. "
+        "Fokusnya adalah pertanyaan yang dijawab setiap ukuran, bukan menghafal rumus."
     )
 
     for topic in build_learn_topics():
@@ -447,9 +458,9 @@ def render_learn_page() -> None:
 
     st.markdown("#### Kenapa model perlu diragukan secara sehat?")
     st.write(
-        "Pasar berubah, data historis terbatas, dan model menyederhanakan kenyataan. Proyek ini "
-        "menjaga urutan waktu saat evaluasi, membandingkan model dengan baseline, dan tidak memakai "
-        "test set untuk memilih model."
+        "Pasar berubah, data historis terbatas, dan model menyederhanakan kenyataan. Proyek "
+        "ini menjaga urutan waktu saat evaluasi, membandingkan model dengan baseline, dan "
+        "tidak memakai test set untuk memilih model."
     )
 
     st.markdown("#### Sumber utama")
