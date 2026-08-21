@@ -26,7 +26,8 @@ RUNTIME_FILENAMES = (
     "latest_risk_snapshot.json",
     "latest_direction_snapshot.json",
 )
-
+OPTIONAL_RUNTIME_FILENAMES = ("latest_daily_intelligence.json",)
+KNOWN_RUNTIME_FILENAMES = (*RUNTIME_FILENAMES, *OPTIONAL_RUNTIME_FILENAMES)
 DEPLOYMENT_FILENAMES = (*RUNTIME_FILENAMES, "manifest.json")
 
 CANONICAL_RUNTIME_PATHS = (
@@ -43,7 +44,7 @@ def canonical_runtime_available(project_root: Path) -> bool:
 
 
 def deployment_bundle_available(project_root: Path) -> bool:
-    """Return True only when the complete deployment bundle is present."""
+    """Return True only when the complete core deployment bundle is present."""
 
     deployment_dir = project_root / "deployment"
     return all((deployment_dir / filename).exists() for filename in DEPLOYMENT_FILENAMES)
@@ -80,18 +81,27 @@ def _validate_manifest_files(
     deployment_dir: Path,
     manifest: dict[str, Any],
 ) -> None:
-    """Verify that runtime files still match the bundle that was published."""
+    """Verify that every published runtime file still matches its checksum."""
 
     file_hashes = manifest.get("files")
     if not isinstance(file_hashes, dict):
         raise DashboardDataError("Deployment manifest is missing file checksums.")
 
-    if set(file_hashes) != set(RUNTIME_FILENAMES):
+    filenames = set(file_hashes)
+    required = set(RUNTIME_FILENAMES)
+    known = set(KNOWN_RUNTIME_FILENAMES)
+
+    if not required.issubset(filenames) or not filenames.issubset(known):
         raise DashboardDataError("Deployment manifest file list is inconsistent.")
 
-    for filename in RUNTIME_FILENAMES:
-        expected_digest = file_hashes.get(filename)
-        actual_digest = _sha256_file(deployment_dir / filename)
+    for filename, expected_digest in file_hashes.items():
+        path = deployment_dir / filename
+        if not path.exists():
+            raise DashboardDataError(
+                f"Deployment manifest references a missing file: {filename}."
+            )
+
+        actual_digest = _sha256_file(path)
         if not isinstance(expected_digest, str) or actual_digest != expected_digest:
             raise DashboardDataError(
                 f"Deployment bundle checksum does not match for {filename}."

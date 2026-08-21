@@ -1,4 +1,4 @@
-checked_at: "2026-08-10"
+checked_at: "2026-08-21"
 sources:
   - id: yfinance_docs
     title: "yfinance documentation"
@@ -128,3 +128,59 @@ sources:
     source_type: "official_package_index"
     role:
       - "Parquet dependency availability check"
+
+  - id: gdelt_doc_2_docs
+    title: "GDELT DOC 2.0 API official documentation"
+    url: "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/"
+    status: "verified_live"
+    verified_at: "2026-08-21"
+    source_type: "official_documentation"
+    role:
+      - "news metadata discovery"
+      - "article list JSON contract"
+
+  - id: bank_indonesia_official
+    title: "Bank Indonesia official website"
+    url: "https://www.bi.go.id/"
+    status: "verified_live"
+    verified_at: "2026-08-21"
+    source_type: "official_institution"
+    role:
+      - "macro and monetary policy news"
+      - "rupiah context"
+
+  - id: bps_official
+    title: "Badan Pusat Statistik official website"
+    url: "https://www.bps.go.id/"
+    status: "verified_live"
+    verified_at: "2026-08-21"
+    source_type: "official_institution"
+    role:
+      - "inflation and growth context"
+
+  - id: astra_official_press_release
+    title: "PT Astra International Tbk press releases"
+    url: "https://www.astra.co.id/press-release"
+    status: "verified_live"
+    verified_at: "2026-08-21"
+    source_type: "official_issuer"
+    role:
+      - "ASII.JK issuer news"
+
+  - id: bca_official_investor_news
+    title: "PT Bank Central Asia Tbk investor news"
+    url: "https://www.bca.co.id/id/tentang-bca/hubungan-investor/berita-investor"
+    status: "verified_live"
+    verified_at: "2026-08-21"
+    source_type: "official_issuer"
+    role:
+      - "BBCA.JK issuer news"
+
+  - id: telkom_official_news
+    title: "PT Telkom Indonesia official news and resources"
+    url: "https://www.telkom.co.id/sites/news-resources/en_US/page/news-about-telkom-124"
+    status: "verified_live"
+    verified_at: "2026-08-21"
+    source_type: "official_issuer"
+    role:
+      - "TLKM.JK issuer news"
