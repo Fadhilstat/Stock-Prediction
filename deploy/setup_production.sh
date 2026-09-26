@@ -115,10 +115,37 @@ fi
 
 if [ "$PORT80_BUSY" = true ]; then
     echo "=========================================================="
-    echo "NOTICE: Port 80 is already occupied on this host."
-    
-    # Check if host has native Nginx running
-    if command -v nginx &> /dev/null && $SUDO systemctl is-active --quiet nginx; then
+    # 1. Check if host has Master Caddy running (e.g. at /srv/infra/caddy/Caddyfile)
+    if [ -f "/srv/infra/caddy/Caddyfile" ] && docker ps | grep -q ' caddy$'; then
+        echo "Detected Master Edge Caddy at /srv/infra/caddy/Caddyfile."
+        echo "Launching Ruang Risiko IDX app on 127.0.0.1:8501..."
+        ${DOCKER_COMPOSE} up -d --build app
+        ${DOCKER_COMPOSE} stop caddy 2>/dev/null || true
+
+        echo "Connecting Master Caddy to application network..."
+        docker network connect ruang-risiko-idx_rridx_network caddy 2>/dev/null || true
+
+        if ! grep -q "${DOMAIN}" /srv/infra/caddy/Caddyfile; then
+            echo "Registering ${DOMAIN} in /srv/infra/caddy/Caddyfile..."
+            cat << CADDY_EOF | $SUDO tee -a /srv/infra/caddy/Caddyfile > /dev/null
+
+# BEGIN RUANG RISIKO IDX PRODUCTION
+${DOMAIN} {
+    encode zstd gzip
+    reverse_proxy ruang_risiko_idx_app:8501
+}
+# END RUANG RISIKO IDX PRODUCTION
+CADDY_EOF
+            echo "Reloading Master Caddy configuration..."
+            docker exec -w /etc/caddy caddy caddy reload
+            echo "SUCCESS: Master Caddy configured and reloaded for ${DOMAIN}."
+        else
+            echo "${DOMAIN} is already registered in Master Caddyfile. Reloading Caddy..."
+            docker exec -w /etc/caddy caddy caddy reload
+        fi
+
+    # 2. Check if host has native Nginx running
+    elif command -v nginx &> /dev/null && $SUDO systemctl is-active --quiet nginx; then
         echo "Detected native Nginx running on host."
         echo "Launching Ruang Risiko IDX app on 127.0.0.1:8501 and configuring Nginx proxy..."
         ${DOCKER_COMPOSE} up -d --build app
