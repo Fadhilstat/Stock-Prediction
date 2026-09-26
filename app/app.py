@@ -18,10 +18,12 @@ from ruang_risiko_idx.research.actions import (
     load_runtime_config,
     record_action,
     trigger_direction_recalculation,
+    trigger_domain_probe,
     trigger_market_data_refresh,
     trigger_risk_recalculation,
     update_runtime_risk_parameters,
 )
+from ruang_risiko_idx.research.domain_probe import check_domain_readiness
 from ruang_risiko_idx.research.broker_network import analyze_broker_network, scan_universe_bandarmology
 from ruang_risiko_idx.research.broker_summary import generate_broker_summary
 from ruang_risiko_idx.research.corporate_action_risk import evaluate_dividend_action_risk
@@ -30,6 +32,7 @@ from ruang_risiko_idx.research.depth_analytics import calculate_depth_pressure, 
 from ruang_risiko_idx.research.flow import compute_liquidity_flow_summary, get_creator_claims_for_ticker
 from ruang_risiko_idx.research.fundamentals import CANONICAL_COMPANIES, get_fundamental_snapshot
 from ruang_risiko_idx.research.ict import evaluate_ict_hypotheses
+from ruang_risiko_idx.research.invalidation_watchdog import scan_active_passports_watchdog
 from ruang_risiko_idx.research.journal import load_prediction_journal
 from ruang_risiko_idx.research.market_context import compute_market_alignment
 from ruang_risiko_idx.research.multimodal import get_ablation_benchmarks, run_evidence_conflict_radar
@@ -38,6 +41,7 @@ from ruang_risiko_idx.research.passport_issuer import issue_custom_passport
 from ruang_risiko_idx.research.portfolio_stress import get_available_stress_scenarios, run_portfolio_stress_test
 from ruang_risiko_idx.research.risk_engine import evaluate_risk_engine
 from ruang_risiko_idx.research.scenarios import compute_horizon_quantiles, generate_scenarios
+from ruang_risiko_idx.research.sector_rotation import compute_sector_rotation
 from ruang_risiko_idx.research.social_stream import get_stream_sentiment
 from ruang_risiko_idx.research.technical import compute_technical_features, summarize_technical_state
 
@@ -200,7 +204,7 @@ st.markdown(
         <div class="tape-item"><span class="tape-label">USD/IDR</span> <span class="tape-val-red">15,420 (-0.15%)</span></div>
         <div class="tape-item"><span class="tape-label">Market Turnover</span> <span class="tape-val-neutral">Rp 12.8 T</span></div>
         <div class="tape-item"><span class="tape-label">Foreign Net Flow</span> <span class="tape-val-green">+Rp 842 Miliar</span></div>
-        <div class="tape-item"><span class="tape-label">Status Bursa</span> <span class="tape-val-green">● SESI 2 SELESAI</span></div>
+        <div class="tape-item"><span class="tape-label">Domain Rilis</span> <span class="tape-val-green">rridx.fadhilrusydi.com</span></div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -269,7 +273,7 @@ st.sidebar.markdown("---")
 data_cutoff = max_date.strftime("%Y-%m-%d")
 st.sidebar.caption(
     f"Cutoff: {data_cutoff} | Data: {len(selected_data):,} baris\n"
-    f"Mode: Headless Non-RDC Ready\n"
+    f"Target: rridx.fadhilrusydi.com\n"
     f"Engine: Stockbit Hybrid vNext"
 )
 
@@ -280,6 +284,7 @@ fund_snapshot = get_fundamental_snapshot(selected_ticker)
 align_summary = compute_market_alignment(selected_data, benchmark_data, selected_ticker)
 liq_summary = compute_liquidity_flow_summary(selected_data, selected_ticker)
 div_risk = evaluate_dividend_action_risk(selected_ticker, tech_summary.close)
+breadth_report = compute_sector_rotation(market_data, selected_ticker, data_cutoff)
 
 ticker_risk = risk_snapshots.get(selected_ticker, {})
 ticker_dir = direction_snapshots.get(selected_ticker, {})
@@ -370,7 +375,7 @@ with header_col1:
             Sektor: <strong>{fund_snapshot.identity.sector}</strong> | Papan: <strong>{fund_snapshot.identity.listing_board}</strong> |
             ARA: <span style="color: #00C076; font-weight: 600;">Rp {orderbook.ara_price:,.0f}</span> |
             ARB: <span style="color: #FF4A68; font-weight: 600;">Rp {orderbook.arb_price:,.0f}</span> |
-            Smart Money Index: <span style="color: #2962FF; font-weight: 700;">{broker_network.smart_money_index}%</span>
+            Rotasi Sektor: <strong>{breadth_report.stock_sector_quadrant}</strong>
         </div>
         """,
         unsafe_allow_html=True,
@@ -840,7 +845,7 @@ with main_tabs[4]:
 # TAB 6: Stream & Narrative Intelligence
 with main_tabs[5]:
     st.markdown("#### Stockbit Stream & Intelijen Narasi")
-    st.caption("Radar sentimen komunitas, herding behavior, hipotesis ICT, dan radar konflik.")
+    st.caption("Radar sentimen komunitas, herding behavior, hipotesis ICT, dan rotasi sektor.")
 
     str_c1, str_c2, str_c3 = st.columns(3)
     str_c1.metric("Status Kerumunan", stream_report.herding_state)
@@ -869,20 +874,25 @@ with main_tabs[5]:
         )
 
     st.markdown("---")
-    stream_col1, stream_col2 = st.columns(2)
-    with stream_col1:
-        st.markdown("**Hipotesis Struktur Pasar Gaya ICT**")
-        st.write(f"- **Struktur Pasar:** `{ict_summary.market_structure_state}`")
-        st.write(f"- **Zona Valuasi Relatif:** `{ict_summary.zone_classification}`")
-        st.write(f"- **Fair Value Gap:** `{'Terdeteksi' if ict_summary.fair_value_gap_present else 'Tidak ada'}`")
-        st.write(f"- **Liquidity Sweep:** `{'Terdeteksi' if ict_summary.liquidity_sweep_detected else 'Tidak ada'}`")
+    st.markdown("##### 🧭 Kompas Rotasi Sektor & Partisipasi Breadth BEI")
+    br_c1, br_c2, br_c3 = st.columns(3)
+    br_c1.metric("Saham di Atas SMA 20", f"{breadth_report.percent_above_sma20:.1f}%")
+    br_c2.metric("Saham di Atas SMA 50", f"{breadth_report.percent_above_sma50:.1f}%")
+    br_c3.metric("Saham di Atas SMA 200", f"{breadth_report.percent_above_sma200:.1f}%")
+    st.info(f"📊 Status Breadth: {breadth_report.summary}")
 
-    with stream_col2:
-        st.markdown("**Keselarasan vs IHSG**")
-        st.write(f"- **Status:** `{align_summary.alignment_state}`")
-        st.write(f"- **Rolling Beta 60D:** `{align_summary.rolling_beta_60d:.2f}`")
-        st.write(f"- **Korelasi 60D:** `{align_summary.rolling_correlation_60d:.2f}`")
-        st.write(f"- **Kekuatan Relatif 20D:** `{align_summary.relative_strength_20d:+.2%}`")
+    sec_rows = []
+    for sec in breadth_report.sectors:
+        sec_rows.append(
+            {
+                "Sektor": sec.sector_name,
+                "Saham Penggerak": sec.primary_ticker,
+                "Return Relatif 20D": f"{sec.relative_strength_20d:+.2f}%",
+                "Kuadran Rotasi": sec.quadrant,
+                "Keterangan": sec.summary,
+            }
+        )
+    st.dataframe(pd.DataFrame(sec_rows), use_container_width=True, hide_index=True)
 
 # TAB 7: Web Action Console (Operational Control Plane)
 with main_tabs[6]:
@@ -1002,6 +1012,33 @@ with main_tabs[6]:
             )
 
     st.markdown("---")
+    st.markdown("##### 🔍 Watchdog Pemantauan Batas Invalidasi Posisi Aktif")
+    active_price_map = {
+        t: float(market_data.loc[market_data["ticker"] == t]["close"].iloc[-1])
+        for t in available_tickers
+        if not market_data.loc[market_data["ticker"] == t].empty
+    }
+    watchdog_alerts = scan_active_passports_watchdog(active_price_map)
+    if watchdog_alerts:
+        w_rows = []
+        for w in watchdog_alerts:
+            w_rows.append(
+                {
+                    "Passport ID": w.passport_id,
+                    "Saham": w.ticker,
+                    "Harga Saat Ini": f"Rp {w.current_price:,.0f}",
+                    "Level Invalidasi": f"Rp {w.invalidation_price:,.0f}",
+                    "Jarak Pengaman (%)": f"{w.distance_percent:+.1f}%",
+                    "Jarak (IDR)": f"Rp {w.distance_idr:,.0f}",
+                    "Status": w.alert_level,
+                    "Rekomendasi": w.recommendation,
+                }
+            )
+        st.dataframe(pd.DataFrame(w_rows), use_container_width=True, hide_index=True)
+    else:
+        st.info("Belum ada Decision Passport aktif yang terdaftar dalam watchdog monitor.")
+
+    st.markdown("---")
     st.markdown("##### 📡 Radar Bandarmology Seluruh Universe")
     if st.button("Jalankan Radar Bandarmology Universe"):
         with st.spinner("Menganalisis matriks smart money untuk seluruh saham..."):
@@ -1026,11 +1063,38 @@ with main_tabs[6]:
         st.info("Belum ada riwayat aksi operasional tercatat.")
 
     st.markdown("---")
+    st.markdown("##### 🚀 Kesiapan Domain & Peluncuran Produksi (rridx.fadhilrusydi.com)")
+    st.caption("Verifikasi langsung status DNS record, sertifikat SSL/TLS, dan instruksi peluncuran headless non-RDC.")
+
+    probe_col1, probe_col2 = st.columns([3, 1])
+    target_domain_input = probe_col1.text_input("Domain Target Peluncuran", value="rridx.fadhilrusydi.com")
+    run_probe_btn = probe_col2.button("Uji Resolusi & SSL")
+
+    if run_probe_btn:
+        with st.spinner("Memeriksa resolusi DNS dan endpoint TLS..."):
+            probe_result = trigger_domain_probe(target_domain_input)
+            if probe_result["dns_status"] == "RESOLVED":
+                st.success(f"DNS Sukses Terarah: `{probe_result['resolved_ip']}`")
+            else:
+                st.warning(f"DNS Status: {probe_result['dns_status']}")
+            st.info(f"Panduan: {probe_result['recommendation']}")
+
+    st.markdown("**Instruksi Peluncuran 1-Command Headless (Non-RDC):**")
+    st.code(
+        f"curl -sSL https://raw.githubusercontent.com/Fadhilstat/Stock-Prediction/main/deploy/setup_production.sh | "
+        f"bash -s -- --domain {target_domain_input} --email admin@fadhilrusydi.com",
+        language="bash",
+    )
+
+    st.markdown("---")
     st.markdown("##### 🌐 Headless API & Webhook Service (Zero-RDC Operations)")
     st.code(
         """
 # Healthcheck Endpoint:
 curl -s http://localhost:8502/health
+
+# Cek Kesiapan Domain & SSL:
+curl -s http://localhost:8502/api/v1/domain-probe
 
 # Trigger Ingestion Webhook (misal dari cron atau Cloudflare Worker):
 curl -X POST http://localhost:8502/api/v1/actions/refresh-data
@@ -1045,5 +1109,6 @@ curl -X POST http://localhost:8502/api/v1/actions/recalc-risk
 st.markdown("---")
 st.caption(
     "Ruang Risiko IDX Autonomous Finished Product. "
-    "Sistem riset risiko pasar modal Indonesia. Semua output adalah estimasi probabilitas statistik dan bukan ajakan investasi."
+    "Sistem riset risiko pasar modal Indonesia. Target domain: rridx.fadhilrusydi.com. "
+    "Semua output adalah estimasi probabilitas statistik dan bukan ajakan investasi."
 )

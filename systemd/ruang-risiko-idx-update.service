@@ -1,0 +1,9 @@
+[Unit]
+Description=Ruang Risiko IDX Autonomous EOD Pipeline
+After=network.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/opt/ruang-risiko-idx
+ExecStart=/bin/bash /opt/ruang-risiko-idx/scripts/cron_daily_update.sh

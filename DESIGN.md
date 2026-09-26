@@ -84,9 +84,12 @@ Its user interface is modeled directly after the authoritative, high-density wor
    - ICT market structure hypothesis breakdown (MSS, FVG, Liquidity Sweeps).
    - Rolling beta and correlation against IHSG.
    - Public analyst / creator claim validation ledger.
+   - Sector Rotation Compass: 4-quadrant momentum map (Leading, Weakening, Lagging, Improving) and market breadth participation (% above SMA 20, 50, 200).
 7. **Web Action Console**:
    - Real-time action triggers (Refresh market data, recalculate risk models, refit directional classifiers).
    - Universe Bandarmology Radar: One-click smart money scanning and ranking across all tickers.
+   - Active Position Invalidation Watchdog: Real-time proximity scanner calculating safety buffer distance to invalidation levels.
+   - Domain & SSL Launch Readiness Probe: In-browser DNS resolution and TLS endpoint verification targeting rridx.fadhilrusydi.com.
    - Interactive runtime parameter adjustment sliders (VaR confidence level, max allocation %, slippage limit).
    - Chronological audit ledger displaying recent actions, operators, parameters, and durations.
    - Headless API & Webhook Service documentation for zero-RDC remote triggers.

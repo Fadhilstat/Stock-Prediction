@@ -1,0 +1,9 @@
+[Unit]
+Description=Ruang Risiko IDX EOD Pipeline Timer (16:30 WIB Mon-Fri)
+
+[Timer]
+OnCalendar=Mon..Fri *-*-* 09:30:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,21 +1,21 @@
 # Ruang Risiko IDX Durable Run State
 
 Project: Ruang Risiko IDX
-Updated: 2026-09-27T00:41:00+07:00
+Updated: 2026-09-27T00:48:00+07:00
 Branch: main
-HEAD: fadhilrusydi domain targets configured
-Current Product State: STOCKBIT_PORTFOLIO_STRESS_PASSPORT_ISSUER_NON_RDC_RELEASE
-Current Release State: FADHILRUSYDI_DOMAIN_CONFIGURED
-Current Milestone: Domain Target Configured to rridx.fadhilrusydi.com / fadhilrusydi.com
-Last Completed Action: Configured Caddyfile, docker-compose.yml, release_profile.json, deploy setup script, and launch guide to target rridx.fadhilrusydi.com. Passed all 107 unit tests. Zero em dash compliance verified.
-Current Action: Commit and synchronize domain configurations to origin/main.
-NEXT_ACTION: Point DNS A-record to VPS and run deploy/setup_production.sh.
+HEAD: sector rotation, watchdog, and domain probe verified
+Current Product State: STOCKBIT_ROTATION_WATCHDOG_DOMAIN_PROBE_NON_RDC_RELEASE
+Current Release State: FADHILRUSYDI_DOMAIN_READY_FOR_LAUNCH
+Current Milestone: Domain Target and Web Action Control Plane Ready for rridx.fadhilrusydi.com
+Last Completed Action: Shipped Sector Rotation Compass, Active Invalidation Watchdog, Autonomous EOD Pipeline (Cron/Systemd), and Web Domain/SSL Launch Readiness Probe. Passed all 112 unit tests. Zero em dash compliance verified.
+Current Action: Commit and synchronize to origin/main with user approval.
+NEXT_ACTION: Execute 1-command VPS launch with domain rridx.fadhilrusydi.com.
 FINISH_GATE State: PASS (all criteria validated)
-Release Candidate ID: RC-20260927-04
+Release Candidate ID: RC-20260927-05
 Push Approval State: APPROVED_BY_USER
 Push State: READY_TO_PUSH
-Change Request ID: PR-16
-CI State: LOCAL_PASSED_ALL_TESTS (107 passed)
+Change Request ID: PR-17
+CI State: LOCAL_PASSED_ALL_TESTS (112 passed)
 Merge Approval State: APPROVED_BY_USER
 Merge State: MERGED_INTO_MAIN
 Post-Merge State: VERIFIED_ON_GITHUB

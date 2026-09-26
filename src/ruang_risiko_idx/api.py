@@ -50,6 +50,23 @@ class RuangRisikoApiHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"history": history, "count": len(history)})
             return
 
+        if path == "/api/v1/domain-probe":
+            from ruang_risiko_idx.research.domain_probe import check_domain_readiness
+
+            probe = check_domain_readiness()
+            self._send_json(
+                200,
+                {
+                    "domain": probe.domain,
+                    "resolved_ip": probe.resolved_ip,
+                    "dns_status": probe.dns_status,
+                    "tls_active": probe.tls_active,
+                    "summary": probe.summary,
+                    "recommendation": probe.dns_recommendation,
+                },
+            )
+            return
+
         if path.startswith("/api/v1/risk-summary/"):
             ticker = path.split("/")[-1].upper()
             settings = ProjectSettings()

@@ -263,3 +263,31 @@ def update_runtime_risk_parameters(
         parameters=new_cfg,
     )
     return {"success": True, "message": msg, "action_id": entry.action_id}
+
+
+def trigger_domain_probe(domain: str = "rridx.fadhilrusydi.com") -> dict[str, Any]:
+    """Execute live DNS resolution and SSL check for deployment domain."""
+    import time
+    from ruang_risiko_idx.research.domain_probe import check_domain_readiness
+
+    start = time.perf_counter()
+    res = check_domain_readiness(domain)
+    elapsed = (time.perf_counter() - start) * 1000.0
+    entry = record_action(
+        action_type="DOMAIN_PROBE_CHECK",
+        status="SUCCESS" if res.dns_status == "RESOLVED" else "PENDING",
+        summary_message=res.summary,
+        parameters={"domain": domain, "resolved_ip": res.resolved_ip, "tls_active": res.tls_active},
+        duration_ms=elapsed,
+    )
+    return {
+        "success": res.dns_status == "RESOLVED",
+        "domain": res.domain,
+        "resolved_ip": res.resolved_ip,
+        "dns_status": res.dns_status,
+        "tls_active": res.tls_active,
+        "summary": res.summary,
+        "recommendation": res.dns_recommendation,
+        "action_id": entry.action_id,
+    }
+
