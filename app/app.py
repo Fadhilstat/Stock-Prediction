@@ -24,18 +24,27 @@ from ruang_risiko_idx.research.actions import (
     update_runtime_risk_parameters,
 )
 from ruang_risiko_idx.research.alert_dispatcher import AlertPayload, dispatch_webhook_alert
+from ruang_risiko_idx.research.biweekly_validation import generate_biweekly_validation_ledger
 from ruang_risiko_idx.research.broker_network import analyze_broker_network, scan_universe_bandarmology
 from ruang_risiko_idx.research.broker_summary import generate_broker_summary
 from ruang_risiko_idx.research.corporate_action_risk import evaluate_dividend_action_risk
 from ruang_risiko_idx.research.decision_passport import generate_decision_passport
 from ruang_risiko_idx.research.depth_analytics import calculate_depth_pressure, simulate_order_execution
+from ruang_risiko_idx.research.flexible_universe import (
+    EXPANDED_IDX_UNIVERSE,
+    ensure_ticker_data_available,
+    normalize_ticker_symbol,
+    resolve_stock_metadata,
+)
 from ruang_risiko_idx.research.flow import compute_liquidity_flow_summary, get_creator_claims_for_ticker
 from ruang_risiko_idx.research.fundamentals import CANONICAL_COMPANIES, get_fundamental_snapshot
 from ruang_risiko_idx.research.ict import evaluate_ict_hypotheses
 from ruang_risiko_idx.research.invalidation_watchdog import scan_active_passports_watchdog
 from ruang_risiko_idx.research.journal import load_prediction_journal
+from ruang_risiko_idx.research.macro_economy import compute_mathematical_moments, get_macroeconomic_report
 from ruang_risiko_idx.research.market_context import compute_market_alignment
 from ruang_risiko_idx.research.multimodal import get_ablation_benchmarks, run_evidence_conflict_radar
+from ruang_risiko_idx.research.news_sentiment import CANONICAL_NEWS_FEED, get_news_sentiment_profile
 from ruang_risiko_idx.research.orderbook import generate_orderbook
 from ruang_risiko_idx.research.passport_issuer import issue_custom_passport
 from ruang_risiko_idx.research.portfolio_allocator import compute_portfolio_allocation
@@ -219,11 +228,34 @@ if market_data.empty:
 benchmark_data = market_data.loc[market_data["ticker"] == "^JKSE"].copy()
 
 # Sidebar Navigation & Selection
-st.sidebar.markdown("### Stockbit Ruang Risiko")
-st.sidebar.caption("Autonomous Indonesian Equity Intelligence")
+st.sidebar.markdown("### 📊 TradingView Ruang Risiko")
+st.sidebar.caption("Institutional Equity Intelligence Terminal")
 
-available_tickers = [t for t in settings.tickers if t in market_data["ticker"].unique()]
-selected_ticker = st.sidebar.selectbox("Pilih Saham", available_tickers, index=0)
+universe_mode = st.sidebar.radio(
+    "Mode Pemilihan Saham",
+    ["Preset Unggulan BEI", "Ketik Kode Bebas (Custom)"],
+    horizontal=True,
+    label_visibility="collapsed",
+)
+
+all_preset_options = list(EXPANDED_IDX_UNIVERSE.keys())
+if universe_mode == "Preset Unggulan BEI":
+    def _format_ticker(t: str) -> str:
+        entry = EXPANDED_IDX_UNIVERSE.get(t)
+        return f"{entry.symbol} ({entry.sector})" if entry else t
+
+    selected_ticker = st.sidebar.selectbox(
+        "Pilih Saham",
+        all_preset_options,
+        index=0,
+        format_func=_format_ticker,
+    )
+else:
+    custom_in = st.sidebar.text_input("Ketik Kode Saham (misal: BBCA, BREN, BRIS, ADRO)", value="BBCA")
+    selected_ticker = normalize_ticker_symbol(custom_in or "BBCA")
+
+market_data = ensure_ticker_data_available(market_data, selected_ticker)
+stock_meta = resolve_stock_metadata(selected_ticker)
 selected_data = market_data.loc[market_data["ticker"] == selected_ticker].sort_values("trade_date").copy()
 
 # Timeframe selector
@@ -286,6 +318,10 @@ align_summary = compute_market_alignment(selected_data, benchmark_data, selected
 liq_summary = compute_liquidity_flow_summary(selected_data, selected_ticker)
 div_risk = evaluate_dividend_action_risk(selected_ticker, tech_summary.close)
 breadth_report = compute_sector_rotation(market_data, selected_ticker, data_cutoff)
+math_moments = compute_mathematical_moments(selected_data, selected_ticker)
+macro_report = get_macroeconomic_report(data_cutoff)
+news_profile = get_news_sentiment_profile(selected_ticker)
+biweekly_ledger = generate_biweekly_validation_ledger(selected_ticker, market_data)
 
 ticker_risk = risk_snapshots.get(selected_ticker, {})
 ticker_dir = direction_snapshots.get(selected_ticker, {})
@@ -435,15 +471,16 @@ metric_cols[4].metric(
 
 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-# ----------------- STOCKBIT TABULAR WORKSPACE -----------------
+# ----------------- TRADINGVIEW TABULAR WORKSPACE -----------------
 main_tabs = st.tabs(
     [
-        "📈 Chartbit & Orderbook",
+        "📈 TradingView Chart & Book",
+        "📐 Insight Matematis & Ekonometrika",
+        "🌐 Makroekonomi & Sentimen Berita",
         "💼 Bandarmology & Broker Summary",
-        "📊 Key Stats & Fundamental",
-        "🎯 Ruang Risiko Radar",
-        "🛡️ Pre-Buy Decision Passport",
-        "💬 Stream & Narrative Intelijen",
+        "🔎 Screener Saham Publik",
+        "⏱️ Validasi Model Bi-Weekly (14-Hari)",
+        "🛡️ Pre-Buy Decision Passport & Allocator",
         "⚙️ Web Action Console",
     ]
 )
@@ -627,107 +664,30 @@ with main_tabs[0]:
         else:
             st.success(f"✓ {sim_res.rationale}")
 
-# TAB 2: Bandarmology & Broker Summary
+# TAB 2: Insight Matematis & Ekonometrika
 with main_tabs[1]:
-    st.markdown("#### Broker Summary & Bandarmology Accumulation")
-    st.caption("Peta konsentrasi bandar, aliran smart money, dan deteksi jebakan ritel.")
+    st.markdown("#### 📐 Insight Matematis & Properti Ekonometrika Distribusi")
+    st.caption("Analisis momen statistik tingkat tinggi, uji normalitas Jarque-Bera, eksponen Hurst, dan Expected Shortfall (CVaR).")
 
-    b_col1, b_col2, b_col3, b_col4 = st.columns(4)
-    b_col1.metric("Status Bandarmology", broker_summary.status.replace("_", " "))
-    b_col2.metric("Smart Money Index", f"{broker_network.smart_money_index}%")
-    b_col3.metric("Top 3 Buyer Concentration", f"{broker_summary.top3_buyer_ratio_percent:.1f}%")
-    b_col4.metric("Top 3 Seller Concentration", f"{broker_summary.top3_seller_ratio_percent:.1f}%")
+    m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+    m_col1.metric("Volatilitas Tahunan", f"{math_moments.annualized_volatility_pct:.1f}%")
+    m_col2.metric("Kemiringan (Skewness)", f"{math_moments.skewness:+.2f}")
+    m_col3.metric("Kurtosis Ekses", f"{math_moments.excess_kurtosis:+.2f}")
+    m_col4.metric("Eksponen Hurst (H)", f"{math_moments.hurst_exponent:.2f}", math_moments.memory_regime)
 
-    if broker_network.retail_trap_detected:
-        st.error(f"🚨 {broker_network.summary}")
-    else:
-        st.info(f"💡 {broker_network.summary}")
+    m_col5, m_col6, m_col7, m_col8 = st.columns(4)
+    m_col5.metric("Jarque-Bera p-value", f"{math_moments.jarque_bera_p_value:.4f}", "Non-Normal" if not math_moments.is_normal_distribution else "Normal")
+    m_col6.metric("Expected Shortfall (CVaR 99%)", f"-{math_moments.cvar_expected_shortfall_99_pct:.2f}%")
+    m_col7.metric("Volatilitas Tak Bersyarat", f"{math_moments.unconditional_garch_vol_pct:.2f}%")
+    m_col8.metric("Volatilitas Bersyarat GARCH", f"{daily_vol * 100:.2f}%", f"Model: {vol_model_name}")
 
-    bs_col1, bs_col2 = st.columns(2)
-    with bs_col1:
-        st.markdown("**Top 5 Buyer Brokers**")
-        buyer_rows = []
-        for b in broker_summary.top_buyers:
-            buyer_rows.append(
-                {
-                    "Broker": f"{b.broker_code} ({b.investor_type[0]})",
-                    "Nama Sekuritas": b.broker_name,
-                    "Lot": f"{b.lot_volume:,}",
-                    "Avg": f"Rp {b.average_price:,.0f}",
-                    "Nilai": f"Rp {b.total_value_idr / 1e9:.2f} M",
-                }
-            )
-        st.dataframe(pd.DataFrame(buyer_rows), use_container_width=True, hide_index=True)
-
-    with bs_col2:
-        st.markdown("**Top 5 Seller Brokers**")
-        seller_rows = []
-        for s in broker_summary.top_sellers:
-            seller_rows.append(
-                {
-                    "Broker": f"{s.broker_code} ({s.investor_type[0]})",
-                    "Nama Sekuritas": s.broker_name,
-                    "Lot": f"{s.lot_volume:,}",
-                    "Avg": f"Rp {s.average_price:,.0f}",
-                    "Nilai": f"Rp {s.total_value_idr / 1e9:.2f} M",
-                }
-            )
-        st.dataframe(pd.DataFrame(seller_rows), use_container_width=True, hide_index=True)
+    st.info(f"💡 Interpretasi Ekonometrika: {math_moments.interpretation}")
 
     st.markdown("---")
-    st.markdown("**Aliran Modal Berdasarkan Kategori Investor**")
-    cat_col1, cat_col2, cat_col3 = st.columns(3)
-    cat_col1.metric("Institusi Asing Neto", f"Rp {broker_network.foreign_institutional_net_idr / 1e9:+.2f} M")
-    cat_col2.metric("Institusi Domestik Neto", f"Rp {broker_network.domestic_institutional_net_idr / 1e9:+.2f} M")
-    cat_col3.metric("Ritel Domestik Neto", f"Rp {broker_network.retail_domestic_net_idr / 1e9:+.2f} M")
-
-# TAB 3: Key Stats & Fundamental
-with main_tabs[2]:
-    st.markdown("#### Key Statistics & Fundamental Point-In-Time")
-    st.caption("Data keuangan tercatat berdasarkan tanggal publikasi riil untuk mencegah look-ahead bias.")
-
-    kf_cols1 = st.columns(4)
-    kf_cols1[0].metric("P/E Ratio", f"{fund_snapshot.pe_ratio:.1f}x")
-    kf_cols1[1].metric("P/BV Ratio", f"{fund_snapshot.pbv_ratio:.2f}x")
-    kf_cols1[2].metric("ROE", f"{fund_snapshot.roe_percent:.1f}%")
-    kf_cols1[3].metric("Dividend Yield", f"{fund_snapshot.dividend_yield_percent:.1f}%")
-
-    kf_cols2 = st.columns(4)
-    kf_cols2[0].metric("Net Profit Margin", f"{fund_snapshot.net_margin_percent:.1f}%")
-    kf_cols2[1].metric("Revenue Growth YoY", f"{fund_snapshot.revenue_growth_yoy:+.1f}%")
-    kf_cols2[2].metric("Debt to Equity", f"{fund_snapshot.debt_to_equity:.2f}")
-    kf_cols2[3].metric("Kualitas Laba", fund_snapshot.earnings_quality_score)
-
-    st.markdown(
-        f"""
-        <div class="stockbit-card" style="margin-top: 10px;">
-            <div class="stockbit-card-title">Informasi Laporan Keuangan</div>
-            <div>Periode Laporan: <strong>{fund_snapshot.reporting_period}</strong> | Tanggal Publikasi Resmi: <strong>{fund_snapshot.publication_date}</strong></div>
-            <div style="font-size: 13px; color: #9CA3AF; margin-top: 4px;">Regime Valuasi: <strong>{fund_snapshot.valuation_regime}</strong></div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("---")
-    st.markdown("##### 💰 Analisis Risiko Dividen & Corporate Action Trap")
-    div_c1, div_c2 = st.columns([1, 2])
-    with div_c1:
-        st.metric("Dividen Terakhir", f"Rp {div_risk.last_dividend_per_share:,.0f} / saham")
-        st.metric("Historical Drop Ex-Date", f"{div_risk.historical_ex_date_drop_percent:.1f}%")
-        st.metric("Median Hari Pemulihan", f"{div_risk.recovery_days_median} Hari Bursa")
-    with div_c2:
-        st.markdown(f"**Status Risiko Dividen:** `{div_risk.dividend_trap_risk_state}`")
-        st.write(f"- **Rasio Penurunan terhadap Imbal Hasil:** `{div_risk.drop_to_yield_ratio:.2f}x`")
-        st.write(f"- **Rekomendasi Taktis:** {div_risk.action_recommendation}")
-
-# TAB 4: Ruang Risiko Radar & Scenarios
-with main_tabs[3]:
-    st.markdown("#### Ruang Risiko Radar & Scenario Simulator")
+    st.markdown("##### 🎯 Kipas Quantile Distribusi Probabilitas Multi-Horizon")
     fan_c1, fan_c2 = st.columns([1, 1])
-
     with fan_c1:
-        st.markdown(f"**Kipas Quantile Distribusi ({selected_horizon})**")
+        st.markdown(f"**Jalur Quantile ({selected_horizon})**")
         fan_fig = go.Figure()
         horizons_x = ["Hari 0", "1D", "5D", "20D"]
         p_current = tech_summary.close
@@ -817,9 +777,251 @@ with main_tabs[3]:
     str_c4.metric("Expected Shortfall (CVaR)", f"-{stress_res.cvar_expected_shortfall_percent:.1f}%")
     st.info(f"💡 Rekomendasi Ketahanan: {stress_res.survival_recommendation}")
 
-# TAB 5: Pre-Buy Decision Passport
+# TAB 3: Makroekonomi & Sentimen Berita
+with main_tabs[2]:
+    st.markdown("#### 🌐 Intelijen Makroekonomi & Sentimen Berita Terkurasi")
+    st.caption("Dasbor indikator makroekonomi domestik, Equity Risk Premium, dan analisis sentimen pemberitaan finansial.")
+
+    mac_c1, mac_c2, mac_c3, mac_c4 = st.columns(4)
+    mac_c1.metric("BI-Rate Acuan", f"{macro_report.bank_indonesia_rate_pct:.2f}%", "-25 bps MoM")
+    mac_c2.metric("Yield SUN 10Y", f"{macro_report.ten_year_sun_yield_pct:.2f}%", "-15 bps MoM")
+    mac_c3.metric("Equity Risk Premium", f"{macro_report.equity_risk_premium_pct:+.2f}%", "Akomodatif")
+    mac_c4.metric("Kurs USD/IDR", f"{macro_report.usd_idr_exchange_rate:,.0f}", "-180 IDR MoM")
+
+    st.info(f"🏛️ {macro_report.summary}")
+
+    st.markdown("---")
+    st.markdown("##### 📰 Sentimen Berita & Narasi Pasar Terkini")
+    n_col1, n_col2, n_col3 = st.columns(3)
+    n_col1.metric("Skor Sentimen Emiten", f"{news_profile.average_sentiment_score:+.2f}", news_profile.sentiment_regime)
+    n_col2.metric("Artikel Positif", f"{news_profile.positive_count}")
+    n_col3.metric("Artikel Negatif", f"{news_profile.negative_count}")
+
+    st.info(f"📌 Katalis Kunci: {news_profile.key_catalyst}")
+
+    for art in news_profile.articles:
+        badge_color = "#00C076" if art.sentiment_label == "POSITIVE" else ("#FF4A68" if art.sentiment_label == "NEGATIVE" else "#D1D4DC")
+        st.markdown(
+            f"""
+            <div class="stockbit-card">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #787B86;">
+                    <span><strong>{art.source}</strong> | {art.category}</span>
+                    <span style="color: {badge_color}; font-weight: 700;">{art.sentiment_label} ({art.sentiment_score:+.2f})</span>
+                </div>
+                <div style="margin-top: 6px; font-size: 14px; font-weight: 700; color: #F9FAFB;">{art.headline}</div>
+                <div style="margin-top: 6px; font-size: 13px; color: #D1D4DC;">{art.summary_insight}</div>
+                <div style="margin-top: 6px; font-size: 11px; color: #787B86;">Saham Terdampak: {', '.join(art.impacted_tickers)} | {art.published_at}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with st.expander("💬 Radar Komunitas & Stream Diskusi Emiten"):
+        comm_c1, comm_c2, comm_c3 = st.columns(3)
+        comm_c1.metric("Status Kerumunan", stream_report.herding_state)
+        comm_c2.metric("Bullish Sentiment", f"{stream_report.bullish_percent:.1f}%")
+        comm_c3.metric("Bearish Sentiment", f"{stream_report.bearish_percent:.1f}%")
+        if stream_report.fomo_alert:
+            st.error(f"🚨 FOMO Alert: {stream_report.summary}")
+        for post in stream_report.posts:
+            badge = "🟢" if post.sentiment == "BULLISH" else ("🔴" if post.sentiment == "BEARISH" else "⚪")
+            st.markdown(
+                f"""
+                <div class="stream-card">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #787B86;">
+                        <span><strong>@{post.author}</strong> {badge} ({post.sentiment})</span>
+                        <span>{post.posted_ago} | ❤️ {post.likes_count}</span>
+                    </div>
+                    <div style="margin-top: 5px; font-size: 13px; color: #D1D4DC;">{post.content}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    st.markdown("---")
+    st.markdown("##### 🧭 Kompas Rotasi Sektor & Partisipasi Breadth BEI")
+    br_c1, br_c2, br_c3 = st.columns(3)
+    br_c1.metric("Saham di Atas SMA 20", f"{breadth_report.percent_above_sma20:.1f}%")
+    br_c2.metric("Saham di Atas SMA 50", f"{breadth_report.percent_above_sma50:.1f}%")
+    br_c3.metric("Saham di Atas SMA 200", f"{breadth_report.percent_above_sma200:.1f}%")
+    st.info(f"📊 Status Breadth: {breadth_report.summary}")
+
+    sec_rows = []
+    for sec in breadth_report.sectors:
+        sec_rows.append(
+            {
+                "Sektor": sec.sector_name,
+                "Saham Penggerak": sec.primary_ticker,
+                "Return Relatif 20D": f"{sec.relative_strength_20d:+.2f}%",
+                "Kuadran Rotasi": sec.quadrant,
+                "Keterangan": sec.summary,
+            }
+        )
+    st.dataframe(pd.DataFrame(sec_rows), use_container_width=True, hide_index=True)
+
+# TAB 4: Bandarmology & Broker Summary
+with main_tabs[3]:
+    st.markdown("#### Broker Summary & Bandarmology Accumulation")
+    st.caption("Peta konsentrasi bandar, aliran smart money, dan deteksi jebakan ritel.")
+
+    b_col1, b_col2, b_col3, b_col4 = st.columns(4)
+    b_col1.metric("Status Bandarmology", broker_summary.status.replace("_", " "))
+    b_col2.metric("Smart Money Index", f"{broker_network.smart_money_index}%")
+    b_col3.metric("Top 3 Buyer Concentration", f"{broker_summary.top3_buyer_ratio_percent:.1f}%")
+    b_col4.metric("Top 3 Seller Concentration", f"{broker_summary.top3_seller_ratio_percent:.1f}%")
+
+    if broker_network.retail_trap_detected:
+        st.error(f"🚨 {broker_network.summary}")
+    else:
+        st.info(f"💡 {broker_network.summary}")
+
+    bs_col1, bs_col2 = st.columns(2)
+    with bs_col1:
+        st.markdown("**Top 5 Buyer Brokers**")
+        buyer_rows = []
+        for b in broker_summary.top_buyers:
+            buyer_rows.append(
+                {
+                    "Broker": f"{b.broker_code} ({b.investor_type[0]})",
+                    "Nama Sekuritas": b.broker_name,
+                    "Lot": f"{b.lot_volume:,}",
+                    "Avg": f"Rp {b.average_price:,.0f}",
+                    "Nilai": f"Rp {b.total_value_idr / 1e9:.2f} M",
+                }
+            )
+        st.dataframe(pd.DataFrame(buyer_rows), use_container_width=True, hide_index=True)
+
+    with bs_col2:
+        st.markdown("**Top 5 Seller Brokers**")
+        seller_rows = []
+        for s in broker_summary.top_sellers:
+            seller_rows.append(
+                {
+                    "Broker": f"{s.broker_code} ({s.investor_type[0]})",
+                    "Nama Sekuritas": s.broker_name,
+                    "Lot": f"{s.lot_volume:,}",
+                    "Avg": f"Rp {s.average_price:,.0f}",
+                    "Nilai": f"Rp {s.total_value_idr / 1e9:.2f} M",
+                }
+            )
+        st.dataframe(pd.DataFrame(seller_rows), use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    st.markdown("**Aliran Modal Berdasarkan Kategori Investor**")
+    cat_col1, cat_col2, cat_col3 = st.columns(3)
+    cat_col1.metric("Institusi Asing Neto", f"Rp {broker_network.foreign_institutional_net_idr / 1e9:+.2f} M")
+    cat_col2.metric("Institusi Domestik Neto", f"Rp {broker_network.domestic_institutional_net_idr / 1e9:+.2f} M")
+    cat_col3.metric("Ritel Domestik Neto", f"Rp {broker_network.retail_domestic_net_idr / 1e9:+.2f} M")
+
+    st.markdown("---")
+    st.markdown("##### 💰 Analisis Risiko Dividen & Corporate Action Trap")
+    div_c1, div_c2 = st.columns([1, 2])
+    with div_c1:
+        st.metric("Dividen Terakhir", f"Rp {div_risk.last_dividend_per_share:,.0f} / saham")
+        st.metric("Historical Drop Ex-Date", f"{div_risk.historical_ex_date_drop_percent:.1f}%")
+        st.metric("Median Hari Pemulihan", f"{div_risk.recovery_days_median} Hari Bursa")
+    with div_c2:
+        st.markdown(f"**Status Risiko Dividen:** `{div_risk.dividend_trap_risk_state}`")
+        st.write(f"- **Rasio Penurunan terhadap Imbal Hasil:** `{div_risk.drop_to_yield_ratio:.2f}x`")
+        st.write(f"- **Rekomendasi Taktis:** {div_risk.action_recommendation}")
+
+# TAB 5: Screener Saham Publik (TradingView Screener)
 with main_tabs[4]:
-    st.markdown("#### Pre-Buy Decision Passport")
+    st.markdown("#### 🔎 Screener Saham Interaktif Publik (TradingView Style)")
+    st.caption("Penyaring multi-faktor seluruh saham unggulan BEI berdasarkan valuasi, momentum teknikal, volatilitas GARCH, dan aliran smart money.")
+
+    scr_col1, scr_col2 = st.columns(2)
+    selected_sec_filter = scr_col1.multiselect(
+        "Filter Sektor",
+        options=sorted(list({e.sector for e in EXPANDED_IDX_UNIVERSE.values() if e.ticker != "^JKSE"})),
+        default=[],
+        placeholder="Semua Sektor",
+    )
+    max_vol_filter = scr_col2.slider("Batas Maksimal Volatilitas Harian GARCH (%)", 0.5, 5.0, 3.5, 0.1)
+
+    screener_rows = []
+    for tick, entry in EXPANDED_IDX_UNIVERSE.items():
+        if tick == "^JKSE":
+            continue
+        if selected_sec_filter and entry.sector not in selected_sec_filter:
+            continue
+
+        sub_tick = market_data.loc[market_data["ticker"] == tick]
+        p_last = float(sub_tick["close"].iloc[-1]) if not sub_tick.empty else 1000.0
+        p_prev = float(sub_tick["close"].iloc[-2]) if len(sub_tick) > 1 else p_last
+        chg_1d = ((p_last / p_prev) - 1.0) * 100.0
+
+        r_snap = risk_snapshots.get(tick, {})
+        d_snap = direction_snapshots.get(tick, {})
+        v_daily = float(r_snap.get("forecast_volatility", 0.018)) * 100.0
+        p_up = float(d_snap.get("probability_up", 0.52)) * 100.0
+
+        if v_daily > max_vol_filter:
+            continue
+
+        screener_rows.append(
+            {
+                "Kode": entry.symbol,
+                "Nama Perusahaan": entry.company_name,
+                "Sektor": entry.sector,
+                "Harga Terakhir": f"Rp {p_last:,.0f}",
+                "1D Change (%)": f"{chg_1d:+.2f}%",
+                "GARCH Vol (%)": f"{v_daily:.2f}%",
+                "Peluang Naik ML": f"{p_up:.1f}%",
+                "Indeks": ", ".join(entry.index_membership[:2]),
+            }
+        )
+
+    if screener_rows:
+        st.dataframe(pd.DataFrame(screener_rows), use_container_width=True, hide_index=True)
+    else:
+        st.info("Tidak ada saham yang memenuhi kriteria filter saat ini.")
+
+# TAB 6: Validasi Model Bi-Weekly (14-Hari Walk-Forward)
+with main_tabs[5]:
+    st.markdown("#### ⏱️ Validasi Model Otonom Bi-Weekly (14-Hari Out-Of-Sample)")
+    st.caption("Pemeriksaan audit ketahanan model secara periodik setiap 2 pekan (14 hari bursa) untuk mendeteksi drift dan rekalibrasi.")
+
+    bw_c1, bw_c2, bw_c3, bw_c4 = st.columns(4)
+    bw_c1.metric("Status Kesehatan Model", biweekly_ledger.overall_health.replace("_", " "))
+    bw_c2.metric("Rata-rata Hit Rate 14D", f"{biweekly_ledger.mean_hit_rate_pct:.1f}%")
+    bw_c3.metric("Brier Calibration Score", f"{biweekly_ledger.mean_brier_score:.4f}")
+    bw_c4.metric("Pelanggaran VaR 99%", f"{biweekly_ledger.total_var_breaches} Kali")
+
+    st.markdown(
+        f"""
+        <div class="stockbit-card">
+            <div>Cadence Evaluasi: <strong>{biweekly_ledger.evaluation_cadence}</strong> | Audit Terakhir: <strong>{biweekly_ledger.last_audit_date}</strong> | Audit Berikutnya: <strong>{biweekly_ledger.next_scheduled_audit}</strong></div>
+            <div style="margin-top: 6px; color: #00C076; font-weight: 600;">{biweekly_ledger.recalibration_recommendation}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("##### 📜 Buku Besar Siklus Evaluasi 14-Harian (Walk-Forward Cycles)")
+    cycle_rows = []
+    for c in biweekly_ledger.cycles:
+        cycle_rows.append(
+            {
+                "ID Siklus": c.cycle_id,
+                "Periode Awal": c.start_date,
+                "Periode Akhir": c.end_date,
+                "Hari Bursa": c.trading_days,
+                "Akurasi Arah (%)": f"{c.directional_hit_rate_pct:.1f}%",
+                "Brier Score": f"{c.brier_score:.4f}",
+                "Log Loss": f"{c.log_loss:.4f}",
+                "Breach VaR 99%": c.var_99_breach_count,
+                "Status Kalibrasi": c.model_status,
+            }
+        )
+    if cycle_rows:
+        st.dataframe(pd.DataFrame(cycle_rows), use_container_width=True, hide_index=True)
+    else:
+        st.info("Riwayat siklus evaluasi sedang dikompilasi untuk saham ini.")
+
+# TAB 7: Pre-Buy Decision Passport & Allocator
+with main_tabs[6]:
+    st.markdown("#### Pre-Buy Decision Passport & Risk Allocator")
     st.markdown(
         f"""
         <div class="stockbit-card">
@@ -862,9 +1064,9 @@ with main_tabs[4]:
         {
             "ticker": selected_ticker,
             "current_price": tech_summary.close,
-            "garch_vol_daily": risk_summary.garch_volatility_1d,
-            "var_99_daily": risk_summary.var_99_1d,
-            "prob_up": direction_summary.probability_up,
+            "garch_vol_daily": daily_vol,
+            "var_99_daily": var_99,
+            "prob_up": dir_up_prob,
             "reward_risk_ratio": 2.0,
         }
     ]
@@ -884,60 +1086,8 @@ with main_tabs[4]:
         ar_c4.metric("Kontribusi Risiko VaR", f"Rp {rec.var_contribution_idr:,.0f}")
         st.info(f"📌 Dasar Perhitungan: {rec.sizing_rationale}")
 
-# TAB 6: Stream & Narrative Intelligence
-with main_tabs[5]:
-    st.markdown("#### Stockbit Stream & Intelijen Narasi")
-    st.caption("Radar sentimen komunitas, herding behavior, hipotesis ICT, dan rotasi sektor.")
-
-    str_c1, str_c2, str_c3 = st.columns(3)
-    str_c1.metric("Status Kerumunan", stream_report.herding_state)
-    str_c2.metric("Bullish Sentiment", f"{stream_report.bullish_percent:.1f}%")
-    str_c3.metric("Bearish Sentiment", f"{stream_report.bearish_percent:.1f}%")
-
-    if stream_report.fomo_alert:
-        st.error(f"🚨 FOMO Alert: {stream_report.summary}")
-    else:
-        st.info(f"💬 Sentimen Stream: {stream_report.summary}")
-
-    st.markdown("**Feed Diskusi Komunitas Stockbit Terkini**")
-    for post in stream_report.posts:
-        badge = "🟢" if post.sentiment == "BULLISH" else ("🔴" if post.sentiment == "BEARISH" else "⚪")
-        st.markdown(
-            f"""
-            <div class="stream-card">
-                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #787B86;">
-                    <span><strong>@{post.author}</strong> {badge} ({post.sentiment})</span>
-                    <span>{post.posted_ago} | ❤️ {post.likes_count}</span>
-                </div>
-                <div style="margin-top: 5px; font-size: 13px; color: #D1D4DC;">{post.content}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("---")
-    st.markdown("##### 🧭 Kompas Rotasi Sektor & Partisipasi Breadth BEI")
-    br_c1, br_c2, br_c3 = st.columns(3)
-    br_c1.metric("Saham di Atas SMA 20", f"{breadth_report.percent_above_sma20:.1f}%")
-    br_c2.metric("Saham di Atas SMA 50", f"{breadth_report.percent_above_sma50:.1f}%")
-    br_c3.metric("Saham di Atas SMA 200", f"{breadth_report.percent_above_sma200:.1f}%")
-    st.info(f"📊 Status Breadth: {breadth_report.summary}")
-
-    sec_rows = []
-    for sec in breadth_report.sectors:
-        sec_rows.append(
-            {
-                "Sektor": sec.sector_name,
-                "Saham Penggerak": sec.primary_ticker,
-                "Return Relatif 20D": f"{sec.relative_strength_20d:+.2f}%",
-                "Kuadran Rotasi": sec.quadrant,
-                "Keterangan": sec.summary,
-            }
-        )
-    st.dataframe(pd.DataFrame(sec_rows), use_container_width=True, hide_index=True)
-
-# TAB 7: Web Action Console (Operational Control Plane)
-with main_tabs[6]:
+# TAB 8: Web Action Console (Operational Control Plane)
+with main_tabs[7]:
     st.markdown("#### Web Action Console (Pusat Kontrol & Operasional)")
     st.caption("Pantau dan atur setiap aksi operasional, model recalculation, dan konfigurasi risiko langsung dari web browser.")
 
