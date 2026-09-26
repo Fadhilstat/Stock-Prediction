@@ -19,10 +19,10 @@ CI State: LOCAL_PASSED_ALL_TESTS (117 passed)
 Merge Approval State: APPROVED_BY_USER
 Merge State: MERGED_INTO_MAIN
 Post-Merge State: VERIFIED_ON_GITHUB
-Deployment State: TARGETING_RRIDX_FADHILRUSYDI_COM
-Production State: READY_FOR_DOMAIN_LAUNCH
+Deployment State: LIVE_AT_RRIDX_FADHILRUSYDI_COM
+Production State: ACTIVE_IN_PRODUCTION
 Primary Domain: fadhilrusydi.com
-Production Target: https://rridx.fadhilrusydi.com
+Production Target: https://rridx.fadhilrusydi.com (VERIFIED_LIVE)
 Rollback State: READY_AT_441fb22
 Market Data Cutoff: 2026-09-25
 Canonical Data State: VALIDATED_SCHEMA (9,744 rows, 0 quarantined)
