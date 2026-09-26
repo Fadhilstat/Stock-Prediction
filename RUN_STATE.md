@@ -1,26 +1,25 @@
 # Ruang Risiko IDX Durable Run State
 
 Project: Ruang Risiko IDX
-Updated: 2026-09-27T00:24:00+07:00
+Updated: 2026-09-27T00:38:00+07:00
 Branch: main
-HEAD: Local release candidate ready (Stockbit UI/UX, Portfolio Stress Engine, Interactive Passport Issuer, and Non-RDC stack)
+HEAD: 6a46da3 feat: add portfolio crash stress replay and in-browser decision passport issuer
 Current Product State: STOCKBIT_PORTFOLIO_STRESS_PASSPORT_ISSUER_NON_RDC_RELEASE
-Current Release State: RELEASE_MERGED_LOCAL_PUSH_PENDING
-Current Milestone: Portfolio Crash Stress Replay, In-Browser Passport Issuer, and Stockbit Terminal
-Last Completed Action: Completed Multivariate Portfolio Stress Replay Engine, In-Browser Decision Passport Generator with SHA256 digital stamp, full regression test suite (107 passed), and zero em dash verification.
-Current Action: Fast-forward merged to main, user APPROVE PUSH and APPROVE MERGE granted. Executing commit.
-NEXT_ACTION: Synchronize with remote origin via git push.
-THEN: Domain DNS cutover and non-RDC headless production verification.
+Current Release State: RELEASED_AND_SYNCHRONIZED_TO_ORIGIN_MAIN
+Current Milestone: Full Stockbit Parity, Web Action Console, and Zero-RDC Production Synchronized
+Last Completed Action: Successfully synchronized 7 release candidate commits to remote GitHub origin/main. Working tree clean. 107 unit tests passing. Zero em dash compliance verified.
+Current Action: Production release live on origin/main. Ready for custom domain DNS mapping and headless deployment.
+NEXT_ACTION: Point domain DNS A-record to VPS and run deploy/setup_production.sh.
 FINISH_GATE State: PASS (all criteria validated)
 Release Candidate ID: RC-20260927-03
 Push Approval State: APPROVED_BY_USER
-Push State: PENDING_PUSH
+Push State: PUSHED_AND_CONFIRMED_ON_ORIGIN_MAIN
 Change Request ID: PR-16
 CI State: LOCAL_PASSED_ALL_TESTS (107 passed)
 Merge Approval State: APPROVED_BY_USER
-Merge State: MERGED_LOCAL
-Post-Merge State: VERIFIED
-Deployment State: CLOUD_INIT_DOCKER_CADDY_GITHUB_ACTIONS_READY
+Merge State: MERGED_INTO_MAIN
+Post-Merge State: VERIFIED_ON_GITHUB
+Deployment State: REPO_SYNCHRONIZED_READY_FOR_VPS_PULL
 Production State: READY_FOR_DOMAIN_LAUNCH
 Rollback State: READY_AT_dd80484
 Market Data Cutoff: 2026-09-25
