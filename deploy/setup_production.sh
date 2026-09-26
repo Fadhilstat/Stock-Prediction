@@ -116,7 +116,7 @@ fi
 if [ "$PORT80_BUSY" = true ]; then
     echo "=========================================================="
     # 1. Check if host has Master Caddy running (e.g. at /srv/infra/caddy/Caddyfile)
-    if [ -f "/srv/infra/caddy/Caddyfile" ] && docker ps | grep -q ' caddy$'; then
+    if [ -f "/srv/infra/caddy/Caddyfile" ]; then
         echo "Detected Master Edge Caddy at /srv/infra/caddy/Caddyfile."
         echo "Launching Ruang Risiko IDX app on 127.0.0.1:8501..."
         ${DOCKER_COMPOSE} up -d --build app
