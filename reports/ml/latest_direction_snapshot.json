@@ -1,0 +1,80 @@
+[
+  {
+    "generated_at_utc":"2026-09-26 15:34:36+00:00",
+    "ticker":"ANTM.JK",
+    "as_of_date":"2026-09-25",
+    "forecast_horizon":"next_trading_day",
+    "selected_model":"logistic_regression",
+    "probability_up":0.4430942183,
+    "probability_down":0.5569057817,
+    "training_observations":1556,
+    "training_start_date":"2020-04-01",
+    "training_end_date":"2026-09-24",
+    "feature_count":14
+  },
+  {
+    "generated_at_utc":"2026-09-26 15:34:36+00:00",
+    "ticker":"ASII.JK",
+    "as_of_date":"2026-09-25",
+    "forecast_horizon":"next_trading_day",
+    "selected_model":"random_forest",
+    "probability_up":0.5045469594,
+    "probability_down":0.4954530406,
+    "training_observations":1555,
+    "training_start_date":"2020-04-01",
+    "training_end_date":"2026-09-24",
+    "feature_count":14
+  },
+  {
+    "generated_at_utc":"2026-09-26 15:34:36+00:00",
+    "ticker":"BBCA.JK",
+    "as_of_date":"2026-09-25",
+    "forecast_horizon":"next_trading_day",
+    "selected_model":"random_forest",
+    "probability_up":0.3301944572,
+    "probability_down":0.6698055428,
+    "training_observations":1556,
+    "training_start_date":"2020-04-01",
+    "training_end_date":"2026-09-24",
+    "feature_count":14
+  },
+  {
+    "generated_at_utc":"2026-09-26 15:34:36+00:00",
+    "ticker":"BBRI.JK",
+    "as_of_date":"2026-09-25",
+    "forecast_horizon":"next_trading_day",
+    "selected_model":"constant_probability",
+    "probability_up":0.455655527,
+    "probability_down":0.544344473,
+    "training_observations":1556,
+    "training_start_date":"2020-04-01",
+    "training_end_date":"2026-09-24",
+    "feature_count":14
+  },
+  {
+    "generated_at_utc":"2026-09-26 15:34:36+00:00",
+    "ticker":"TLKM.JK",
+    "as_of_date":"2026-09-25",
+    "forecast_horizon":"next_trading_day",
+    "selected_model":"random_forest",
+    "probability_up":0.4761444351,
+    "probability_down":0.5238555649,
+    "training_observations":1556,
+    "training_start_date":"2020-04-01",
+    "training_end_date":"2026-09-24",
+    "feature_count":14
+  },
+  {
+    "generated_at_utc":"2026-09-26 15:34:36+00:00",
+    "ticker":"^JKSE",
+    "as_of_date":"2026-09-25",
+    "forecast_horizon":"next_trading_day",
+    "selected_model":"constant_probability",
+    "probability_up":0.5276705277,
+    "probability_down":0.4723294723,
+    "training_observations":1554,
+    "training_start_date":"2020-04-01",
+    "training_end_date":"2026-09-24",
+    "feature_count":14
+  }
+]

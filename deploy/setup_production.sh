@@ -77,6 +77,9 @@ else
     cd "${TARGET_DIR}"
 fi
 
+# Ensure workspace runtime directories exist
+mkdir -p data/raw data/processed data/snapshots data/audit reports/risk reports/ml reports/passports reports/audit
+
 # 3. Configure Environment
 echo "[3/4] Writing production environment for domain ${DOMAIN}..."
 cat << EOF > .env

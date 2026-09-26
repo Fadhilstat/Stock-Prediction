@@ -305,5 +305,52 @@
     },
     "summary_message": "Runtime parameters updated: VaR confidence 95.0%, Max Alloc 20.0%.",
     "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260926-175247-1042",
+    "action_type": "DOMAIN_PROBE_CHECK",
+    "triggered_at": "2026-09-26T17:52:47.423299+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "domain": "rridx.fadhilrusydi.com",
+      "resolved_ip": "103.150.12.34",
+      "tls_active": false
+    },
+    "summary_message": "DNS telah terarah ke 103.150.12.34, menunggu inisialisasi Caddy TLS pada VPS.",
+    "duration_ms": 393.86
+  },
+  {
+    "action_id": "ACT-20260926-175249-7321",
+    "action_type": "PASSPORT_CUSTOM_ISSUANCE",
+    "triggered_at": "2026-09-26T17:52:49.214432+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "passport_id": "PASSPORT-BBCA_JK-20260926-175249",
+      "ticker": "BBCA.JK",
+      "custom_invalidation": 9500.0,
+      "position_size_pct": 12.5,
+      "signature": "0CB8DC86157206B3"
+    },
+    "summary_message": "Diterbitkan Decision Passport bertanda tangan PASSPORT-BBCA_JK-20260926-175249 untuk BBCA.JK.",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260926-175249-2410",
+    "action_type": "RUNTIME_CONFIG_UPDATE",
+    "triggered_at": "2026-09-26T17:52:49.375677+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "var_confidence_level": 0.95,
+      "max_portfolio_allocation_percent": 20.0,
+      "max_slippage_bps": 30.0,
+      "garch_vol_hard_veto_threshold": 0.05,
+      "tail_var99_veto_threshold": 0.08,
+      "active_direction_model": "xgboost"
+    },
+    "summary_message": "Runtime parameters updated: VaR confidence 95.0%, Max Alloc 20.0%.",
+    "duration_ms": 0.0
   }
 ]

@@ -34,7 +34,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pyarrow==25.0.1 \
     yfinance==0.2.57
 
-# Copy application code, configuration, and data
+# Ensure required application directory structure exists
+RUN mkdir -p data/raw data/processed data/snapshots data/audit reports/risk reports/ml reports/passports reports/audit
+
+# Copy application code, configuration, baseline data, and reports
 COPY app/ ./app/
 COPY config/ ./config/
 COPY data/ ./data/

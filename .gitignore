@@ -19,19 +19,21 @@ env/
 .streamlit/secrets.toml
 
 # Local market data
-data/raw/
-data/processed/
+data/raw/*
+!data/raw/market_prices.parquet
+!data/raw/.gitkeep
+
+data/processed/*
+!data/processed/analytics_daily.parquet
+!data/processed/.gitkeep
+
 data/snapshots/
 data/audit/
 
-# Keep empty directory structure when needed
-!data/raw/.gitkeep
-!data/processed/.gitkeep
-!data/snapshots/.gitkeep
-!data/audit/.gitkeep
-
 # Databases and generated datasets
 *.parquet
+!data/raw/market_prices.parquet
+!data/processed/analytics_daily.parquet
 *.duckdb
 *.db
 *.sqlite
@@ -67,6 +69,7 @@ Thumbs.db
 # Generated risk snapshot outputs
 reports/risk/*.parquet
 reports/risk/*.json
+!reports/risk/latest_risk_snapshot.json
 
 # Generated machine learning outputs
 data/processed/ml_features.parquet
@@ -76,7 +79,8 @@ reports/foundation/granite/rolling_backtest_pilot/
 reports/foundation/granite/rolling_backtest_full_252/
 
 # Generated direction snapshot outputs
-reports/ml/latest_direction_snapshot.json
+# Allow tracking baseline direction snapshot
+!reports/ml/latest_direction_snapshot.json
 
 # Local test runner temp directory
 .pytest_temp/
