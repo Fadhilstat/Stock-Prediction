@@ -34,29 +34,123 @@ class YahooFinanceProvider:
         if not tickers:
             raise ValueError("At least one ticker must be provided.")
 
-        import yfinance as yf
+        try:
+            import yfinance as yf
 
-        raw = yf.download(
+            raw = yf.download(
+                tickers=tickers,
+                start=start_date,
+                end=end_date,
+                interval="1d",
+                auto_adjust=False,
+                actions=True,
+                repair=True,
+                group_by="ticker",
+                threads=False,
+                keepna=True,
+                progress=False,
+                timeout=30,
+            )
+
+            if not raw.empty:
+                return self.normalize_download(raw=raw, requested_tickers=tickers)
+        except Exception:
+            pass
+
+        return self._fetch_via_direct_api(
             tickers=tickers,
-            start=start_date,
-            end=end_date,
-            interval="1d",
-            auto_adjust=False,
-            actions=True,
-            repair=True,
-            group_by="ticker",
-            threads=False,
-            keepna=True,
-            progress=False,
-            timeout=30,
+            start_date=start_date,
+            end_date=end_date,
         )
 
-        if raw.empty:
+    @classmethod
+    def _fetch_via_direct_api(
+        cls,
+        tickers: list[str],
+        start_date: str,
+        end_date: str,
+        ingested_at: datetime | None = None,
+    ) -> pd.DataFrame:
+        """Fetch market data directly from Yahoo Finance v8 chart API."""
+
+        import calendar
+        from datetime import datetime as dt
+        import requests
+
+        start_dt = dt.fromisoformat(start_date)
+        end_dt = dt.fromisoformat(end_date)
+        period1 = int(calendar.timegm(start_dt.timetuple()))
+        period2 = int(calendar.timegm(end_dt.timetuple()))
+        timestamp = ingested_at or datetime.now(UTC)
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            )
+        }
+
+        frames: list[pd.DataFrame] = []
+
+        for ticker in tickers:
+            url = (
+                f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+                f"?period1={period1}&period2={period2}&interval=1d&events=div%2Csplit"
+            )
+            try:
+                response = requests.get(url, headers=headers, timeout=30)
+                if response.status_code != 200:
+                    continue
+                payload = response.json()
+            except Exception:
+                continue
+
+            results = payload.get("chart", {}).get("result")
+            if not results:
+                continue
+
+            result = results[0]
+            timestamps = result.get("timestamp", [])
+            indicators = result.get("indicators", {}).get("quote", [{}])[0]
+            adjclose_list = result.get("indicators", {}).get("adjclose", [{}])
+            if adjclose_list and "adjclose" in adjclose_list[0]:
+                adj_closes = adjclose_list[0]["adjclose"]
+            else:
+                adj_closes = indicators.get("close", [])
+
+            dates = [
+                dt.fromtimestamp(ts, UTC).strftime("%Y-%m-%d")
+                for ts in timestamps
+            ]
+
+            df = pd.DataFrame(
+                {
+                    "trade_date": pd.to_datetime(dates),
+                    "open": indicators.get("open", []),
+                    "high": indicators.get("high", []),
+                    "low": indicators.get("low", []),
+                    "close": indicators.get("close", []),
+                    "adjusted_close": adj_closes,
+                    "volume": indicators.get("volume", []),
+                    "dividends": 0.0,
+                    "stock_splits": 0.0,
+                }
+            )
+
+            df.insert(0, "ticker", ticker)
+            df["source"] = cls.source_name
+            df["ingested_at"] = pd.Timestamp(timestamp)
+            df = df.dropna(subset=["trade_date", "close"])
+            frames.append(df)
+
+        if not frames:
             raise RuntimeError(
                 "Yahoo Finance returned no data. Check the tickers, dates, and connection."
             )
 
-        return self.normalize_download(raw=raw, requested_tickers=tickers)
+        normalized = pd.concat(frames, ignore_index=True)
+        return normalized.sort_values(["ticker", "trade_date"]).reset_index(drop=True)
 
     @classmethod
     def normalize_download(

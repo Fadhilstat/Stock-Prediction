@@ -4,13 +4,18 @@ from __future__ import annotations
 
 import random
 import sys
+from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
-import torch
+
+try:
+    import torch
+except ImportError:
+    torch = None  # type: ignore[assignment]
 
 from ruang_risiko_idx.foundation.kronos_adapter import (
     KRONOS_FEATURE_COLUMNS,
@@ -59,10 +64,10 @@ def resolve_kronos_device(
     if requested_device is not None:
         return requested_device
 
-    if torch.cuda.is_available():
+    if torch is not None and torch.cuda.is_available():
         return "cuda:0"
 
-    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+    if torch is not None and hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
         return "mps"
 
     return "cpu"
@@ -75,10 +80,11 @@ def configure_inference_seed(
 
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)
+    if torch is not None:
+        torch.manual_seed(seed)
 
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
 
 
 def load_kronos_predictor(
@@ -88,6 +94,9 @@ def load_kronos_predictor(
     """Load the external Kronos predictor and return its device."""
 
     config.validate()
+
+    if torch is None:
+        raise ImportError("PyTorch is required to load Kronos model.")
 
     root = Path(kronos_root).resolve()
 
@@ -141,7 +150,8 @@ def predict_kronos_window(
     if window.lookback > config.max_context:
         raise ValueError("Kronos lookback exceeds the configured maximum context.")
 
-    with torch.inference_mode():
+    inference_context = torch.inference_mode() if torch is not None else nullcontext()
+    with inference_context:
         prediction = predictor.predict(
             df=window.context,
             x_timestamp=window.context_timestamps,

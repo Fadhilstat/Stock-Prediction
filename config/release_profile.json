@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "ruang-risiko-idx",
+  "project_name": "Ruang Risiko IDX",
+  "local_source": "E:/[2] Download/[1] Docs/[5] Coding/Fadhil Portfolio/[2] IDX Project/Stock-Prediction",
+  "git_authority": "forgejo_vps",
+  "primary_remote": "origin",
+  "backup_remote": "gitlab",
+  "default_branch": "main",
+  "release_branch_policy": "release/v*",
+  "ci_backend": "gitlab_ci",
+  "runner_tags": [
+    "contabo",
+    "self-managed",
+    "python311"
+  ],
+  "test_command": "python -m pytest tests",
+  "lint_command": "python scripts/check_text_rules.py",
+  "typecheck_command": "python -m ruff check .",
+  "build_command": "python -m build",
+  "staging_target": "https://staging.ruangrisikoidx.com",
+  "production_target": "https://ruangrisikoidx.com",
+  "primary_domain": "ruangrisikoidx.com",
+  "deployment_adapter": "vps_docker_compose",
+  "rollback_adapter": "vps_instant_rollback",
+  "backup_policy": "daily_drive_and_gitlab_mirror",
+  "approval_policy": "explicit_user_chat_binding",
+  "lock_scope": "release-lock:ruang-risiko-idx"
+}

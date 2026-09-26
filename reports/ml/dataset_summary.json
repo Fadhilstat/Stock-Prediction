@@ -1,10 +1,10 @@
 {
-  "rows":16309,
+  "rows":9333,
   "tickers":6,
-  "first_feature_date":"2015-04-02T00:00:00.000",
-  "last_feature_date":"2026-07-31T00:00:00.000",
-  "first_target_date":"2015-04-06T00:00:00.000",
-  "last_target_date":"2026-08-03T00:00:00.000",
-  "positive_target_rate":0.4531240419,
+  "first_feature_date":"2020-04-01T00:00:00.000",
+  "last_feature_date":"2026-09-24T00:00:00.000",
+  "first_target_date":"2020-04-02T00:00:00.000",
+  "last_target_date":"2026-09-25T00:00:00.000",
+  "positive_target_rate":0.4586949534,
   "missing_feature_values":0
 }
