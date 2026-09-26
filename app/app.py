@@ -24,6 +24,7 @@ from ruang_risiko_idx.research.actions import (
 )
 from ruang_risiko_idx.research.broker_network import analyze_broker_network, scan_universe_bandarmology
 from ruang_risiko_idx.research.broker_summary import generate_broker_summary
+from ruang_risiko_idx.research.corporate_action_risk import evaluate_dividend_action_risk
 from ruang_risiko_idx.research.decision_passport import generate_decision_passport
 from ruang_risiko_idx.research.depth_analytics import calculate_depth_pressure, simulate_order_execution
 from ruang_risiko_idx.research.flow import compute_liquidity_flow_summary, get_creator_claims_for_ticker
@@ -35,6 +36,7 @@ from ruang_risiko_idx.research.multimodal import get_ablation_benchmarks, run_ev
 from ruang_risiko_idx.research.orderbook import generate_orderbook
 from ruang_risiko_idx.research.risk_engine import evaluate_risk_engine
 from ruang_risiko_idx.research.scenarios import compute_horizon_quantiles, generate_scenarios
+from ruang_risiko_idx.research.social_stream import get_stream_sentiment
 from ruang_risiko_idx.research.technical import compute_technical_features, summarize_technical_state
 
 st.set_page_config(
@@ -125,6 +127,13 @@ st.markdown(
     .badge-avoid { background-color: #78350F; color: #FBBF24; border: 1px solid #D97706; }
     .badge-veto { background-color: #7F1D1D; color: #FF4A68; border: 1px solid #DC2626; }
 
+    .stream-card {
+        background-color: #1E222D;
+        border: 1px solid #2A2E39;
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+    }
     [data-testid="stMetric"] {
         background-color: #1E222D;
         border: 1px solid #2A2E39;
@@ -268,6 +277,7 @@ ict_summary = evaluate_ict_hypotheses(selected_data, selected_ticker)
 fund_snapshot = get_fundamental_snapshot(selected_ticker)
 align_summary = compute_market_alignment(selected_data, benchmark_data, selected_ticker)
 liq_summary = compute_liquidity_flow_summary(selected_data, selected_ticker)
+div_risk = evaluate_dividend_action_risk(selected_ticker, tech_summary.close)
 
 ticker_risk = risk_snapshots.get(selected_ticker, {})
 ticker_dir = direction_snapshots.get(selected_ticker, {})
@@ -337,6 +347,7 @@ broker_summary = generate_broker_summary(
     foreign_flow_state=liq_summary.foreign_flow_state,
 )
 broker_network = analyze_broker_network(broker_summary)
+stream_report = get_stream_sentiment(selected_ticker, broker_network.regime)
 
 # Stockbit Header Banner
 header_col1, header_col2 = st.columns([3, 1])
@@ -690,6 +701,18 @@ with main_tabs[2]:
         unsafe_allow_html=True,
     )
 
+    st.markdown("---")
+    st.markdown("##### 💰 Analisis Risiko Dividen & Corporate Action Trap")
+    div_c1, div_c2 = st.columns([1, 2])
+    with div_c1:
+        st.metric("Dividen Terakhir", f"Rp {div_risk.last_dividend_per_share:,.0f} / saham")
+        st.metric("Historical Drop Ex-Date", f"{div_risk.historical_ex_date_drop_percent:.1f}%")
+        st.metric("Median Hari Pemulihan", f"{div_risk.recovery_days_median} Hari Bursa")
+    with div_c2:
+        st.markdown(f"**Status Risiko Dividen:** `{div_risk.dividend_trap_risk_state}`")
+        st.write(f"- **Rasio Penurunan terhadap Imbal Hasil:** `{div_risk.drop_to_yield_ratio:.2f}x`")
+        st.write(f"- **Rekomendasi Taktis:** {div_risk.action_recommendation}")
+
 # TAB 4: Ruang Risiko Radar & Scenarios
 with main_tabs[3]:
     st.markdown("#### Ruang Risiko Radar & Scenario Simulator")
@@ -794,8 +817,35 @@ with main_tabs[4]:
 # TAB 6: Stream & Narrative Intelligence
 with main_tabs[5]:
     st.markdown("#### Stockbit Stream & Intelijen Narasi")
-    st.caption("Radar sentimen, pengujian hipotesis ICT, dan radar konflik bukti multimodal.")
+    st.caption("Radar sentimen komunitas, herding behavior, hipotesis ICT, dan radar konflik.")
 
+    str_c1, str_c2, str_c3 = st.columns(3)
+    str_c1.metric("Status Kerumunan", stream_report.herding_state)
+    str_c2.metric("Bullish Sentiment", f"{stream_report.bullish_percent:.1f}%")
+    str_c3.metric("Bearish Sentiment", f"{stream_report.bearish_percent:.1f}%")
+
+    if stream_report.fomo_alert:
+        st.error(f"🚨 FOMO Alert: {stream_report.summary}")
+    else:
+        st.info(f"💬 Sentimen Stream: {stream_report.summary}")
+
+    st.markdown("**Feed Diskusi Komunitas Stockbit Terkini**")
+    for post in stream_report.posts:
+        badge = "🟢" if post.sentiment == "BULLISH" else ("🔴" if post.sentiment == "BEARISH" else "⚪")
+        st.markdown(
+            f"""
+            <div class="stream-card">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #787B86;">
+                    <span><strong>@{post.author}</strong> {badge} ({post.sentiment})</span>
+                    <span>{post.posted_ago} | ❤️ {post.likes_count}</span>
+                </div>
+                <div style="margin-top: 5px; font-size: 13px; color: #D1D4DC;">{post.content}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
     stream_col1, stream_col2 = st.columns(2)
     with stream_col1:
         st.markdown("**Hipotesis Struktur Pasar Gaya ICT**")
@@ -810,26 +860,6 @@ with main_tabs[5]:
         st.write(f"- **Rolling Beta 60D:** `{align_summary.rolling_beta_60d:.2f}`")
         st.write(f"- **Korelasi 60D:** `{align_summary.rolling_correlation_60d:.2f}`")
         st.write(f"- **Kekuatan Relatif 20D:** `{align_summary.relative_strength_20d:+.2%}`")
-
-    st.markdown("---")
-    st.markdown("**Klaim Kreator & Analis Publik**")
-    claims = get_creator_claims_for_ticker(selected_ticker)
-    if claims:
-        claims_data = []
-        for c in claims:
-            claims_data.append(
-                {
-                    "Kreator": c.creator_name,
-                    "Platform": c.platform,
-                    "Tanggal": c.timestamp,
-                    "Arah": c.claim_direction,
-                    "Status": c.current_status,
-                    "Ringkasan Tesis": c.thesis_summary,
-                }
-            )
-        st.dataframe(pd.DataFrame(claims_data), use_container_width=True, hide_index=True)
-    else:
-        st.info("Belum ada klaim publik terdaftar untuk saham ini.")
 
 # TAB 7: Web Action Console (Operational Control Plane)
 with main_tabs[6]:

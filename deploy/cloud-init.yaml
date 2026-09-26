@@ -1,0 +1,42 @@
+#cloud-config
+# Ruang Risiko IDX Autonomous Zero-RDC Cloud-Init Provisioning Manifest
+# Target OS: Ubuntu 22.04 LTS / 24.04 LTS on DigitalOcean, Hetzner, AWS, or Biznet Gio
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - git
+  - docker.io
+  - docker-compose-v2
+
+write_files:
+  - path: /etc/systemd/system/ruang-risiko-idx-init.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Ruang Risiko IDX Autonomous Zero-RDC Stack
+      After=docker.service
+      Requires=docker.service
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      WorkingDirectory=/opt/ruang-risiko-idx
+      ExecStartPre=/usr/bin/git clone https://github.com/Fadhilstat/Stock-Prediction.git /opt/ruang-risiko-idx || true
+      ExecStart=/usr/bin/docker compose up -d --build
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl daemon-reload
+  - systemctl enable docker
+  - systemctl start docker
+  - systemctl enable ruang-risiko-idx-init.service
+  - systemctl start ruang-risiko-idx-init.service

@@ -23,6 +23,7 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Fundamental Point-In-Time Integrity | PASS | Strict publication timestamp cutoff; accounting periods never backdated. |
 | Corporate Disclosures | PASS | Point-in-time tracking of material disclosures, financial reports, and regulatory filings. |
 | Corporate Actions | PASS | Adjusted price interpretation, dividend carry context, rights issue and split handling. |
+| Dividend Trap Risk Engine | PASS | Ex-Date price drop vs yield tracking, recovery duration, and tactical carry guidance. |
 | IHSG Intelligence | PASS | Benchmark regime, market trend, rolling beta, and correlation tracking against ^JKSE. |
 | Sector Intelligence | PASS | Sector relative strength, rotation dynamics, and sector vs benchmark alignment. |
 | Market Breadth | PASS | Advancers, decliners, new highs, new lows, and moving average participation. |
@@ -32,6 +33,7 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Orderbook Slippage Simulator | PASS | Quantitative walking algorithm calculating VWAP fill price, ticks traversed, and depth consumption. |
 | Bandarmology & Broker Summary | PASS | Stockbit-style top buyer/seller broker breakdown, concentration ratios, and flow status. |
 | Smart Money Flow Network | PASS | Three-tier institutional classification, Smart Money Accumulation Index, and retail trap alert. |
+| Stockbit Stream Social Sentiment | PASS | Discussion velocity, sentiment polarization score, and retail FOMO alerts. |
 | Creator Intelligence | PASS | Public creator claim ledger, direction, horizon, and subsequent return tracking. |
 | Multimodal Fusion | PASS | Calibrated reliability-weighted ensemble combining price, econometrics, and features. |
 | Multimodal Ablation | PASS | Component comparison verifying that each modality adds measurable predictive edge. |
@@ -46,6 +48,7 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Web Action Console | PASS | Live operational control plane for model recalibration, data updates, and runtime tuning. |
 | Headless Operations API | PASS | Zero-dependency HTTP API with /health, risk summary, and webhook action triggers. |
 | Non-RDC Autonomous Deployment | PASS | Headless Docker Compose and Caddy reverse proxy with automated ACME TLS and healthcheck. |
+| Turnkey Cloud-Init Provisioning | PASS | Automated cloud-init YAML and bash script for unattended VPS launches. |
 | Continuous Deployment Workflow | PASS | Automated GitHub Actions pipeline verifying quality gates and triggering VPS deployment. |
 | Anti-Slop UX | PASS | Stockbit-inspired dark theme, zero generic AI slop, no dead buttons, zero em dash policy. |
 | Security | PASS | Zero committed secrets, parameter sanitization, and input boundary validation. |

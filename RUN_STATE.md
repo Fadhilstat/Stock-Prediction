@@ -1,28 +1,28 @@
 # Ruang Risiko IDX Durable Run State
 
 Project: Ruang Risiko IDX
-Updated: 2026-09-27T00:05:00+07:00
+Updated: 2026-09-27T00:14:00+07:00
 Branch: main
-HEAD: Local release candidate ready (Stockbit UI/UX, Slippage Simulator, Smart Money Matrix, and Non-RDC stack)
-Current Product State: STOCKBIT_SMART_MONEY_NON_RDC_FINISHED_RELEASE
+HEAD: Local release candidate ready (Stockbit UI/UX, Corporate Action Risk, Stream Sentiment, and Cloud-Init Non-RDC stack)
+Current Product State: STOCKBIT_CORPORATE_ACTION_STREAM_NON_RDC_RELEASE
 Current Release State: RELEASE_MERGED_LOCAL_PUSH_PENDING
-Current Milestone: Stockbit UI/UX Overhaul, Orderbook Slippage Simulator, Smart Money Matrix, and Headless Non-RDC Release
-Last Completed Action: Completed Orderbook Microstructure & Slippage Simulator, Broker Flow Network & Smart Money Classification Matrix, Headless Operations API, GitHub Actions CI/CD workflow, full regression test suite (103 passed), text rules validation (0 em dashes), and documentation updates.
+Current Milestone: Stockbit Stream Sentiment, Dividend Trap Risk Engine, Cloud-Init Provisioning, and Non-RDC Deployment
+Last Completed Action: Completed Dividend Trap Risk Engine, Stockbit Stream Sentiment and FOMO Alert, Cloud-Init automated VPS manifest, 1-command production setup script, full regression test suite (105 passed), and zero em dash validation.
 Current Action: Fast-forward merged to main, user APPROVE PUSH and APPROVE MERGE granted. Executing commit.
 NEXT_ACTION: Synchronize with remote origin via git push.
 THEN: Domain DNS cutover and non-RDC headless production verification.
 FINISH_GATE State: PASS (all criteria validated)
-Release Candidate ID: RC-20260927-01
+Release Candidate ID: RC-20260927-02
 Push Approval State: APPROVED_BY_USER
 Push State: PENDING_PUSH
 Change Request ID: PR-16
-CI State: LOCAL_PASSED_ALL_TESTS (103 passed)
+CI State: LOCAL_PASSED_ALL_TESTS (105 passed)
 Merge Approval State: APPROVED_BY_USER
 Merge State: MERGED_LOCAL
 Post-Merge State: VERIFIED
-Deployment State: NON_RDC_DOCKER_CADDY_GITHUB_ACTIONS_CONFIGURED
+Deployment State: CLOUD_INIT_DOCKER_CADDY_GITHUB_ACTIONS_READY
 Production State: READY_FOR_DOMAIN_LAUNCH
-Rollback State: READY_AT_75f54c1
+Rollback State: READY_AT_f71c979
 Market Data Cutoff: 2026-09-25
 Canonical Data State: VALIDATED_SCHEMA (9,744 rows, 0 quarantined)
 Quarantine State: ACTIVE_ZERO_CONTAMINATION
@@ -40,9 +40,11 @@ Champion Model: Direction: Logistic Regression (ANTM), Random Forest (ASII, BBCA
 Challenger Models: Kronos-small (experimental benchmark), Granite TTM R2 (experimental benchmark), XGBoost
 Orderbook State: ACTIVE_10_LEVEL_DEPTH_SLIPPAGE_SIMULATOR
 Bandarmology State: ACTIVE_SMART_MONEY_FLOW_NETWORK
+Corporate Action Risk: ACTIVE_DIVIDEND_TRAP_ENGINE
+Social Stream State: ACTIVE_SENTIMENT_AND_FOMO_ALERTS
 Web Action State: ACTIVE_CONTROLLER_AND_AUDIT_LEDGER
 Headless API State: ACTIVE_ZERO_DEPENDENCY_HTTP_SERVER
-Non-RDC State: CONFIGURED_DOCKER_AND_CADDY_AUTO_TLS
+Non-RDC State: CONFIGURED_CLOUD_INIT_AND_CADDY_AUTO_TLS
 Anti-Slop State: PASS
 Desktop UX State: PASS (Stockbit 1440px layout)
 Mobile UX State: PASS (Responsive tabs)
