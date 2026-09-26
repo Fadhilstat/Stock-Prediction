@@ -1,21 +1,21 @@
 # Ruang Risiko IDX Durable Run State
 
 Project: Ruang Risiko IDX
-Updated: 2026-09-27T00:48:00+07:00
+Updated: 2026-09-27T01:07:00+07:00
 Branch: main
-HEAD: sector rotation, watchdog, and domain probe verified
-Current Product State: STOCKBIT_ROTATION_WATCHDOG_DOMAIN_PROBE_NON_RDC_RELEASE
+HEAD: capital allocator, webhook dispatcher, and nginx integration verified
+Current Product State: STOCKBIT_ALLOCATOR_DISPATCHER_NGINX_NON_RDC_RELEASE
 Current Release State: FADHILRUSYDI_DOMAIN_READY_FOR_LAUNCH
-Current Milestone: Domain Target and Web Action Control Plane Ready for rridx.fadhilrusydi.com
-Last Completed Action: Shipped Sector Rotation Compass, Active Invalidation Watchdog, Autonomous EOD Pipeline (Cron/Systemd), and Web Domain/SSL Launch Readiness Probe. Passed all 112 unit tests. Zero em dash compliance verified.
+Current Milestone: Domain Target, Capital Allocator, and Webhook Dispatcher Shipped
+Last Completed Action: Delivered Dynamic Portfolio Capital & Risk Budget Allocator, Real-Time Webhook Alert Dispatcher (Discord/Telegram), Host Port 80 Nginx auto-integration, and baseline data embedding. Passed all 117 unit tests. Zero em dash compliance verified.
 Current Action: Commit and synchronize to origin/main with user approval.
-NEXT_ACTION: Execute 1-command VPS launch with domain rridx.fadhilrusydi.com.
+NEXT_ACTION: Continue deployment monitoring and execute next macro batch.
 FINISH_GATE State: PASS (all criteria validated)
-Release Candidate ID: RC-20260927-05
+Release Candidate ID: RC-20260927-06
 Push Approval State: APPROVED_BY_USER
 Push State: READY_TO_PUSH
-Change Request ID: PR-17
-CI State: LOCAL_PASSED_ALL_TESTS (112 passed)
+Change Request ID: PR-18
+CI State: LOCAL_PASSED_ALL_TESTS (117 passed)
 Merge Approval State: APPROVED_BY_USER
 Merge State: MERGED_INTO_MAIN
 Post-Merge State: VERIFIED_ON_GITHUB

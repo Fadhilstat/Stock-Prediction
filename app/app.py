@@ -23,7 +23,7 @@ from ruang_risiko_idx.research.actions import (
     trigger_risk_recalculation,
     update_runtime_risk_parameters,
 )
-from ruang_risiko_idx.research.domain_probe import check_domain_readiness
+from ruang_risiko_idx.research.alert_dispatcher import AlertPayload, dispatch_webhook_alert
 from ruang_risiko_idx.research.broker_network import analyze_broker_network, scan_universe_bandarmology
 from ruang_risiko_idx.research.broker_summary import generate_broker_summary
 from ruang_risiko_idx.research.corporate_action_risk import evaluate_dividend_action_risk
@@ -38,6 +38,7 @@ from ruang_risiko_idx.research.market_context import compute_market_alignment
 from ruang_risiko_idx.research.multimodal import get_ablation_benchmarks, run_evidence_conflict_radar
 from ruang_risiko_idx.research.orderbook import generate_orderbook
 from ruang_risiko_idx.research.passport_issuer import issue_custom_passport
+from ruang_risiko_idx.research.portfolio_allocator import compute_portfolio_allocation
 from ruang_risiko_idx.research.portfolio_stress import get_available_stress_scenarios, run_portfolio_stress_test
 from ruang_risiko_idx.research.risk_engine import evaluate_risk_engine
 from ruang_risiko_idx.research.scenarios import compute_horizon_quantiles, generate_scenarios
@@ -842,6 +843,47 @@ with main_tabs[4]:
     with st.expander("Tampilkan Dokumen Passport Lengkap"):
         st.markdown(passport.markdown_content)
 
+    st.markdown("---")
+    st.markdown("##### 💼 Kalkulator Alokasi Modal & Budget Risiko Portofolio")
+    st.caption("Penentuan ukuran posisi matematis berbasis Fractional Kelly dan volatilitas bersyarat GARCH.")
+
+    alloc_c1, alloc_c2, alloc_c3 = st.columns(3)
+    user_capital = alloc_c1.number_input(
+        "Total Modal Portofolio (IDR)",
+        min_value=1_000_000,
+        max_value=10_000_000_000,
+        value=100_000_000,
+        step=5_000_000,
+    )
+    user_budget_pct = alloc_c2.slider("Batas Risiko Harian Maksimum (% Portofolio)", 0.5, 5.0, 2.0, 0.1)
+    user_max_single = alloc_c3.slider("Batas Maksimal 1 Saham (% Portofolio)", 5.0, 40.0, 20.0, 1.0)
+
+    alloc_stocks = [
+        {
+            "ticker": selected_ticker,
+            "current_price": tech_summary.close,
+            "garch_vol_daily": risk_summary.garch_volatility_1d,
+            "var_99_daily": risk_summary.var_99_1d,
+            "prob_up": direction_summary.probability_up,
+            "reward_risk_ratio": 2.0,
+        }
+    ]
+    alloc_report = compute_portfolio_allocation(
+        total_capital_idr=float(user_capital),
+        daily_risk_budget_pct=float(user_budget_pct),
+        max_single_stock_pct=float(user_max_single),
+        stocks_data=alloc_stocks,
+    )
+
+    ar_c1, ar_c2, ar_c3, ar_c4 = st.columns(4)
+    if alloc_report.recommendations:
+        rec = alloc_report.recommendations[0]
+        ar_c1.metric("Rekomendasi Bobot", f"{rec.recommended_weight_pct:.1f}%")
+        ar_c2.metric("Nominal Pembelian", f"Rp {rec.allocated_value_idr:,.0f}")
+        ar_c3.metric("Jumlah Lot Disarankan", f"{rec.allocated_lots:,} Lot")
+        ar_c4.metric("Kontribusi Risiko VaR", f"Rp {rec.var_contribution_idr:,.0f}")
+        st.info(f"📌 Dasar Perhitungan: {rec.sizing_rationale}")
+
 # TAB 6: Stream & Narrative Intelligence
 with main_tabs[5]:
     st.markdown("#### Stockbit Stream & Intelijen Narasi")
@@ -1037,6 +1079,36 @@ with main_tabs[6]:
         st.dataframe(pd.DataFrame(w_rows), use_container_width=True, hide_index=True)
     else:
         st.info("Belum ada Decision Passport aktif yang terdaftar dalam watchdog monitor.")
+
+    st.markdown("---")
+    st.markdown("##### 🔔 Webhook Notifikasi Real-Time (Telegram / Discord)")
+    st.caption("Kirim notifikasi otomatis saat harga mendekati atau menembus batas invalidasi posisi.")
+
+    wh_c1, wh_c2 = st.columns([3, 1])
+    webhook_url_input = wh_c1.text_input(
+        "Webhook URL (Discord atau HTTP Gateway)",
+        value="",
+        placeholder="https://discord.com/api/webhooks/...",
+    )
+    test_wh_btn = wh_c2.button("Kirim Test Ping")
+
+    if test_wh_btn and webhook_url_input:
+        with st.spinner("Mengirimkan sinyal uji coba webhook..."):
+            test_alert = AlertPayload(
+                event_type="TEST_PING",
+                ticker=selected_ticker,
+                current_price=tech_summary.close,
+                invalidation_price=round(tech_summary.close * 0.95),
+                distance_percent=5.0,
+                message=f"Uji coba konektivitas webhook Ruang Risiko IDX untuk {selected_ticker} berhasil.",
+            )
+            wh_res = dispatch_webhook_alert(webhook_url_input, test_alert)
+            if wh_res["success"]:
+                st.success(f"Webhook terkirim sukses (Status {wh_res['status_code']})!")
+            else:
+                st.error(f"Gagal mengirim webhook: {wh_res.get('error')}")
+    elif test_wh_btn:
+        st.warning("Masukkan Webhook URL terlebih dahulu.")
 
     st.markdown("---")
     st.markdown("##### 📡 Radar Bandarmology Seluruh Universe")

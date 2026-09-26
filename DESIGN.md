@@ -80,6 +80,7 @@ Its user interface is modeled directly after the authoritative, high-density wor
 5. **Pre-Buy Decision Passport**:
    - Clear GO / NO-GO research certificate with hard veto rationale.
    - Position sizing limits and one-click Markdown passport download.
+   - Dynamic Capital & Risk Budget Allocator: Volatility-adjusted fractional Kelly sizing calculating exact recommended lots and IDR VaR contribution.
 6. **Stream & Narrative Intelligence**:
    - ICT market structure hypothesis breakdown (MSS, FVG, Liquidity Sweeps).
    - Rolling beta and correlation against IHSG.
@@ -89,7 +90,9 @@ Its user interface is modeled directly after the authoritative, high-density wor
    - Real-time action triggers (Refresh market data, recalculate risk models, refit directional classifiers).
    - Universe Bandarmology Radar: One-click smart money scanning and ranking across all tickers.
    - Active Position Invalidation Watchdog: Real-time proximity scanner calculating safety buffer distance to invalidation levels.
+   - Real-Time Push Invalidation Notifier: Outbound webhook integration (Discord / HTTP API Gateway) with interactive test ping.
    - Domain & SSL Launch Readiness Probe: In-browser DNS resolution and TLS endpoint verification targeting rridx.fadhilrusydi.com.
+   - Multi-Server Auto-Integration: Automatic detection and reverse-proxy binding for hosts with existing Nginx/Apache services.
    - Interactive runtime parameter adjustment sliders (VaR confidence level, max allocation %, slippage limit).
    - Chronological audit ledger displaying recent actions, operators, parameters, and durations.
    - Headless API & Webhook Service documentation for zero-RDC remote triggers.
