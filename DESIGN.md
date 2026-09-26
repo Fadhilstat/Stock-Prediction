@@ -64,10 +64,13 @@ Its user interface is modeled directly after the authoritative, high-density wor
 1. **Chartbit & Orderbook**:
    - Left Panel (70%): Interactive Candlestick Chart with SMA (20, 50, 200), Bollinger Bands, and Volume Bars.
    - Right Panel (30%): Official 10-Level IDX Market Depth Queue (Bid lots, Bid price, Offer price, Offer lots, Bid/Offer ratio, and ARA/ARB callouts).
+   - Bottom Panel: Interactive Orderbook Slippage & Depth Simulator (test buying or selling specific IDR values with average fill price, slippage bps, ticks traversed, and liquidity cliff warnings).
 2. **Bandarmology & Broker Summary**:
    - Stockbit-style broker transaction breakdown.
    - Top 5 Buyer brokers vs Top 5 Seller brokers with broker codes, investor type (Domestic / Foreign), lot volumes, and average execution prices.
-   - Top 1, Top 3, and Top 5 broker concentration ratios with accumulation status.
+   - Three-Tier Institutional Classification: Foreign Institutional, Domestic Institutional, and Retail Domestic net flow breakdown.
+   - Smart Money Accumulation Index (SMAI) from 0% to 100%.
+   - Automated Retail Trap Detection alert.
 3. **Key Stats & Fundamental PIT**:
    - Comprehensive fundamental ratios (P/E, P/BV, ROE, Net Profit Margin, Debt-to-Equity, Dividend Yield).
    - Point-In-Time reporting period and publication date disclosure.
@@ -83,17 +86,20 @@ Its user interface is modeled directly after the authoritative, high-density wor
    - Public analyst / creator claim validation ledger.
 7. **Web Action Console**:
    - Real-time action triggers (Refresh market data, recalculate risk models, refit directional classifiers).
+   - Universe Bandarmology Radar: One-click smart money scanning and ranking across all tickers.
    - Interactive runtime parameter adjustment sliders (VaR confidence level, max allocation %, slippage limit).
    - Chronological audit ledger displaying recent actions, operators, parameters, and durations.
+   - Headless API & Webhook Service documentation for zero-RDC remote triggers.
 
 ---
 
 ## 5. Web Action Control Plane Architecture
 To ensure complete system transparency and autonomy without requiring command-line or RDC logins:
 - Every action initiated in the **Web Action Console** invokes the backend `actions.py` controller.
-- The action generates a unique immutable `action_id` (e.g. `ACT-20260926-163000-4821`).
+- The action generates a unique immutable `action_id` (e.g. `ACT-20260927-000500-1284`).
 - The action executes asynchronously or with immediate UI feedback and logs its status (`SUCCESS` / `FAILED`), execution duration (ms), operator ID, and parameter diff to `reports/audit/action_ledger.json`.
 - The live audit ledger is immediately rendered on-screen, providing operational observability directly within the browser.
+- External webhook and CI/CD triggers interact with `src/ruang_risiko_idx/api.py` via HTTP POST, allowing complete headless operation.
 
 ---
 

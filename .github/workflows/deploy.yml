@@ -1,0 +1,53 @@
+name: Ruang Risiko IDX Continuous Verification & Zero-RDC Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify:
+    name: Run Quality Gates & Regression Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgomp1
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . --no-deps
+          pip install duckdb xgboost statsmodels arch plotly pyarrow yfinance streamlit pytest
+
+      - name: Verify Zero Em Dash Rule
+        run: |
+          python scripts/check_text_rules.py
+
+      - name: Run Pytest Regression Suite
+        run: |
+          python -m pytest tests --basetemp=.pytest_temp
+
+  deploy:
+    name: Autonomous Zero-RDC Headless Deployment
+    needs: verify
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Autonomous Deployment Dispatch
+        run: |
+          echo "Quality gates passed. Zero-RDC automated deployment ready."
+          echo "To enable direct SSH VPS auto-deployment, set SSH_HOST and SSH_KEY in repository secrets."

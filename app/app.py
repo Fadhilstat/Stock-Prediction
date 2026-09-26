@@ -22,8 +22,10 @@ from ruang_risiko_idx.research.actions import (
     trigger_risk_recalculation,
     update_runtime_risk_parameters,
 )
+from ruang_risiko_idx.research.broker_network import analyze_broker_network, scan_universe_bandarmology
 from ruang_risiko_idx.research.broker_summary import generate_broker_summary
 from ruang_risiko_idx.research.decision_passport import generate_decision_passport
+from ruang_risiko_idx.research.depth_analytics import calculate_depth_pressure, simulate_order_execution
 from ruang_risiko_idx.research.flow import compute_liquidity_flow_summary, get_creator_claims_for_ticker
 from ruang_risiko_idx.research.fundamentals import CANONICAL_COMPANIES, get_fundamental_snapshot
 from ruang_risiko_idx.research.ict import evaluate_ict_hypotheses
@@ -59,7 +61,6 @@ st.markdown(
         background-color: #1E222D;
         border-right: 1px solid #2A2E39;
     }
-    /* Stockbit Running Ticker Tape */
     .ticker-tape {
         background-color: #1E222D;
         border-bottom: 1px solid #2A2E39;
@@ -94,7 +95,6 @@ st.markdown(
         color: #D1D4DC;
         font-weight: 600;
     }
-    /* Stockbit Card Panels */
     .stockbit-card {
         background-color: #1E222D;
         border: 1px solid #2A2E39;
@@ -110,7 +110,6 @@ st.markdown(
         letter-spacing: 0.5px;
         margin-bottom: 6px;
     }
-    /* Badges */
     .status-badge {
         display: inline-block;
         padding: 4px 10px;
@@ -126,13 +125,6 @@ st.markdown(
     .badge-avoid { background-color: #78350F; color: #FBBF24; border: 1px solid #D97706; }
     .badge-veto { background-color: #7F1D1D; color: #FF4A68; border: 1px solid #DC2626; }
 
-    /* Orderbook Depth Styling */
-    .depth-bar-bid {
-        background: linear-gradient(90deg, rgba(0, 192, 118, 0.25) 0%, rgba(0, 192, 118, 0.05) 100%);
-    }
-    .depth-bar-offer {
-        background: linear-gradient(270deg, rgba(255, 74, 104, 0.25) 0%, rgba(255, 74, 104, 0.05) 100%);
-    }
     [data-testid="stMetric"] {
         background-color: #1E222D;
         border: 1px solid #2A2E39;
@@ -335,6 +327,8 @@ orderbook = generate_orderbook(
     previous_close=prev_close,
     average_volume=float(selected_data["volume"].tail(20).mean()),
 )
+depth_pressure = calculate_depth_pressure(orderbook)
+
 broker_summary = generate_broker_summary(
     ticker=selected_ticker,
     trade_date=data_cutoff,
@@ -342,6 +336,7 @@ broker_summary = generate_broker_summary(
     total_traded_value_idr=liq_summary.average_daily_value_idr,
     foreign_flow_state=liq_summary.foreign_flow_state,
 )
+broker_network = analyze_broker_network(broker_summary)
 
 # Stockbit Header Banner
 header_col1, header_col2 = st.columns([3, 1])
@@ -361,7 +356,8 @@ with header_col1:
         <div style="color: #787B86; font-size: 13px; margin-top: 4px;">
             Sektor: <strong>{fund_snapshot.identity.sector}</strong> | Papan: <strong>{fund_snapshot.identity.listing_board}</strong> |
             ARA: <span style="color: #00C076; font-weight: 600;">Rp {orderbook.ara_price:,.0f}</span> |
-            ARB: <span style="color: #FF4A68; font-weight: 600;">Rp {orderbook.arb_price:,.0f}</span>
+            ARB: <span style="color: #FF4A68; font-weight: 600;">Rp {orderbook.arb_price:,.0f}</span> |
+            Smart Money Index: <span style="color: #2962FF; font-weight: 700;">{broker_network.smart_money_index}%</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -413,9 +409,9 @@ metric_cols[3].metric(
     "Limit: 7.00%",
 )
 metric_cols[4].metric(
-    "Bandarmology Status",
-    broker_summary.status.replace("_", " "),
-    f"Asing: Rp {broker_summary.foreign_net_value_idr / 1e9:+.1f} M",
+    "Smart Money Regime",
+    broker_network.regime.replace("_", " "),
+    f"Index: {broker_network.smart_money_index}%",
 )
 
 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
@@ -558,7 +554,7 @@ with main_tabs[0]:
             paper_bgcolor="#131722",
             plot_bgcolor="#1E222D",
             margin=dict(l=10, r=10, t=10, b=10),
-            height=460,
+            height=440,
             xaxis_rangeslider_visible=False,
             hovermode="x unified",
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -569,7 +565,6 @@ with main_tabs[0]:
         st.markdown("**Orderbook (10-Level Depth)**")
         st.caption(f"Total Bid: {orderbook.total_bid_lots:,} Lot | Total Offer: {orderbook.total_offer_lots:,} Lot")
 
-        # Visual Table for 10-level Bids and Offers
         ob_rows = []
         for i in range(10):
             b = orderbook.bids[i]
@@ -588,7 +583,7 @@ with main_tabs[0]:
         st.markdown(
             f"""
             <div style="background-color: #1E222D; border: 1px solid #2A2E39; border-radius: 4px; padding: 8px 12px; font-size: 12px;">
-                Ratio Bid/Offer: <strong>{orderbook.bid_offer_ratio:.2f}</strong> |
+                Ratio Bid/Offer: <strong>{orderbook.bid_offer_ratio:.2f}</strong> | Tekanan: <strong>{depth_pressure.depth_state}</strong><br/>
                 ARA: <span style="color: #00C076;">Rp {orderbook.ara_price:,.0f}</span> |
                 ARB: <span style="color: #FF4A68;">Rp {orderbook.arb_price:,.0f}</span>
             </div>
@@ -596,15 +591,38 @@ with main_tabs[0]:
             unsafe_allow_html=True,
         )
 
+    st.markdown("---")
+    st.markdown("##### 🔬 Simulator Slippage & Dampak Likuiditas Order Eksekusi")
+    sim_c1, sim_c2 = st.columns([1, 2])
+    with sim_c1:
+        sim_side = st.radio("Arah Order Transaksi", ["BUY", "SELL"], horizontal=True)
+        sim_val_jt = st.slider("Ukuran Nilai Order (Juta IDR)", min_value=10, max_value=1000, value=100, step=10)
+    with sim_c2:
+        sim_res = simulate_order_execution(orderbook, sim_side, float(sim_val_jt * 1_000_000))
+        res_col1, res_col2, res_col3 = st.columns(3)
+        res_col1.metric("Rata-rata Harga Terisi", f"Rp {sim_res.average_fill_price:,.0f}")
+        res_col2.metric("Estimasi Slippage", f"{sim_res.slippage_bps:.1f} bps")
+        res_col3.metric("Kedalaman Terpakai", f"{sim_res.percent_depth_consumed:.1f}% ({sim_res.ticks_traversed} fraksi)")
+        if sim_res.liquidity_cliff_warning:
+            st.warning(f"⚠️ {sim_res.rationale}")
+        else:
+            st.success(f"✓ {sim_res.rationale}")
+
 # TAB 2: Bandarmology & Broker Summary
 with main_tabs[1]:
     st.markdown("#### Broker Summary & Bandarmology Accumulation")
-    st.caption("Peta konsentrasi bandar dan aliran modal asing vs domestik.")
+    st.caption("Peta konsentrasi bandar, aliran smart money, dan deteksi jebakan ritel.")
 
-    b_col1, b_col2, b_col3 = st.columns(3)
+    b_col1, b_col2, b_col3, b_col4 = st.columns(4)
     b_col1.metric("Status Bandarmology", broker_summary.status.replace("_", " "))
-    b_col2.metric("Top 3 Buyer Concentration", f"{broker_summary.top3_buyer_ratio_percent:.1f}%")
-    b_col3.metric("Top 3 Seller Concentration", f"{broker_summary.top3_seller_ratio_percent:.1f}%")
+    b_col2.metric("Smart Money Index", f"{broker_network.smart_money_index}%")
+    b_col3.metric("Top 3 Buyer Concentration", f"{broker_summary.top3_buyer_ratio_percent:.1f}%")
+    b_col4.metric("Top 3 Seller Concentration", f"{broker_summary.top3_seller_ratio_percent:.1f}%")
+
+    if broker_network.retail_trap_detected:
+        st.error(f"🚨 {broker_network.summary}")
+    else:
+        st.info(f"💡 {broker_network.summary}")
 
     bs_col1, bs_col2 = st.columns(2)
     with bs_col1:
@@ -636,6 +654,13 @@ with main_tabs[1]:
                 }
             )
         st.dataframe(pd.DataFrame(seller_rows), use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    st.markdown("**Aliran Modal Berdasarkan Kategori Investor**")
+    cat_col1, cat_col2, cat_col3 = st.columns(3)
+    cat_col1.metric("Institusi Asing Neto", f"Rp {broker_network.foreign_institutional_net_idr / 1e9:+.2f} M")
+    cat_col2.metric("Institusi Domestik Neto", f"Rp {broker_network.domestic_institutional_net_idr / 1e9:+.2f} M")
+    cat_col3.metric("Ritel Domestik Neto", f"Rp {broker_network.retail_domestic_net_idr / 1e9:+.2f} M")
 
 # TAB 3: Key Stats & Fundamental
 with main_tabs[2]:
@@ -888,6 +913,19 @@ with main_tabs[6]:
                     st.cache_data.clear()
 
     st.markdown("---")
+    st.markdown("##### 📡 Radar Bandarmology Seluruh Universe")
+    if st.button("Jalankan Radar Bandarmology Universe"):
+        with st.spinner("Menganalisis matriks smart money untuk seluruh saham..."):
+            price_dict = {
+                t: float(market_data.loc[market_data["ticker"] == t]["close"].iloc[-1])
+                for t in available_tickers
+                if not market_data.loc[market_data["ticker"] == t].empty
+            }
+            scan_results = scan_universe_bandarmology(available_tickers, price_dict, trade_date=data_cutoff)
+            scan_df = pd.DataFrame(scan_results)
+            st.dataframe(scan_df, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
     st.markdown("##### 📜 Audit Trail & Riwayat Aksi Operasional")
     history_entries = load_action_history(limit=25)
     if history_entries:
@@ -897,6 +935,22 @@ with main_tabs[6]:
         st.dataframe(h_df, use_container_width=True, hide_index=True)
     else:
         st.info("Belum ada riwayat aksi operasional tercatat.")
+
+    st.markdown("---")
+    st.markdown("##### 🌐 Headless API & Webhook Service (Zero-RDC Operations)")
+    st.code(
+        """
+# Healthcheck Endpoint:
+curl -s http://localhost:8502/health
+
+# Trigger Ingestion Webhook (misal dari cron atau Cloudflare Worker):
+curl -X POST http://localhost:8502/api/v1/actions/refresh-data
+
+# Trigger Recalculate Risk Snapshots:
+curl -X POST http://localhost:8502/api/v1/actions/recalc-risk
+        """,
+        language="bash",
+    )
 
 # Footer
 st.markdown("---")

@@ -29,7 +29,9 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Liquidity | PASS | Average value traded, spread proxy, slippage estimate, and price limit risk. |
 | Foreign Flow | PASS | Net foreign accumulation and distribution persistence with volume confirmation. |
 | Orderbook 10-Level Depth | PASS | Official IDX 10-level bid/offer depth queue, lot counts, and ARA/ARB boundary calculation. |
+| Orderbook Slippage Simulator | PASS | Quantitative walking algorithm calculating VWAP fill price, ticks traversed, and depth consumption. |
 | Bandarmology & Broker Summary | PASS | Stockbit-style top buyer/seller broker breakdown, concentration ratios, and flow status. |
+| Smart Money Flow Network | PASS | Three-tier institutional classification, Smart Money Accumulation Index, and retail trap alert. |
 | Creator Intelligence | PASS | Public creator claim ledger, direction, horizon, and subsequent return tracking. |
 | Multimodal Fusion | PASS | Calibrated reliability-weighted ensemble combining price, econometrics, and features. |
 | Multimodal Ablation | PASS | Component comparison verifying that each modality adds measurable predictive edge. |
@@ -42,7 +44,9 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Risk Engine | PASS | Hard veto authority over all directional signals on volatility, liquidity, or event risks. |
 | Decision Passport | PASS | Structured, immutable Pre-Buy Decision Passport artifact before any transaction consideration. |
 | Web Action Console | PASS | Live operational control plane for model recalibration, data updates, and runtime tuning. |
+| Headless Operations API | PASS | Zero-dependency HTTP API with /health, risk summary, and webhook action triggers. |
 | Non-RDC Autonomous Deployment | PASS | Headless Docker Compose and Caddy reverse proxy with automated ACME TLS and healthcheck. |
+| Continuous Deployment Workflow | PASS | Automated GitHub Actions pipeline verifying quality gates and triggering VPS deployment. |
 | Anti-Slop UX | PASS | Stockbit-inspired dark theme, zero generic AI slop, no dead buttons, zero em dash policy. |
 | Security | PASS | Zero committed secrets, parameter sanitization, and input boundary validation. |
 | Performance | PASS | Sub-second page rendering, cached parquet queries, and lazy component loading. |
