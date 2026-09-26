@@ -34,6 +34,7 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Bandarmology & Broker Summary | PASS | Stockbit-style top buyer/seller broker breakdown, concentration ratios, and flow status. |
 | Smart Money Flow Network | PASS | Three-tier institutional classification, Smart Money Accumulation Index, and retail trap alert. |
 | Stockbit Stream Social Sentiment | PASS | Discussion velocity, sentiment polarization score, and retail FOMO alerts. |
+| Portfolio Stress Engine | PASS | Historical crisis replay (2020 Pandemic, 2013 Taper Tantrum, 2015 Commodity Crash) with VaR/CVaR. |
 | Creator Intelligence | PASS | Public creator claim ledger, direction, horizon, and subsequent return tracking. |
 | Multimodal Fusion | PASS | Calibrated reliability-weighted ensemble combining price, econometrics, and features. |
 | Multimodal Ablation | PASS | Component comparison verifying that each modality adds measurable predictive edge. |
@@ -45,6 +46,7 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Prediction Journal | PASS | Append-only persistent journal surviving restarts, merges, and chat boundaries. |
 | Risk Engine | PASS | Hard veto authority over all directional signals on volatility, liquidity, or event risks. |
 | Decision Passport | PASS | Structured, immutable Pre-Buy Decision Passport artifact before any transaction consideration. |
+| In-Browser Passport Issuer | PASS | Interactive form generating digitally signed passports with custom invalidation and sizing. |
 | Web Action Console | PASS | Live operational control plane for model recalibration, data updates, and runtime tuning. |
 | Headless Operations API | PASS | Zero-dependency HTTP API with /health, risk summary, and webhook action triggers. |
 | Non-RDC Autonomous Deployment | PASS | Headless Docker Compose and Caddy reverse proxy with automated ACME TLS and healthcheck. |

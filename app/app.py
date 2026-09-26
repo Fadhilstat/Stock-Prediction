@@ -34,6 +34,8 @@ from ruang_risiko_idx.research.journal import load_prediction_journal
 from ruang_risiko_idx.research.market_context import compute_market_alignment
 from ruang_risiko_idx.research.multimodal import get_ablation_benchmarks, run_evidence_conflict_radar
 from ruang_risiko_idx.research.orderbook import generate_orderbook
+from ruang_risiko_idx.research.passport_issuer import issue_custom_passport
+from ruang_risiko_idx.research.portfolio_stress import get_available_stress_scenarios, run_portfolio_stress_test
 from ruang_risiko_idx.research.risk_engine import evaluate_risk_engine
 from ruang_risiko_idx.research.scenarios import compute_horizon_quantiles, generate_scenarios
 from ruang_risiko_idx.research.social_stream import get_stream_sentiment
@@ -788,6 +790,27 @@ with main_tabs[3]:
             )
         st.dataframe(pd.DataFrame(scen_rows), use_container_width=True, hide_index=True)
 
+    st.markdown("---")
+    st.markdown("##### ⚡ Uji Ketahanan Portofolio terhadap Crash Historis BEI")
+    stress_scenarios = get_available_stress_scenarios()
+    scen_titles = [s.title for s in stress_scenarios]
+    selected_scen_title = st.selectbox("Pilih Skenario Guncangan Krisis", scen_titles, index=0)
+    selected_scen = next(s for s in stress_scenarios if s.title == selected_scen_title)
+
+    port_val_jt = st.number_input("Total Modal Portofolio Ekuitas (Juta IDR)", min_value=10, max_value=50000, value=100, step=10)
+    stress_res = run_portfolio_stress_test(
+        portfolio_weights={selected_ticker: 0.50, "^JKSE": 0.50},
+        total_portfolio_value_idr=float(port_val_jt * 1_000_000),
+        scenario_id=selected_scen.scenario_id,
+    )
+
+    str_c1, str_c2, str_c3, str_c4 = st.columns(4)
+    str_c1.metric("Estimasi Kerugian Portofolio", f"-{stress_res.portfolio_loss_percent:.1f}%")
+    str_c2.metric("Nominal Penurunan", f"Rp {stress_res.monetary_loss_idr:,.0f}")
+    str_c3.metric("VaR 99% Tertekan", f"-{stress_res.var_99_loss_percent:.1f}%")
+    str_c4.metric("Expected Shortfall (CVaR)", f"-{stress_res.cvar_expected_shortfall_percent:.1f}%")
+    st.info(f"💡 Rekomendasi Ketahanan: {stress_res.survival_recommendation}")
+
 # TAB 5: Pre-Buy Decision Passport
 with main_tabs[4]:
     st.markdown("#### Pre-Buy Decision Passport")
@@ -941,6 +964,42 @@ with main_tabs[6]:
                 if cfg_res["success"]:
                     st.success(cfg_res["message"])
                     st.cache_data.clear()
+
+    st.markdown("---")
+    st.markdown("##### 📝 Penerbitan Mandiri Pre-Buy Decision Passport Berstempel Digital")
+    with st.form("passport_custom_issuer_form"):
+        pass_col1, pass_col2, pass_col3 = st.columns(3)
+        custom_inv_price = pass_col1.number_input(
+            "Level Invalidasi Tesis Kustom (Rp)",
+            min_value=50.0,
+            max_value=100000.0,
+            value=float(round(tech_summary.close * 0.95)),
+            step=25.0,
+        )
+        custom_alloc = pass_col2.slider("Alokasi Portofolio yang Disetujui (%)", 1.0, 30.0, 10.0, 0.5)
+        custom_horiz = pass_col3.selectbox("Target Horizon Transaksi", ["Swing 5D", "Position 20D", "Day 1D"], index=1)
+        custom_notes = st.text_area("Catatan & Rationale Keputusan Riset Operator", "Setup terkonfirmasi sinyal kuantitatif. Siap dieksekusi bertahap.")
+
+        submit_pass = st.form_submit_button("Terbitkan & Sahkan Passport Resmi")
+        if submit_pass:
+            new_pass, new_path = issue_custom_passport(
+                ticker=selected_ticker,
+                company_name=fund_snapshot.identity.company_name,
+                cutoff_date=data_cutoff,
+                current_price=tech_summary.close,
+                custom_invalidation=custom_inv_price,
+                position_size_pct=custom_alloc,
+                horizon=custom_horiz,
+                operator_notes=custom_notes,
+                base_passport=passport,
+            )
+            st.success(f"Berhasil menerbitkan {new_pass.passport_id}!")
+            st.download_button(
+                label=f"Unduh {new_pass.passport_id}.md",
+                data=new_pass.markdown_content,
+                file_name=f"{new_pass.passport_id}.md",
+                mime="text/markdown",
+            )
 
     st.markdown("---")
     st.markdown("##### 📡 Radar Bandarmology Seluruh Universe")

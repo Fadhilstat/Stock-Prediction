@@ -1,28 +1,28 @@
 # Ruang Risiko IDX Durable Run State
 
 Project: Ruang Risiko IDX
-Updated: 2026-09-27T00:14:00+07:00
+Updated: 2026-09-27T00:24:00+07:00
 Branch: main
-HEAD: Local release candidate ready (Stockbit UI/UX, Corporate Action Risk, Stream Sentiment, and Cloud-Init Non-RDC stack)
-Current Product State: STOCKBIT_CORPORATE_ACTION_STREAM_NON_RDC_RELEASE
+HEAD: Local release candidate ready (Stockbit UI/UX, Portfolio Stress Engine, Interactive Passport Issuer, and Non-RDC stack)
+Current Product State: STOCKBIT_PORTFOLIO_STRESS_PASSPORT_ISSUER_NON_RDC_RELEASE
 Current Release State: RELEASE_MERGED_LOCAL_PUSH_PENDING
-Current Milestone: Stockbit Stream Sentiment, Dividend Trap Risk Engine, Cloud-Init Provisioning, and Non-RDC Deployment
-Last Completed Action: Completed Dividend Trap Risk Engine, Stockbit Stream Sentiment and FOMO Alert, Cloud-Init automated VPS manifest, 1-command production setup script, full regression test suite (105 passed), and zero em dash validation.
+Current Milestone: Portfolio Crash Stress Replay, In-Browser Passport Issuer, and Stockbit Terminal
+Last Completed Action: Completed Multivariate Portfolio Stress Replay Engine, In-Browser Decision Passport Generator with SHA256 digital stamp, full regression test suite (107 passed), and zero em dash verification.
 Current Action: Fast-forward merged to main, user APPROVE PUSH and APPROVE MERGE granted. Executing commit.
 NEXT_ACTION: Synchronize with remote origin via git push.
 THEN: Domain DNS cutover and non-RDC headless production verification.
 FINISH_GATE State: PASS (all criteria validated)
-Release Candidate ID: RC-20260927-02
+Release Candidate ID: RC-20260927-03
 Push Approval State: APPROVED_BY_USER
 Push State: PENDING_PUSH
 Change Request ID: PR-16
-CI State: LOCAL_PASSED_ALL_TESTS (105 passed)
+CI State: LOCAL_PASSED_ALL_TESTS (107 passed)
 Merge Approval State: APPROVED_BY_USER
 Merge State: MERGED_LOCAL
 Post-Merge State: VERIFIED
 Deployment State: CLOUD_INIT_DOCKER_CADDY_GITHUB_ACTIONS_READY
 Production State: READY_FOR_DOMAIN_LAUNCH
-Rollback State: READY_AT_f71c979
+Rollback State: READY_AT_dd80484
 Market Data Cutoff: 2026-09-25
 Canonical Data State: VALIDATED_SCHEMA (9,744 rows, 0 quarantined)
 Quarantine State: ACTIVE_ZERO_CONTAMINATION
@@ -42,6 +42,8 @@ Orderbook State: ACTIVE_10_LEVEL_DEPTH_SLIPPAGE_SIMULATOR
 Bandarmology State: ACTIVE_SMART_MONEY_FLOW_NETWORK
 Corporate Action Risk: ACTIVE_DIVIDEND_TRAP_ENGINE
 Social Stream State: ACTIVE_SENTIMENT_AND_FOMO_ALERTS
+Portfolio Stress State: ACTIVE_HISTORICAL_CRASH_REPLAY_ENGINE
+Passport Issuer State: ACTIVE_DIGITAL_SIGNATURE_REGISTRY
 Web Action State: ACTIVE_CONTROLLER_AND_AUDIT_LEDGER
 Headless API State: ACTIVE_ZERO_DEPENDENCY_HTTP_SERVER
 Non-RDC State: CONFIGURED_CLOUD_INIT_AND_CADDY_AUTO_TLS
