@@ -291,3 +291,69 @@ def trigger_domain_probe(domain: str = "rridx.fadhilrusydi.com") -> dict[str, An
         "action_id": entry.action_id,
     }
 
+
+def trigger_morning_briefing_generation(date_str: str | None = None) -> dict[str, Any]:
+    """Compile and register the autonomous pre-market morning briefing digest."""
+    import time
+    from ruang_risiko_idx.research.morning_briefing import generate_premarket_morning_briefing
+
+    start = time.perf_counter()
+    digest = generate_premarket_morning_briefing(briefing_date=date_str)
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    msg = f"Pre-Market Morning Briefing {digest.digest_id} berhasil dikompilasi untuk {digest.briefing_date}."
+    entry = record_action(
+        action_type="PREMARKET_BRIEFING_GENERATION",
+        status="SUCCESS",
+        summary_message=msg,
+        parameters={"digest_id": digest.digest_id, "top_setups": [s.ticker for s in digest.top_setups]},
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "digest_id": digest.digest_id,
+        "briefing_date": digest.briefing_date,
+        "market_tone": digest.market_tone,
+        "top_setups": [s.ticker for s in digest.top_setups],
+        "markdown_content": digest.markdown_content,
+        "message": msg,
+        "action_id": entry.action_id,
+    }
+
+
+def trigger_microstructure_imbalance_scan(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Execute orderbook microstructure and order flow delta scan."""
+    import time
+    from ruang_risiko_idx.research.orderbook import generate_orderbook
+    from ruang_risiko_idx.research.microstructure_imbalance import compute_microstructure_imbalance
+
+    start = time.perf_counter()
+    ob = generate_orderbook(ticker=ticker, current_price=10250.0, previous_close=10200.0)
+    analysis = compute_microstructure_imbalance(ob)
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    msg = f"Microstructure Imbalance scan selesai untuk {ticker}: VOI {analysis.volume_order_imbalance_lots:+,} lot ({analysis.order_flow_regime})."
+    entry = record_action(
+        action_type="MICROSTRUCTURE_IMBALANCE_SCAN",
+        status="SUCCESS",
+        summary_message=msg,
+        parameters={
+            "ticker": ticker,
+            "voi_lots": analysis.volume_order_imbalance_lots,
+            "regime": analysis.order_flow_regime,
+            "spoofing_score": analysis.spoofing_probability_score,
+        },
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "ticker": ticker,
+        "voi_lots": analysis.volume_order_imbalance_lots,
+        "regime": analysis.order_flow_regime,
+        "spoofing_score": analysis.spoofing_probability_score,
+        "phantom_wall": analysis.phantom_wall_detected,
+        "message": msg,
+        "action_id": entry.action_id,
+    }
+
+

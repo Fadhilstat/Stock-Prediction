@@ -1,21 +1,21 @@
 # Ruang Risiko IDX Durable Run State
 
 Project: Ruang Risiko IDX
-Updated: 2026-09-27T01:55:00+07:00
+Updated: 2026-09-27T02:01:00+07:00
 Branch: main
-HEAD: 8bd7478 (feat: revamp to TradingView UI/UX, add mathematical moments, macro dashboard, screener, and bi-weekly validation)
-Current Product State: TRADINGVIEW_UX_MATHEMATICAL_INSIGHTS_MACRO_BIWEEKLY_FLEXIBLE_UNIVERSE
-Current Release State: PRODUCTION_LIVE_AND_EXPANDED
-Current Milestone: TradingView UI Revamp, Public Screener, Macro Intelligence, and Bi-Weekly Validation Shipped
-Last Completed Action: Delivered 8-tab TradingView workspace, higher-order mathematical moments (skewness, excess kurtosis, Jarque-Bera, Hurst exponent H, Expected Shortfall CVaR 99%), macro intelligence (BI-Rate, SUN 10Y, ERP, USD/IDR), curated financial news sentiment scoring, 14-stock flexible universe with custom ticker auto-normalization, and autonomous 14-day rolling walk-forward model validation ledger. Passed all 124 unit tests. Zero em dash compliance verified. Pushed to origin/main.
-Current Action: Provide clear deployment update instruction for production VPS.
+HEAD: orderbook microstructure imbalance, CVD proxy, and pre-market morning briefing
+Current Product State: OMI_CVD_PREMARKET_BRIEFING_TRADINGVIEW_RELEASE
+Current Release State: PRODUCTION_LIVE_AND_ENHANCED
+Current Milestone: Microstructure Imbalance (VOI/CVD) & Autonomous Morning Briefing Shipped
+Last Completed Action: Delivered Volume Order Imbalance (VOI) engine, Cumulative Volume Delta (CVD) absorption tracking, Stockbit-style visual orderbook depth bars, Pre-Market Morning Briefing (08:30 WIB) digest with 1-click Markdown download, and Web Action Console triggers. Passed all 127 unit tests. Zero em dash compliance verified. Ready to push to origin/main.
+Current Action: Commit, push to origin/main with user approval, and trigger VPS deployment.
 NEXT_ACTION: Proactively introduce next quantitative risk innovation batch.
 FINISH_GATE State: PASS (all criteria validated)
-Release Candidate ID: RC-20260927-07
+Release Candidate ID: RC-20260927-08
 Push Approval State: APPROVED_BY_USER
-Push State: PUSHED_TO_ORIGIN_MAIN
-Change Request ID: PR-19
-CI State: LOCAL_PASSED_ALL_TESTS (124 passed)
+Push State: READY_TO_PUSH
+Change Request ID: PR-20
+CI State: LOCAL_PASSED_ALL_TESTS (127 passed)
 Merge Approval State: APPROVED_BY_USER
 Merge State: MERGED_INTO_MAIN
 Post-Merge State: VERIFIED_ON_GITHUB
@@ -23,7 +23,7 @@ Deployment State: LIVE_AT_RRIDX_FADHILRUSYDI_COM
 Production State: ACTIVE_IN_PRODUCTION
 Primary Domain: fadhilrusydi.com
 Production Target: https://rridx.fadhilrusydi.com (VERIFIED_LIVE)
-Rollback State: READY_AT_1343d85
+Rollback State: READY_AT_2c3da1d
 Market Data Cutoff: 2026-09-25
 Canonical Data State: VALIDATED_SCHEMA (9,744 rows, 0 quarantined)
 Quarantine State: ACTIVE_ZERO_CONTAMINATION
@@ -39,7 +39,7 @@ Forecast Version: MULTI-HORIZON-QUANTILES-v1.0
 Calibration Version: LOGLOSS-BRIER-v1.0
 Champion Model: Direction: Logistic Regression, Random Forest, XGBoost; Volatility: EGARCH / GJR-GARCH per ticker
 Challenger Models: Kronos-small (experimental benchmark), Granite TTM R2 (experimental benchmark)
-Orderbook State: ACTIVE_10_LEVEL_DEPTH_SLIPPAGE_SIMULATOR
+Orderbook State: ACTIVE_10_LEVEL_DEPTH_SLIPPAGE_SIMULATOR_AND_VOI_CVD
 Bandarmology State: ACTIVE_SMART_MONEY_FLOW_NETWORK
 Corporate Action Risk: ACTIVE_DIVIDEND_TRAP_ENGINE
 Social Stream State: ACTIVE_SENTIMENT_AND_FOMO_ALERTS

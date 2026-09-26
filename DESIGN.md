@@ -66,7 +66,12 @@ Its user interface combines the visual ergonomics of TradingView dark mode with 
 
 ### Tab 1: TradingView Chart and 10-Level Orderbook
 - **Interactive Multi-Pane Chart**: Candlestick and OHLC display with moving averages (SMA 20, SMA 50, SMA 200), Bollinger Bands, and volume histogram.
-- **Official 10-Level IDX Depth Queue**: Real-time bid and offer ladders displaying prices, lot depths, bid/offer volume ratio, and regulatory ARA/ARB limits.
+- **Stockbit-Style Visual Orderbook Depth Queue**: Real-time 10-level bid and offer ladders with horizontal colored depth progress bars proportional to lot volume, ARA/ARB limits, and bid/offer ratio.
+- **Microstructure Imbalance and Order Flow Delta**:
+  - Volume Order Imbalance (VOI) weighted across 10 depth tiers.
+  - Cumulative Volume Delta (CVD) proxy quantifying aggressive buy vs sell market absorption.
+  - Order flow regime classification (`AGGRESSIVE_BUYING`, `BALANCED_FLOW`, `AGGRESSIVE_SELLING`).
+  - Spoofing & Phantom Wall detector flagging asymmetric phantom liquidity far from the touch.
 - **Slippage and Depth Simulator**: Computes volume-weighted average fill price (VWAP), slippage in basis points (bps), and orderbook ticks consumed for custom transaction sizes.
 
 ### Tab 2: Insight Matematis and Ekonometrika
@@ -90,6 +95,10 @@ Its user interface combines the visual ergonomics of TradingView dark mode with 
   - 10-Year Surat Berharga Negara (SUN 10Y) benchmark yield.
   - Domestic Equity Risk Premium (ERP): Calculated as Earnings Yield minus SUN 10Y Yield.
   - USD/IDR Foreign Exchange Spot Rate.
+- **Pre-Market Morning Briefing (08:30 WIB Digest)**:
+  - Daily opening briefing synthesizing overnight global cues (Brent Oil, Nickel, Coal, Gold, S&P 500).
+  - Top 3 Pre-Market High-Conviction Setups with invalidation boundaries and expected target levels.
+  - Operational risk execution warnings and 1-click Markdown digest download.
 - **Curated Financial News Sentiment**:
   - Real-time news aggregation categorized by Macro, Banking, Energy, and Regulatory domains.
   - Natural language sentiment scoring (-1.0 to +1.0) with sentiment labels (POSITIVE, NEUTRAL, NEGATIVE).
@@ -133,6 +142,8 @@ Its user interface combines the visual ergonomics of TradingView dark mode with 
   - Refresh market data ingestion.
   - Recalculate GARCH volatility and VaR snapshots.
   - Retrain and re-score machine learning directional models.
+  - Compile Pre-Market Morning Briefing (08:30 WIB) digest.
+  - Run Microstructure Imbalance & Order Flow Delta scans.
 - **Runtime Risk Configuration**:
   - Slider adjustments for VaR confidence level, maximum single-stock allocation %, and execution slippage limits.
   - Active model selector (Random Forest, Logistic Regression, XGBoost, Ensemble).
@@ -171,6 +182,15 @@ $$\text{Variance Ratio } = \frac{\sigma_t^2}{\sigma_{\text{long-run}}^2}$$
 Expected Shortfall measures the expected return conditional on exceeding the 99% Value-at-Risk threshold:
 
 $$\text{CVaR}_{0.99} = -\mathbb{E}[r_t \mid r_t < -\text{VaR}_{0.99}]$$
+
+### 5.5 Volume Order Imbalance (VOI) and Cumulative Volume Delta (CVD)
+Multi-level queue imbalance aggregates weighted net depth across $K=10$ levels:
+
+$$\text{VOI} = \sum_{k=1}^K w_k \cdot (V_k^{\text{bid}} - V_k^{\text{offer}}), \quad w_k = \frac{1}{k}$$
+
+Cumulative Volume Delta proxy quantifies net market order aggression:
+
+$$\text{CVD} = \int (\text{Market Buys} - \text{Market Sells}) \, dt \approx 0.75 \cdot \left(\sum_{k=1}^3 V_k^{\text{bid}} - \sum_{k=1}^3 V_k^{\text{offer}}\right)$$
 
 ---
 

@@ -20,11 +20,15 @@ from ruang_risiko_idx.research.actions import (
     trigger_direction_recalculation,
     trigger_domain_probe,
     trigger_market_data_refresh,
+    trigger_microstructure_imbalance_scan,
+    trigger_morning_briefing_generation,
     trigger_risk_recalculation,
     update_runtime_risk_parameters,
 )
 from ruang_risiko_idx.research.alert_dispatcher import AlertPayload, dispatch_webhook_alert
 from ruang_risiko_idx.research.biweekly_validation import generate_biweekly_validation_ledger
+from ruang_risiko_idx.research.microstructure_imbalance import compute_microstructure_imbalance
+from ruang_risiko_idx.research.morning_briefing import generate_premarket_morning_briefing
 from ruang_risiko_idx.research.broker_network import analyze_broker_network, scan_universe_bandarmology
 from ruang_risiko_idx.research.broker_summary import generate_broker_summary
 from ruang_risiko_idx.research.corporate_action_risk import evaluate_dividend_action_risk
@@ -382,6 +386,12 @@ orderbook = generate_orderbook(
     average_volume=float(selected_data["volume"].tail(20).mean()),
 )
 depth_pressure = calculate_depth_pressure(orderbook)
+micro_imbalance = compute_microstructure_imbalance(orderbook)
+morning_briefing = generate_premarket_morning_briefing(
+    briefing_date=data_cutoff,
+    risk_snapshots=risk_snapshots,
+    direction_snapshots=direction_snapshots,
+)
 
 broker_summary = generate_broker_summary(
     ticker=selected_ticker,
@@ -621,27 +631,52 @@ with main_tabs[0]:
         st.markdown("**Orderbook (10-Level Depth)**")
         st.caption(f"Total Bid: {orderbook.total_bid_lots:,} Lot | Total Offer: {orderbook.total_offer_lots:,} Lot")
 
-        ob_rows = []
+        max_depth_lot = max(max(b.lots for b in orderbook.bids), max(o.lots for o in orderbook.offers), 1)
+        ob_html = """
+        <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 12px; color: #D1D4DC;">
+            <thead>
+                <tr style="border-bottom: 1px solid #2A2E39; color: #787B86;">
+                    <th style="text-align: right; padding: 4px;">Bid Lot</th>
+                    <th style="text-align: right; padding: 4px; color: #00C076;">Bid</th>
+                    <th style="text-align: left; padding: 4px; color: #FF4A68;">Offer</th>
+                    <th style="text-align: left; padding: 4px;">Offer Lot</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
         for i in range(10):
             b = orderbook.bids[i]
             o = orderbook.offers[i]
-            ob_rows.append(
-                {
-                    "Bid Lot": f"{b.lots:,}",
-                    "Bid": f"{b.price:,.0f}",
-                    "Offer": f"{o.price:,.0f}",
-                    "Offer Lot": f"{o.lots:,}",
-                }
-            )
-        ob_df = pd.DataFrame(ob_rows)
-        st.dataframe(ob_df, use_container_width=True, hide_index=True)
+            b_pct = (b.lots / max_depth_lot) * 100.0
+            o_pct = (o.lots / max_depth_lot) * 100.0
+            ob_html += f"""
+                <tr style="border-bottom: 1px solid rgba(42, 46, 57, 0.4);">
+                    <td style="text-align: right; padding: 4px; position: relative;">
+                        <div style="position: absolute; right: 0; top: 0; bottom: 0; width: {b_pct:.0f}%; background-color: rgba(0, 192, 118, 0.20); z-index: 1;"></div>
+                        <span style="position: relative; z-index: 2;">{b.lots:,}</span>
+                    </td>
+                    <td style="text-align: right; padding: 4px; font-weight: 700; color: #00C076;">{b.price:,.0f}</td>
+                    <td style="text-align: left; padding: 4px; font-weight: 700; color: #FF4A68;">{o.price:,.0f}</td>
+                    <td style="text-align: left; padding: 4px; position: relative;">
+                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {o_pct:.0f}%; background-color: rgba(255, 74, 104, 0.20); z-index: 1;"></div>
+                        <span style="position: relative; z-index: 2;">{o.lots:,}</span>
+                    </td>
+                </tr>
+            """
+        ob_html += "</tbody></table>"
+        st.markdown(ob_html, unsafe_allow_html=True)
 
+        voi_sign = "+" if micro_imbalance.volume_order_imbalance_lots > 0 else ""
+        cvd_sign = "+" if micro_imbalance.cumulative_volume_delta_lots > 0 else ""
         st.markdown(
             f"""
-            <div style="background-color: #1E222D; border: 1px solid #2A2E39; border-radius: 4px; padding: 8px 12px; font-size: 12px;">
+            <div style="background-color: #1E222D; border: 1px solid #2A2E39; border-radius: 4px; padding: 8px 12px; font-size: 12px; margin-top: 8px;">
                 Ratio Bid/Offer: <strong>{orderbook.bid_offer_ratio:.2f}</strong> | Tekanan: <strong>{depth_pressure.depth_state}</strong><br/>
                 ARA: <span style="color: #00C076;">Rp {orderbook.ara_price:,.0f}</span> |
-                ARB: <span style="color: #FF4A68;">Rp {orderbook.arb_price:,.0f}</span>
+                ARB: <span style="color: #FF4A68;">Rp {orderbook.arb_price:,.0f}</span><br/>
+                VOI 10-Level: <strong>{voi_sign}{micro_imbalance.volume_order_imbalance_lots:,} Lot</strong> ({micro_imbalance.order_flow_regime})<br/>
+                CVD Proksi: <strong>{cvd_sign}{micro_imbalance.cumulative_volume_delta_lots:,} Lot</strong> (Rp {micro_imbalance.cvd_nominal_idr / 1e9:+.2f} M)<br/>
+                Skor Risiko Spoofing: <strong>{micro_imbalance.spoofing_probability_score * 100:.0f}%</strong> {'(🚨 Benteng Semu)' if micro_imbalance.phantom_wall_detected else '(Normal)'}
             </div>
             """,
             unsafe_allow_html=True,
@@ -663,6 +698,26 @@ with main_tabs[0]:
             st.warning(f"⚠️ {sim_res.rationale}")
         else:
             st.success(f"✓ {sim_res.rationale}")
+
+    with st.expander("🔬 Analisis Mikrostruktur Imbalance & Penyerapan Order Flow"):
+        st.markdown(f"**Insight Penyerapan Pasar:** {micro_imbalance.operational_insight}")
+        micro_c1, micro_c2, micro_c3 = st.columns(3)
+        micro_c1.metric("VOI Ternormalisasi", f"{micro_imbalance.voi_normalized:+.3f}")
+        micro_c2.metric("Rasio Kemiringan (Bid/Offer Slope)", f"{micro_imbalance.slope_ratio:.2f}x")
+        micro_c3.metric("Status Penyerapan", micro_imbalance.absorption_state.replace("_", " "))
+
+        breakdown_rows = []
+        for l in micro_imbalance.level_breakdowns:
+            breakdown_rows.append(
+                {
+                    "Level": f"Fraksi #{l.step}",
+                    "Bid (Lot)": f"{l.bid_price:,.0f} ({l.bid_lots:,})",
+                    "Offer (Lot)": f"{l.offer_price:,.0f} ({l.offer_lots:,})",
+                    "Net Delta": f"{l.net_level_delta_lots:+,}",
+                    "Imbalance (%)": f"{l.imbalance_ratio * 100:+.1f}%",
+                }
+            )
+        st.dataframe(pd.DataFrame(breakdown_rows), use_container_width=True, hide_index=True)
 
 # TAB 2: Insight Matematis & Ekonometrika
 with main_tabs[1]:
@@ -789,6 +844,45 @@ with main_tabs[2]:
     mac_c4.metric("Kurs USD/IDR", f"{macro_report.usd_idr_exchange_rate:,.0f}", "-180 IDR MoM")
 
     st.info(f"🏛️ {macro_report.summary}")
+
+    st.markdown("---")
+    st.markdown("##### ☕ Pre-Market Morning Briefing & Intisari Pembukaan Sesi I (08:30 WIB)")
+    st.caption(f"Audit ID: {morning_briefing.digest_id} | Tanggal Efektif: {morning_briefing.briefing_date}")
+
+    st.markdown(f"**Nada Pasar Harian:** `{morning_briefing.market_tone}`")
+
+    cue_c1, cue_c2, cue_c3, cue_c4, cue_c5 = st.columns(5)
+    for idx_cue, cue in enumerate(morning_briefing.global_cues[:5]):
+        [cue_c1, cue_c2, cue_c3, cue_c4, cue_c5][idx_cue].metric(
+            cue.asset_name.split(" ")[0],
+            cue.last_value,
+            f"{cue.daily_change_pct:+.2f}%",
+        )
+
+    st.markdown("**Top 3 Kandidat Saham Pilihan Pre-Market (High Conviction)**")
+    top_cols = st.columns(3)
+    for idx_s, setup in enumerate(morning_briefing.top_setups):
+        with top_cols[idx_s]:
+            st.markdown(
+                f"""
+                <div class="stockbit-card">
+                    <div style="font-weight: 700; color: #2962FF; font-size: 14px;">#{idx_s + 1} {setup.ticker}</div>
+                    <div style="font-size: 12px; color: #9CA3AF;">{setup.company_name}</div>
+                    <div style="margin-top: 4px; font-size: 12px;">Status: <strong>{setup.setup_status}</strong> ({setup.sentiment_tag})</div>
+                    <div style="font-size: 12px; color: #00C076;">Target q50: Rp {setup.target_q50_idr:,.0f}</div>
+                    <div style="font-size: 12px; color: #FF4A68;">Invalidasi: Rp {setup.invalidation_level_idr:,.0f}</div>
+                    <div style="margin-top: 4px; font-size: 11px; color: #787B86;">{setup.key_theme}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    st.download_button(
+        label="Unduh Pre-Market Morning Briefing (Markdown)",
+        data=morning_briefing.markdown_content,
+        file_name=f"{morning_briefing.digest_id}.md",
+        mime="text/markdown",
+    )
 
     st.markdown("---")
     st.markdown("##### 📰 Sentimen Berita & Narasi Pasar Terkini")
@@ -1117,6 +1211,24 @@ with main_tabs[7]:
         if st.button("Hitung Ulang Model Direction ML"):
             with st.spinner("Menjalankan klasifikasi arah probabilitas machine learning..."):
                 res = trigger_direction_recalculation()
+                if res["success"]:
+                    st.success(res["message"])
+                    st.cache_data.clear()
+                else:
+                    st.error(res["message"])
+
+        if st.button("Kompilasi Pre-Market Morning Briefing (08:30 WIB)"):
+            with st.spinner("Mengompilasi intisari makro, katalis global, dan saham pilihan..."):
+                res = trigger_morning_briefing_generation()
+                if res["success"]:
+                    st.success(res["message"])
+                    st.cache_data.clear()
+                else:
+                    st.error(res["message"])
+
+        if st.button("Pindai Microstructure Imbalance & Order Flow Delta"):
+            with st.spinner(f"Memindai dinamika antrean mikrostruktur {selected_ticker}..."):
+                res = trigger_microstructure_imbalance_scan(selected_ticker)
                 if res["success"]:
                     st.success(res["message"])
                     st.cache_data.clear()
