@@ -1,73 +1,103 @@
-# Ruang Risiko IDX Design System and Anti-Slop Specification
+# Ruang Risiko IDX Design System: Stockbit Terminal Specification
 
-## 1. Product Identity
-Ruang Risiko IDX is professional financial research software tailored specifically for the Indonesian equity market (Bursa Efek Indonesia / IDX).
-The visual tone is sober, analytical, authoritative, and data-dense.
-If the logo and title are removed, the software must still immediately be recognized as an Indonesian equity risk and probabilistic research terminal.
+## 1. Product Identity and Design Philosophy
+Ruang Risiko IDX is professional Indonesian equity risk and decision research software.
+Its user interface is modeled directly after the authoritative, high-density workflow familiar to Indonesian institutional analysts and Stockbit community traders.
+
+### Core Philosophy
+1. **Familiarity & Speed**: Traders instantly recognize Stockbit layout conventions (top running ticker tape, Chartbit canvas, 10-level orderbook depth, Bandarmology broker summary, and key statistics).
+2. **Quantitative Rigor without Slop**: Beneath familiar retail visualizations lies an audit-grade statistical engine (GARCH volatility forecasting, Value at Risk, Machine Learning directional quantiles, Point-In-Time fundamentals, and Hard Veto rules).
+3. **Web-Based Operational Sovereignty**: Every critical system action (data updates, model recalculation, risk tolerance tuning, and passport issuance) can be monitored and controlled directly through the browser.
+
+---
 
 ## 2. Anti-Slop UX Mandates
-- No generic AI gradients (no purple to cyan, no blue to magenta, no rainbow accents).
-- No decorative background grids, glowing borders, or arbitrary geometric floating blobs.
-- No excessive glassmorphism or translucent card layering that degrades contrast.
-- No pill-shaped containers for serious financial tabular metrics.
-- No repetitive card walls where a structured tabular view is more readable.
-- No generic AI icons (sparkles, magic wands, robots, crystal balls).
-- No unsupported or hyperbolic performance claims, fake win rates, or pseudo-deterministic buy targets.
-- No dead buttons, fake filter toggles, or decorative non-functional controls.
-- No missing loading, empty, or error states.
-- No em dash characters anywhere in UI copy, labels, tooltips, or documentation.
+- **Zero Generic AI Slop**: No purple-to-cyan decorative gradients, glowing border animations, or floating particles.
+- **Zero Decorative Placeholders**: Every button, slider, and selector triggers an actual computation, config change, or audit log entry.
+- **Zero Pseudo-Certainty**: Predictions are rendered strictly as quantile probability distributions (q10 to q90), never as deterministic price guarantees.
+- **Zero Look-Ahead Bias**: Historical inspection and fundamental data enforce strict Point-In-Time reporting dates.
+- **Zero Em Dash Policy**: No em dash characters (`\u2014`) anywhere across UI copy, labels, tooltips, or system documentation.
 
-## 3. Typography Reasoning
-- Primary interface font: Clean system sans-serif (Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto) for maximum legibility on low-resolution displays.
-- Numerical and code font: Monospace with tabular figures (JetBrains Mono, SF Mono, Consolas) to ensure numbers align vertically in tables and financial metric panels.
-- Font scale hierarchy:
-  - Title: 24px bold (reserved for primary screen heading)
-  - Section Header: 18px semibold
-  - Subheader / Group Label: 14px semibold uppercase with letter-spacing
-  - Body Text: 14px regular (line-height: 1.5)
-  - Secondary / Caption: 12px regular
-  - Micro / Audit Metadata: 11px monospace
+---
 
-## 4. Palette and Financial Semantics
-- Neutral Dark Palette:
-  - Background Base: `#0B0F19` (Deep slate navy, reducing eye strain during extended market research)
-  - Surface Card / Panel: `#111827` (Subtle elevation)
-  - Surface Border: `#1F2937` (1px clean border)
-  - High Contrast Text: `#F9FAFB`
-  - Secondary Text: `#9CA3AF`
-  - Tertiary / Muted Text: `#6B7280`
-- Financial Status Semantics:
-  - Bullish / Positive Return: `#10B981` (Emerald green, avoiding oversaturated neon)
-  - Bearish / Negative Return: `#EF4444` (Ruby red, distinct from warning orange)
-  - Neutral / Unchanged: `#94A3B8` (Slate gray)
-  - High Risk / Hard Veto: `#DC2626` (Intense crimson alert)
-  - Warning / Moderate Risk / Event Imminent: `#F59E0B` (Amber gold)
-  - Information / Calibration Note: `#3B82F6` (Muted sapphire)
+## 3. Design Tokens and Theme Architecture
 
-## 5. Forecast and Uncertainty Semantics
-- Median Path (q50): Solid crisp line indicating the statistical median expectation.
-- Interquartile Range (q25 to q75): Moderate opacity fan fill indicating typical outcome dispersion.
-- Tail Range (q10 to q90): Low opacity fan fill showing tail uncertainty.
-- Invalidation Levels: Crisp dashed horizontal reference lines with price callouts.
-- Rule: A wider fan visually signifies higher uncertainty, never false certainty.
+### Color Palette (Stockbit Dark Theme)
+| Token Name | Hex Code | Purpose |
+| :--- | :--- | :--- |
+| `color-bg-base` | `#131722` | Terminal deep charcoal background |
+| `color-bg-surface` | `#1E222D` | Cards, panels, orderbook background, and sidebar |
+| `color-border-subtle` | `#2A2E39` | Clean structural dividing borders |
+| `color-accent-blue` | `#2962FF` | Stockbit brand blue for active states, links, and median paths |
+| `color-idx-green` | `#00C076` | IDX bullish price movement, bid queue, ARA limit, net foreign buy |
+| `color-idx-red` | `#FF4A68` | IDX bearish price movement, offer queue, ARB limit, net foreign sell |
+| `color-warning-amber` | `#F59E0B` | Watch setups, event risks, moderate volatility warnings |
+| `color-veto-crimson` | `#DC2626` | Hard veto triggers, tail risk breaches, circuit breaker limits |
+| `color-text-primary` | `#F9FAFB` | Primary headings, asset prices, and critical figures |
+| `color-text-secondary` | `#D1D4DC` | Standard body copy, table figures, and active labels |
+| `color-text-muted` | `#787B86` | Micro captions, audit metadata, and inactive headers |
 
-## 6. Information Hierarchy and Analytical Density
-- Information is organized logically:
-  1. Context Bar: Selected ticker, current price, data cutoff date, provider freshness, trust score.
-  2. Primary Action / Decision Passport: Current decision state (FAVORABLE_SETUP, WATCH, WAIT, AVOID, HIGH_RISK), risk veto status, and summary metrics.
-  3. Interactive Chart & Day Inspector: Candlestick price action, volume, and synchronized historical evidence panel.
-  4. Probabilistic Forecast & Calibration: Multi-horizon quantile fan (1D, 5D, 20D), expected return, and calibration reliability metrics.
-  5. Multi-Layer Research Panels: Technical features, ICT hypotheses, fundamental metrics, corporate actions, and IHSG/sector alignment.
-  6. Flow & Social Evidence: Foreign flow persistence, broker concentration proxies, creator claim ledger, and social narrative acceleration.
-  7. Governance & Audit: Prediction Journal, paper trade ledger, walk-forward stats, and model registry.
+### Typography & Tabular Alignment
+- **Sans-Serif System Font**: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` for clean legibility on Indonesian retail trader devices.
+- **Monospace Tabular Font**: `SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace` for the 10-level orderbook, broker lots, prices, and timestamped audit logs to ensure strict vertical digit alignment.
 
-## 7. Responsive and Touch Strategy
-- Supported viewports: 360px, 412px, 768px, 1024px, 1440px.
-- Touch target sizes: Minimum 44px by 44px for touchable buttons, selectors, and tabs.
-- Layout flow: Desktop uses multi-column linked analytical panels; mobile collapses into stacked, logically ordered sections without page-level horizontal overflow.
+---
 
-## 8. Accessibility Principles (WCAG 2.2 AA)
-- Contrast ratio: Minimum 4.5:1 for normal text and 3.0:1 for large headers or graphical components against backgrounds.
-- Focus indicators: 2px solid `#3B82F6` outline with 2px offset on all interactive keyboard elements.
-- Semantic HTML: Proper header nesting (h1, h2, h3), semantic tables with headers, and aria-labels for chart controls.
-- Keyboard navigation: Full Tab order traversal, Enter and Space activation, Escape dismissal for modals and flyouts.
+## 4. Layout and Information Hierarchy
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ Ticker Tape: IHSG 7,812.35 (+0.42%) | LQ45 982.10 | USD/IDR 15,420 | Net Flow   │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│ Header: BBCA.JK | Rp 10,250 (+0.49%) | ARA: Rp 12,300 | ARB: Rp 8,200 | [FAVORABLE]│
+├─────────────────────────────────────────────────────────────────────────────────┤
+│ Metrics: Prob Up: 58.4% | Median q50: Rp 10,280 | GARCH Vol: 1.5% | VaR 99: 4.0%│
+├─────────────────────────────────────────────────────────────────────────────────┤
+│ Sub-Navigation Tabs:                                                            │
+│ [Chartbit & Book] [Bandarmology] [Key Stats] [Radar] [Passport] [Stream] [Console]│
+│                                                                                 │
+│ Active Workspace Panel (Dynamic Content Based on Selected Tab)                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Sub-Navigation Tab Specifications:
+1. **Chartbit & Orderbook**:
+   - Left Panel (70%): Interactive Candlestick Chart with SMA (20, 50, 200), Bollinger Bands, and Volume Bars.
+   - Right Panel (30%): Official 10-Level IDX Market Depth Queue (Bid lots, Bid price, Offer price, Offer lots, Bid/Offer ratio, and ARA/ARB callouts).
+2. **Bandarmology & Broker Summary**:
+   - Stockbit-style broker transaction breakdown.
+   - Top 5 Buyer brokers vs Top 5 Seller brokers with broker codes, investor type (Domestic / Foreign), lot volumes, and average execution prices.
+   - Top 1, Top 3, and Top 5 broker concentration ratios with accumulation status.
+3. **Key Stats & Fundamental PIT**:
+   - Comprehensive fundamental ratios (P/E, P/BV, ROE, Net Profit Margin, Debt-to-Equity, Dividend Yield).
+   - Point-In-Time reporting period and publication date disclosure.
+4. **Ruang Risiko Radar & Scenarios**:
+   - Multi-horizon quantile fan (1D, 5D, 20D) showing q10, q25, q50, q75, and q90 paths.
+   - 5-Scenario simulation engine with probability and invalidation levels.
+5. **Pre-Buy Decision Passport**:
+   - Clear GO / NO-GO research certificate with hard veto rationale.
+   - Position sizing limits and one-click Markdown passport download.
+6. **Stream & Narrative Intelligence**:
+   - ICT market structure hypothesis breakdown (MSS, FVG, Liquidity Sweeps).
+   - Rolling beta and correlation against IHSG.
+   - Public analyst / creator claim validation ledger.
+7. **Web Action Console**:
+   - Real-time action triggers (Refresh market data, recalculate risk models, refit directional classifiers).
+   - Interactive runtime parameter adjustment sliders (VaR confidence level, max allocation %, slippage limit).
+   - Chronological audit ledger displaying recent actions, operators, parameters, and durations.
+
+---
+
+## 5. Web Action Control Plane Architecture
+To ensure complete system transparency and autonomy without requiring command-line or RDC logins:
+- Every action initiated in the **Web Action Console** invokes the backend `actions.py` controller.
+- The action generates a unique immutable `action_id` (e.g. `ACT-20260926-163000-4821`).
+- The action executes asynchronously or with immediate UI feedback and logs its status (`SUCCESS` / `FAILED`), execution duration (ms), operator ID, and parameter diff to `reports/audit/action_ledger.json`.
+- The live audit ledger is immediately rendered on-screen, providing operational observability directly within the browser.
+
+---
+
+## 6. Accessibility and Compliance (WCAG 2.2 AA)
+- **Contrast**: All text tokens against `#131722` and `#1E222D` maintain a minimum contrast ratio of 4.5:1.
+- **Focus Rings**: Keyboard navigation highlights interactive inputs with a 2px `#2962FF` outline.
+- **Color Independence**: Status states combine color cues with explicit text badges (`FAVORABLE_SETUP`, `HIGH_RISK`, `WATCH`).

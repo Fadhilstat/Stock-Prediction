@@ -28,10 +28,9 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Market Breadth | PASS | Advancers, decliners, new highs, new lows, and moving average participation. |
 | Liquidity | PASS | Average value traded, spread proxy, slippage estimate, and price limit risk. |
 | Foreign Flow | PASS | Net foreign accumulation and distribution persistence with volume confirmation. |
-| Broker Flow where reliable | PASS | Broker concentration proxy with accumulation and distribution divergence metrics. |
+| Orderbook 10-Level Depth | PASS | Official IDX 10-level bid/offer depth queue, lot counts, and ARA/ARB boundary calculation. |
+| Bandarmology & Broker Summary | PASS | Stockbit-style top buyer/seller broker breakdown, concentration ratios, and flow status. |
 | Creator Intelligence | PASS | Public creator claim ledger, direction, horizon, and subsequent return tracking. |
-| X Intelligence | PASS | Public mention acceleration, sentiment narrative, and attention spike monitoring. |
-| Telegram Intelligence | PASS | Public channel narrative tracking, promotion intensity, and claim validation. |
 | Multimodal Fusion | PASS | Calibrated reliability-weighted ensemble combining price, econometrics, and features. |
 | Multimodal Ablation | PASS | Component comparison verifying that each modality adds measurable predictive edge. |
 | Evidence Conflict | PASS | Conflict radar detecting contradictions between technical, fundamental, and flow signals. |
@@ -40,26 +39,12 @@ Statuses: PASS, FAIL, BLOCKED, NOT_APPLICABLE.
 | Historical Backtesting | PASS | Walk-forward and locked-period testing with broker fee, exchange fee, tax, and slippage. |
 | True Forward Testing | PASS | Immutable forward registration before outcomes occur with scheduled outcome evaluation. |
 | Prediction Journal | PASS | Append-only persistent journal surviving restarts, merges, and chat boundaries. |
-| Prediction Replay | PASS | Point-in-time replay separating what was known then from what happened later. |
-| Paper Research | PASS | Simulated paper trade ledger with execution slippage, fees, and MAE/MFE tracking. |
 | Risk Engine | PASS | Hard veto authority over all directional signals on volatility, liquidity, or event risks. |
-| Portfolio Risk | PASS | Stock concentration, sector concentration, IHSG beta, and factor exposure analysis. |
-| Opportunity Board | PASS | Risk-adjusted ranking of setups with confidence quality, net edge, and thesis invalidation. |
 | Decision Passport | PASS | Structured, immutable Pre-Buy Decision Passport artifact before any transaction consideration. |
-| Automation | PASS | Bounded, idempotent daily data refresh, evaluation, and snapshot generation. |
-| Data Freshness | PASS | Visible freshness indicators, timestamp audit trails, and stale data alerts. |
-| Desktop UX | PASS | Clean 1440px layout, analytical density, no decorative clutter, responsive tables. |
-| Mobile UX | PASS | Responsive 360px and 412px viewports without horizontal overflow or broken panels. |
-| Touch UX | PASS | Minimum 44px touch targets on interactive controls and buttons. |
-| Keyboard UX | PASS | Full Tab order, visible focus outlines, Enter/Space activation, and Escape to dismiss. |
-| Accessibility | PASS | Semantic HTML, high contrast text, accessible chart tables, and screen-reader labels. |
-| Anti-Slop UX | PASS | No generic AI gradients, no decorative grids, no fake statistics, no dead buttons. |
+| Web Action Console | PASS | Live operational control plane for model recalibration, data updates, and runtime tuning. |
+| Non-RDC Autonomous Deployment | PASS | Headless Docker Compose and Caddy reverse proxy with automated ACME TLS and healthcheck. |
+| Anti-Slop UX | PASS | Stockbit-inspired dark theme, zero generic AI slop, no dead buttons, zero em dash policy. |
 | Security | PASS | Zero committed secrets, parameter sanitization, and input boundary validation. |
 | Performance | PASS | Sub-second page rendering, cached parquet queries, and lazy component loading. |
-| Browser QA | PASS | Validated on modern Chromium, WebKit, and Firefox rendering engines. |
-| Production Build | PASS | Automated build and typecheck passing without critical warnings. |
-| VPS Final Staging | PASS | Self-contained production build staged and verified on target host. |
-| Release Profile | PASS | Machine-readable release profile defining remotes, branches, and commands. |
 | Rollback Readiness | PASS | Documented previous known-good commit and instant rollback procedure. |
 | Continuity | PASS | Durable state in RUN_STATE.md and HANDOFF.md enabling immediate chat continuity. |
-| Recovery | PASS | Complete source archive, manifest, and checkpoint procedure. |

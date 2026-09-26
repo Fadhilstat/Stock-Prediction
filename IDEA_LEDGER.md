@@ -4,7 +4,7 @@
 This ledger records prospective research, statistical, and engineering enhancements.
 Items are promoted into active scope only when supported by verifiable empirical edge, market-data availability, and risk reduction.
 
-## Tracked Backlog Items
+## Tracked Backlog and Accepted Innovations
 
 | ID | Title | Problem Statement | Research Basis & Edge | Required Data | Complexity | Priority | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -16,3 +16,7 @@ Items are promoted into active scope only when supported by verifiable empirical
 | IDEA-06 | Creator Lead-Lag Lab | Financial social media creators may lag institutional repositioning. | Measure whether creator claim publication timestamps precede or follow price inflection. | Public social claim timestamps and price series | Medium | P2 | BACKLOG |
 | IDEA-07 | Portfolio Scenario Stress Lab | Correlated equity holdings collapse simultaneously during liquidity shocks. | Monte Carlo multivariate copula stress testing under 2020 and 2008 shock parameters. | Covariance matrix of historical stock returns | High | P2 | BACKLOG |
 | IDEA-08 | Earnings Quality Monitor | Headline earnings growth can mask aggressive accruals or accounts receivable ballooning. | Beneish M-Score and Sloan accruals ratio adapted for Indonesian accounting disclosures. | Annual financial statements (balance sheet and cash flow) | Medium | P2 | BACKLOG |
+| IDEA-09 | Autonomous Non-RDC Headless Stack | Remote Desktop is bottlenecked by queue times, latency, and session drops. | Containerized Docker and Caddy reverse proxy with automated ACME TLS and health probing. | Server SSH access and public DNS | Low | P0 | ACCEPTED_AND_SHIPPED |
+| IDEA-10 | Web Action Control Plane | Operational model recalibration previously required command line terminal access. | Interactive web controller with live audit logging, action dispatch, and runtime risk sliders. | Application session state and audit ledger JSON | Medium | P0 | ACCEPTED_AND_SHIPPED |
+| IDEA-11 | Stockbit Bandarmology & 10-Level Depth | Retail traders ignore quant risk when isolated from familiar trading interfaces. | High-density 10-level orderbook, ARA/ARB bounds, and top broker concentration ratios. | Market depth orders and broker trade aggregations | Medium | P0 | ACCEPTED_AND_SHIPPED |
+| IDEA-12 | Real-Time Statistical Invalidation Engine | Rigid stop-loss targets fail during structural market regime changes. | Continuous tracking of ICT Fair Value Gaps and rolling ATR bounds for early exit signals. | Intraday price series and ICT hypothesis engine | Medium | P1 | ACCEPTED_AND_SHIPPED |
