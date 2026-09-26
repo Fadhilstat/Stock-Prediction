@@ -1,6 +1,6 @@
 # Caddy Reverse Proxy Configuration for Ruang Risiko IDX
 
-{$DOMAIN:localhost} {
+{$DOMAIN:rridx.fadhilrusydi.com} {
     encode gzip zstd
 
     # Security Headers

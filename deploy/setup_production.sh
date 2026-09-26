@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Ruang Risiko IDX 1-Command Production Setup Script (Zero-RDC)
-# Usage: curl -sSL https://raw.githubusercontent.com/Fadhilstat/Stock-Prediction/main/deploy/setup_production.sh | bash -s -- --domain yourdomain.com
+# Target Domain: rridx.fadhilrusydi.com
+# Usage: curl -sSL https://raw.githubusercontent.com/Fadhilstat/Stock-Prediction/main/deploy/setup_production.sh | bash -s -- --domain rridx.fadhilrusydi.com
 
 set -euo pipefail
 
-DOMAIN="localhost"
-EMAIL="admin@ruangrisiko.id"
+DOMAIN="rridx.fadhilrusydi.com"
+EMAIL="admin@fadhilrusydi.com"
 
 while [[ $# -gt 0 ]]; do
   case $1 in

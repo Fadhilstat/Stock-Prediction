@@ -34,8 +34,8 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      - DOMAIN=${CUSTOM_DOMAIN:-localhost}
-      - TLS_EMAIL=${TLS_EMAIL:-admin@ruangrisiko.id}
+      - DOMAIN=${CUSTOM_DOMAIN:-rridx.fadhilrusydi.com}
+      - TLS_EMAIL=${TLS_EMAIL:-admin@fadhilrusydi.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
