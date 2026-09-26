@@ -105,15 +105,77 @@ if ! ${DOCKER_COMPOSE} version &> /dev/null; then
     fi
 fi
 
-# 5. Launch Stack
-echo "[4/4] Launching containerized application and Caddy TLS proxy..."
-${DOCKER_COMPOSE} down || true
-${DOCKER_COMPOSE} up -d --build
+# 5. Check Port 80 availability and Launch Strategy
+PORT80_BUSY=false
+if command -v ss &> /dev/null; then
+    if ss -tlpn | grep -q ':80 '; then
+        PORT80_BUSY=true
+    fi
+fi
 
-echo "Waiting for healthcheck..."
-sleep 10
+if [ "$PORT80_BUSY" = true ]; then
+    echo "=========================================================="
+    echo "NOTICE: Port 80 is already occupied on this host."
+    
+    # Check if host has native Nginx running
+    if command -v nginx &> /dev/null && $SUDO systemctl is-active --quiet nginx; then
+        echo "Detected native Nginx running on host."
+        echo "Launching Ruang Risiko IDX app on 127.0.0.1:8501 and configuring Nginx proxy..."
+        ${DOCKER_COMPOSE} up -d --build app
+        
+        # Configure Nginx for domain
+        NGINX_CONF="/etc/nginx/sites-available/${DOMAIN}"
+        cat << NGINX_EOF | $SUDO tee "${NGINX_CONF}" > /dev/null
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${DOMAIN};
+
+    location / {
+        proxy_pass http://127.0.0.1:8501;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+}
+NGINX_EOF
+        $SUDO ln -sf "${NGINX_CONF}" "/etc/nginx/sites-enabled/${DOMAIN}"
+        $SUDO nginx -t && $SUDO systemctl reload nginx
+        echo "SUCCESS: Nginx reverse proxy configured and reloaded for ${DOMAIN}."
+        
+        # Request SSL via Certbot if installed
+        if command -v certbot &> /dev/null; then
+            echo "Requesting SSL certificate via Certbot for ${DOMAIN}..."
+            $SUDO certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos -m "${EMAIL}" --redirect || true
+        else
+            echo "TIP: Install certbot for automatic SSL: sudo apt-get install -y certbot python3-certbot-nginx"
+            echo "Then run: sudo certbot --nginx -d ${DOMAIN}"
+        fi
+    else
+        echo "Port 80 is in use by another service. Launching app container on 127.0.0.1:8501..."
+        ${DOCKER_COMPOSE} up -d --build app
+        echo "App is listening at http://127.0.0.1:8501."
+        echo "Route your existing host web server (Nginx/Apache) to http://127.0.0.1:8501."
+    fi
+else
+    echo "[4/4] Launching containerized application and Caddy TLS proxy..."
+    ${DOCKER_COMPOSE} down || true
+    ${DOCKER_COMPOSE} up -d --build
+fi
+
+echo "Waiting for container healthcheck..."
+sleep 8
 if ${DOCKER_COMPOSE} exec -T app curl -f -s http://localhost:8501/_stcore/health > /dev/null; then
+    echo "=========================================================="
     echo "SUCCESS: Ruang Risiko IDX is live at https://${DOMAIN}"
+    echo "Local endpoint: http://127.0.0.1:8501"
+    echo "=========================================================="
 else
     echo "NOTICE: Service started. Initial model load may take up to 30 seconds."
     echo "Check logs: ${DOCKER_COMPOSE} logs -f"
