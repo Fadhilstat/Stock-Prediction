@@ -17,11 +17,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy package dependency manifests first for layer caching
 COPY pyproject.toml README.md ./
-COPY src/ ./src/
+RUN mkdir -p src/ruang_risiko_idx && touch src/ruang_risiko_idx/__init__.py
 
-# Install python package and dependencies
+# Install python package and dependencies (cached unless pyproject.toml changes)
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -e ".[models]"
+
+# Copy application source code (cached layer above is preserved on code changes)
+COPY src/ ./src/
 
 # Ensure required application directory structure exists
 RUN mkdir -p data/raw data/processed data/snapshots data/audit reports/risk reports/ml reports/passports reports/audit

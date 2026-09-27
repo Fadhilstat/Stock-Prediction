@@ -40,7 +40,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-addopts = "-q --basetemp=.pytest_temp"
+addopts = "-q --basetemp=.pytest_temp -p no:cov"
 
 [tool.ruff]
 line-length = 100
