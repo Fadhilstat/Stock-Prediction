@@ -1,6 +1,6 @@
 [
   {
-    "generated_at_utc":"2026-09-26 15:34:46+00:00",
+    "generated_at_utc":"2026-09-27 01:30:04+00:00",
     "ticker":"ANTM.JK",
     "as_of_date":"2026-09-25",
     "data_start_date":"2020-01-03",
@@ -29,7 +29,7 @@
     "selection_note":"EGARCH Normal had the lowest QLIKE. Student-t was selected for VaR because the Normal model failed 99 percent unconditional coverage."
   },
   {
-    "generated_at_utc":"2026-09-26 15:34:46+00:00",
+    "generated_at_utc":"2026-09-27 01:30:04+00:00",
     "ticker":"ASII.JK",
     "as_of_date":"2026-09-25",
     "data_start_date":"2020-01-03",
@@ -58,7 +58,7 @@
     "selection_note":"EGARCH Student-t had the lowest QLIKE and passed the reported VaR backtests."
   },
   {
-    "generated_at_utc":"2026-09-26 15:34:46+00:00",
+    "generated_at_utc":"2026-09-27 01:30:04+00:00",
     "ticker":"BBCA.JK",
     "as_of_date":"2026-09-25",
     "data_start_date":"2020-01-03",
@@ -87,7 +87,7 @@
     "selection_note":"GJR-GARCH Student-t had the lowest QLIKE and the strongest 99 percent VaR calibration among the tested specifications."
   },
   {
-    "generated_at_utc":"2026-09-26 15:34:46+00:00",
+    "generated_at_utc":"2026-09-27 01:30:04+00:00",
     "ticker":"BBRI.JK",
     "as_of_date":"2026-09-25",
     "data_start_date":"2020-01-03",
@@ -116,7 +116,7 @@
     "selection_note":"GJR-GARCH Normal ranked first for both QLIKE and volatility MAE, while its reported VaR tests remained acceptable."
   },
   {
-    "generated_at_utc":"2026-09-26 15:34:46+00:00",
+    "generated_at_utc":"2026-09-27 01:30:04+00:00",
     "ticker":"TLKM.JK",
     "as_of_date":"2026-09-25",
     "data_start_date":"2020-01-03",
@@ -145,7 +145,7 @@
     "selection_note":"EGARCH Student-t had the lowest QLIKE and well-calibrated 95 and 99 percent VaR results."
   },
   {
-    "generated_at_utc":"2026-09-26 15:34:46+00:00",
+    "generated_at_utc":"2026-09-27 01:30:04+00:00",
     "ticker":"^JKSE",
     "as_of_date":"2026-09-25",
     "data_start_date":"2020-01-03",

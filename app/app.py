@@ -26,9 +26,15 @@ from ruang_risiko_idx.research.actions import (
     update_runtime_risk_parameters,
 )
 from ruang_risiko_idx.research.alert_dispatcher import AlertPayload, dispatch_webhook_alert
+from ruang_risiko_idx.research.automation_daemon import (
+    load_automation_schedule,
+    run_autonomous_full_cycle,
+)
 from ruang_risiko_idx.research.biweekly_validation import generate_biweekly_validation_ledger
+from ruang_risiko_idx.research.dynamic_trailing import compute_dynamic_trailing_boundary
 from ruang_risiko_idx.research.microstructure_imbalance import compute_microstructure_imbalance
 from ruang_risiko_idx.research.morning_briefing import generate_premarket_morning_briefing
+from ruang_risiko_idx.research.strategy_backtest import run_strategy_backtest_replay
 from ruang_risiko_idx.research.broker_network import analyze_broker_network, scan_universe_bandarmology
 from ruang_risiko_idx.research.broker_summary import generate_broker_summary
 from ruang_risiko_idx.research.corporate_action_risk import evaluate_dividend_action_risk
@@ -391,6 +397,26 @@ morning_briefing = generate_premarket_morning_briefing(
     briefing_date=data_cutoff,
     risk_snapshots=risk_snapshots,
     direction_snapshots=direction_snapshots,
+)
+
+trailing_snapshot = compute_dynamic_trailing_boundary(
+    ticker=selected_ticker,
+    entry_price=tech_summary.sma_20 if tech_summary.sma_20 > 0 else tech_summary.close * 0.98,
+    current_price=tech_summary.close,
+    highest_price_since_entry=float(selected_data["high"].tail(20).max()),
+    static_invalidation=passport.invalidation_price,
+    target_q50=quantiles["20D"].q50,
+    daily_garch_vol=daily_vol,
+    unconditional_vol=float(math_moments.unconditional_garch_vol_pct / 100.0),
+    atr_14=float(tech_summary.atr_14),
+)
+
+backtest_report = run_strategy_backtest_replay(
+    price_df=selected_data,
+    ticker=selected_ticker,
+    initial_capital_idr=100_000_000.0,
+    prob_up_threshold=0.52,
+    max_vol_threshold=0.035,
 )
 
 broker_summary = generate_broker_summary(
@@ -1180,11 +1206,145 @@ with main_tabs[6]:
         ar_c4.metric("Kontribusi Risiko VaR", f"Rp {rec.var_contribution_idr:,.0f}")
         st.info(f"📌 Dasar Perhitungan: {rec.sizing_rationale}")
 
+    st.markdown("---")
+    st.markdown("##### 🏹 GARCH-ATR Dynamic Trailing Boundary & Volatility Ratchet")
+    st.caption("Penyesuaian batas proteksi kerugian bertingkat berbasis volatilitas bersyarat dan rata-rata pergerakan rentang nyata (ATR).")
+
+    tr_c1, tr_c2, tr_c3, tr_c4 = st.columns(4)
+    tr_c1.metric("Trailing Stop Dinamis", f"Rp {trailing_snapshot.dynamic_trailing_stop_price:,.0f}")
+    tr_c2.metric("Jarak ke Batas Stop", f"{trailing_snapshot.distance_to_stop_pct:+.2f}%")
+    tr_c3.metric("Tahap Ratchet", trailing_snapshot.ratchet_stage.replace("_", " "))
+    tr_c4.metric("Status Posisi", "🚨 TERLANGGAR" if trailing_snapshot.is_breached else "✓ AMAN TERKENDALI")
+
+    st.info(f"💡 Logika Ratchet: {trailing_snapshot.ratchet_rationale}")
+
+    st.markdown("---")
+    st.markdown("##### 📈 Simulasi Kurva Ekuitas Strategi & Strategy Backtest Replay")
+    st.caption("Evaluasi performa historis eksekusi protokol Pre-Buy Passport dan alokasi Kelly pada data pasar aktual.")
+
+    bt_c1, bt_c2, bt_c3, bt_c4 = st.columns(4)
+    bt_c1.metric("Total Return Strategi", f"{backtest_report.total_return_pct:+.2f}%", f"Alpha: {backtest_report.alpha_pct:+.2f}%")
+    bt_c2.metric("CAGR Disetahunkan", f"{backtest_report.annualized_return_cagr_pct:.2f}%")
+    bt_c3.metric("Sharpe Ratio", f"{backtest_report.annualized_sharpe_ratio:.2f}")
+    bt_c4.metric("Maximum Drawdown", f"-{backtest_report.maximum_drawdown_pct:.2f}%")
+
+    bt_c5, bt_c6, bt_c7, bt_c8 = st.columns(4)
+    bt_c5.metric("Win Rate (%)", f"{backtest_report.win_rate_pct:.1f}%")
+    bt_c6.metric("Profit Factor", f"{backtest_report.profit_factor:.2f}x")
+    bt_c7.metric("Calmar Ratio", f"{backtest_report.calmar_ratio:.2f}")
+    bt_c8.metric("Total Transaksi", f"{backtest_report.total_trades_count} Trade")
+
+    # Plot Equity Curve
+    eq_dates = [pt.trade_date for pt in backtest_report.equity_curve]
+    eq_strat = [pt.strategy_equity for pt in backtest_report.equity_curve]
+    eq_bench = [pt.benchmark_equity for pt in backtest_report.equity_curve]
+
+    eq_fig = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.04,
+        row_heights=[0.75, 0.25],
+    )
+    eq_fig.add_trace(
+        go.Scatter(
+            x=eq_dates,
+            y=eq_strat,
+            mode="lines",
+            name="Strategi Pre-Buy Passport",
+            line=dict(color="#00C076", width=2.2),
+        ),
+        row=1,
+        col=1,
+    )
+    eq_fig.add_trace(
+        go.Scatter(
+            x=eq_dates,
+            y=eq_bench,
+            mode="lines",
+            name="Benchmark Buy & Hold",
+            line=dict(color="#787B86", width=1.5, dash="dot"),
+        ),
+        row=1,
+        col=1,
+    )
+    eq_fig.add_trace(
+        go.Scatter(
+            x=eq_dates,
+            y=[pt.drawdown_pct for pt in backtest_report.equity_curve],
+            mode="lines",
+            name="Drawdown (%)",
+            line=dict(color="#FF4A68", width=1.0),
+            fill="tozeroy",
+            fillcolor="rgba(255, 74, 104, 0.15)",
+        ),
+        row=2,
+        col=1,
+    )
+    eq_fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#131722",
+        plot_bgcolor="#1E222D",
+        margin=dict(l=10, r=10, t=10, b=10),
+        height=380,
+        hovermode="x unified",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+    st.plotly_chart(eq_fig, use_container_width=True)
+    st.caption(f"📝 Ringkasan Replay: {backtest_report.executive_summary}")
+
 # TAB 8: Web Action Console (Operational Control Plane)
 with main_tabs[7]:
     st.markdown("#### Web Action Console (Pusat Kontrol & Operasional)")
     st.caption("Pantau dan atur setiap aksi operasional, model recalculation, dan konfigurasi risiko langsung dari web browser.")
 
+    st.markdown("##### 🤖 Panel Orkestrasi & Otomasi Daemon (Zero-RDC Full Automation)")
+    st.caption("Kendali eksekusi pipeline otonom tanpa perlu intervensi manual atau login terminal VPS.")
+
+    auto_col1, auto_col2 = st.columns([2, 1])
+    with auto_col1:
+        st.markdown(
+            """
+            <div style="background-color: #1E222D; border: 1px solid #2A2E39; border-radius: 6px; padding: 12px 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 700; color: #F9FAFB; font-size: 14px;">Status Daemon Otomasi Sistem</span>
+                    <span class="status-badge badge-favorable">BERJALAN OTONOM (ACTIVE)</span>
+                </div>
+                <div style="margin-top: 6px; font-size: 13px; color: #D1D4DC;">
+                    Pipeline dijadwalkan secara otomatis: Ingestion Data Pasar (16:30 WIB), Recalculation GARCH/VaR (17:00 WIB), Morning Briefing (08:30 WIB), dan Audit Bi-Weekly 14-Hari.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with auto_col2:
+        if st.button("⚡ Jalankan Siklus Penuh Otonom Sekarang", use_container_width=True):
+            with st.spinner("Mengeksekusi seluruh siklus otomatisasi (Data -> GARCH -> ML -> Briefing -> Audit)..."):
+                cycle_res = run_autonomous_full_cycle(operator="web_operator")
+                if cycle_res.all_success:
+                    st.success(cycle_res.summary_message)
+                    st.cache_data.clear()
+                else:
+                    st.warning(cycle_res.summary_message)
+
+    with st.expander("📅 Jadwal & Status Eksekusi Pekerjaan Otomatis (Task Registry)"):
+        sched_tasks = load_automation_schedule()
+        task_rows = []
+        for t in sched_tasks:
+            task_rows.append(
+                {
+                    "ID Tugas": t.task_id,
+                    "Nama Pekerjaan": t.task_name,
+                    "Frekuensi": t.cadence,
+                    "Jadwal (WIB)": t.schedule_time_wib,
+                    "Status": t.status,
+                    "Total Eksekusi": f"{t.execution_count}x",
+                    "Pesan Terakhir": t.last_message,
+                }
+            )
+        st.dataframe(pd.DataFrame(task_rows), use_container_width=True, hide_index=True)
+
+    st.markdown("---")
     action_c1, action_c2 = st.columns([1, 1])
 
     with action_c1:

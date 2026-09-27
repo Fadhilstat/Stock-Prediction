@@ -1,0 +1,57 @@
+[
+  {
+    "task_id": "TASK-MARKET-DATA",
+    "task_name": "Pembaruan Data Pasar Pasca-Penutupan BEI",
+    "cadence": "Harian",
+    "schedule_time_wib": "16:30 WIB",
+    "status": "SCHEDULED",
+    "last_run_at": "2026-09-27T01:30:04.529211+00:00",
+    "next_run_at": "Hari bursa berikutnya 16:30 WIB",
+    "execution_count": 51,
+    "last_message": "Sinkronisasi data harga dan volume seluruh semesta IDX berhasil."
+  },
+  {
+    "task_id": "TASK-RISK-MODELS",
+    "task_name": "Estimasi Ulang GARCH & VaR Snapshot",
+    "cadence": "Harian",
+    "schedule_time_wib": "17:00 WIB",
+    "status": "SCHEDULED",
+    "last_run_at": "2026-09-27T01:30:04.529211+00:00",
+    "next_run_at": "Hari bursa berikutnya 17:00 WIB",
+    "execution_count": 51,
+    "last_message": "Parameter volatilitas GARCH(1,1) dan VaR 99% terkalibrasi."
+  },
+  {
+    "task_id": "TASK-MORNING-BRIEFING",
+    "task_name": "Kompilasi Pre-Market Morning Briefing",
+    "cadence": "Harian",
+    "schedule_time_wib": "08:30 WIB",
+    "status": "SCHEDULED",
+    "last_run_at": "2026-09-27T01:30:04.529211+00:00",
+    "next_run_at": "Hari bursa berikutnya 08:30 WIB",
+    "execution_count": 35,
+    "last_message": "Intisari pembukaan sesi I dan 3 saham pilihan siap diakses."
+  },
+  {
+    "task_id": "TASK-BIWEEKLY-AUDIT",
+    "task_name": "Audit Walk-Forward Model Bi-Weekly (14-Hari)",
+    "cadence": "2 Pekan (14 Hari Bursa)",
+    "schedule_time_wib": "Setiap Jumat ke-2 18:00 WIB",
+    "status": "SCHEDULED",
+    "last_run_at": "2026-09-27T01:30:04.529211+00:00",
+    "next_run_at": "Siklus ke-5 dijadwalkan 2 pekan mendatang",
+    "execution_count": 7,
+    "last_message": "Model calibration sehat; Brier score 0.2312 di bawah batas toleransi."
+  },
+  {
+    "task_id": "TASK-WATCHDOG-SCAN",
+    "task_name": "Pemindai Mandiri Invalidation Watchdog",
+    "cadence": "Intraday (Tiap 15 Menit)",
+    "schedule_time_wib": "Jam Perdagangan BEI",
+    "status": "ACTIVE",
+    "last_run_at": "2026-09-27T01:30:04.529211+00:00",
+    "next_run_at": "15 menit mendatang",
+    "execution_count": 323,
+    "last_message": "Seluruh posisi aktif berjarak aman dari batas invalidasi keras."
+  }
+]

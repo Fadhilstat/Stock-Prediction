@@ -165,7 +165,7 @@ def trigger_risk_recalculation() -> dict[str, Any]:
     try:
         from scripts.build_latest_risk_snapshot import main as rebuild_risk
 
-        exit_code = rebuild_risk()
+        exit_code = rebuild_risk(argv=[])
         elapsed = (time.perf_counter() - start) * 1000.0
         if exit_code == 0:
             msg = "GARCH volatility and VaR snapshots successfully recomputed and registered."
@@ -205,7 +205,7 @@ def trigger_direction_recalculation() -> dict[str, Any]:
     try:
         from scripts.build_latest_direction_snapshot import main as rebuild_dir
 
-        exit_code = rebuild_dir()
+        exit_code = rebuild_dir(argv=[])
         elapsed = (time.perf_counter() - start) * 1000.0
         if exit_code == 0:
             msg = "Directional classification models re-inferred and latest snapshot registered."

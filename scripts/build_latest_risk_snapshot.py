@@ -23,7 +23,7 @@ DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "reports" / "risk" / "latest_risk_snapshot.
 DEFAULT_JSON_PATH = PROJECT_ROOT / "reports" / "risk" / "latest_risk_snapshot.json"
 
 
-def parse_arguments() -> argparse.Namespace:
+def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse command-line arguments."""
 
     parser = argparse.ArgumentParser(
@@ -60,7 +60,7 @@ def parse_arguments() -> argparse.Namespace:
         default=750,
     )
 
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def write_parquet_atomic(
@@ -118,10 +118,10 @@ def write_json_atomic(
     temporary_path.replace(destination)
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     """Build and save the latest risk snapshot."""
 
-    args = parse_arguments()
+    args = parse_arguments(argv)
 
     if not args.input.exists():
         raise FileNotFoundError(f"Analytics data was not found at {args.input}.")

@@ -1,21 +1,21 @@
 # Ruang Risiko IDX Durable Run State
 
 Project: Ruang Risiko IDX
-Updated: 2026-09-27T02:01:00+07:00
+Updated: 2026-09-27T08:31:00+07:00
 Branch: main
-HEAD: orderbook microstructure imbalance, CVD proxy, and pre-market morning briefing
-Current Product State: OMI_CVD_PREMARKET_BRIEFING_TRADINGVIEW_RELEASE
+HEAD: autonomous daemon, dynamic trailing ratchet, and strategy equity backtest
+Current Product State: AUTONOMOUS_DAEMON_DYNAMIC_TRAILING_BACKTEST_RELEASE
 Current Release State: PRODUCTION_LIVE_AND_ENHANCED
-Current Milestone: Microstructure Imbalance (VOI/CVD) & Autonomous Morning Briefing Shipped
-Last Completed Action: Delivered Volume Order Imbalance (VOI) engine, Cumulative Volume Delta (CVD) absorption tracking, Stockbit-style visual orderbook depth bars, Pre-Market Morning Briefing (08:30 WIB) digest with 1-click Markdown download, and Web Action Console triggers. Passed all 127 unit tests. Zero em dash compliance verified. Ready to push to origin/main.
+Current Milestone: Full Automation Daemon, Dynamic Trailing Ratchet, and Strategy Equity Replay Shipped
+Last Completed Action: Delivered end-to-end Autonomous Task Daemon (daily 16:30 WIB ingestion, 17:00 WIB risk recalculation, 08:30 WIB morning briefing, 14-day bi-weekly audit), GARCH-ATR Dynamic Trailing Boundary with 4-stage ratchet, and Walk-Forward Strategy Backtest Replay with interactive Plotly equity curve. Passed all 130 unit tests. Zero em dash compliance verified. Ready to push to origin/main.
 Current Action: Commit, push to origin/main with user approval, and trigger VPS deployment.
 NEXT_ACTION: Proactively introduce next quantitative risk innovation batch.
 FINISH_GATE State: PASS (all criteria validated)
-Release Candidate ID: RC-20260927-08
+Release Candidate ID: RC-20260927-09
 Push Approval State: APPROVED_BY_USER
 Push State: READY_TO_PUSH
-Change Request ID: PR-20
-CI State: LOCAL_PASSED_ALL_TESTS (127 passed)
+Change Request ID: PR-21
+CI State: LOCAL_PASSED_ALL_TESTS (130 passed)
 Merge Approval State: APPROVED_BY_USER
 Merge State: MERGED_INTO_MAIN
 Post-Merge State: VERIFIED_ON_GITHUB
@@ -23,7 +23,7 @@ Deployment State: LIVE_AT_RRIDX_FADHILRUSYDI_COM
 Production State: ACTIVE_IN_PRODUCTION
 Primary Domain: fadhilrusydi.com
 Production Target: https://rridx.fadhilrusydi.com (VERIFIED_LIVE)
-Rollback State: READY_AT_2c3da1d
+Rollback State: READY_AT_1f61987
 Market Data Cutoff: 2026-09-25
 Canonical Data State: VALIDATED_SCHEMA (9,744 rows, 0 quarantined)
 Quarantine State: ACTIVE_ZERO_CONTAMINATION

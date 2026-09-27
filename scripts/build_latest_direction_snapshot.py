@@ -42,7 +42,7 @@ DEFAULT_JSON_PATH = (
 )
 
 
-def parse_arguments() -> argparse.Namespace:
+def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse command-line arguments."""
 
     parser = argparse.ArgumentParser(
@@ -81,7 +81,7 @@ def parse_arguments() -> argparse.Namespace:
         default=750,
     )
 
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def write_parquet_atomic(
@@ -249,10 +249,10 @@ def validate_snapshot(
         )
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     """Build and save the latest direction snapshot."""
 
-    args = parse_arguments()
+    args = parse_arguments(argv)
 
     if not args.input.exists():
         raise FileNotFoundError(

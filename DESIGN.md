@@ -136,8 +136,19 @@ Its user interface combines the visual ergonomics of TradingView dark mode with 
   - Volatility-adjusted Fractional Kelly sizing.
   - Position sizing constrained by maximum single-stock allocation, daily portfolio risk budget, and IDX 100-share lot minimums.
   - Exact IDR Value-at-Risk contribution calculation.
+- **GARCH-ATR Dynamic Trailing Boundary and Volatility Ratchet**:
+  - Continuous stop-loss tightening driven by conditional GARCH volatility and ATR multiples.
+  - 4-stage ratchet mechanism: Initial Defense, Breakeven Locked (covers fees upon reaching q50), Profit Protection (locks 4% profit upon 8% gain), and Trailing Tight (locks within 7% of high upon 15% run).
+- **Strategy Backtest Replay and Interactive Equity Curve**:
+  - Historical simulation comparing strategy return vs Benchmark Buy & Hold across empirical trading days.
+  - Performance metrics: CAGR (%), Alpha (%), Annualized Sharpe Ratio, Maximum Drawdown (%), Calmar Ratio, Win Rate (%), and Profit Factor.
+  - Interactive Plotly multi-pane equity curve with historical drawdown visualization.
 
 ### Tab 8: Web Action Console (Operational Control Plane)
+- **Autonomous Task Daemon and Orchestration Panel**:
+  - End-to-end autonomous background job coordinator eliminating need for command-line or RDC intervention.
+  - Master Execution Trigger: 1-click execution of the entire pipeline sequence (Data Ingestion, GARCH/VaR Recalculation, ML Direction Refit, Morning Briefing Compilation, Bi-Weekly Model Audit).
+  - Live Task Schedule Registry: Monitored status, execution frequency, next scheduled run, and audit logs.
 - **Real-Time Action Triggers**:
   - Refresh market data ingestion.
   - Recalculate GARCH volatility and VaR snapshots.
@@ -191,6 +202,16 @@ $$\text{VOI} = \sum_{k=1}^K w_k \cdot (V_k^{\text{bid}} - V_k^{\text{offer}}), \
 Cumulative Volume Delta proxy quantifies net market order aggression:
 
 $$\text{CVD} = \int (\text{Market Buys} - \text{Market Sells}) \, dt \approx 0.75 \cdot \left(\sum_{k=1}^3 V_k^{\text{bid}} - \sum_{k=1}^3 V_k^{\text{offer}}\right)$$
+
+### 5.6 GARCH-ATR Dynamic Trailing Boundary
+The adaptive stop-loss boundary scales dynamically with conditional volatility:
+
+$$\text{Trailing Stop}_t = \max\left(\text{Stop}_{t-1}, P_{\text{high}} - k \cdot \text{ATR}_{14} \cdot \sqrt{\frac{\sigma_t^2}{\sigma_{\text{long-run}}^2}}\right)$$
+
+### 5.7 Strategy Performance Metrics
+The annualized Sharpe Ratio incorporates the risk-free rate (BI-Rate $R_f = 6.0\%$):
+
+$$\text{Sharpe} = \frac{\bar{R}_p - R_f}{\sigma_p} \cdot \sqrt{252}, \quad \text{Calmar} = \frac{\text{CAGR}}{\text{Maximum Drawdown}}$$
 
 ---
 
