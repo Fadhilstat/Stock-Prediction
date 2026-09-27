@@ -35,6 +35,7 @@ COPY config/ ./config/
 COPY data/ ./data/
 COPY reports/ ./reports/
 COPY scripts/ ./scripts/
+COPY DESIGN.md CONTEXT_HANDOVER.md ./
 
 EXPOSE 8501
 

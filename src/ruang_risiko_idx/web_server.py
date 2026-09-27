@@ -22,7 +22,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 from ruang_risiko_idx.config import ProjectSettings
@@ -149,6 +149,22 @@ async def health_check() -> dict[str, Any]:
         "timestamp": datetime.now(UTC).isoformat(),
         "version": "2.0.0",
     }
+
+
+@app.get("/context", response_class=PlainTextResponse)
+@app.get("/api/v1/system/context", response_class=PlainTextResponse)
+async def get_system_context() -> str:
+    """Serve master context handover specification for cross-session AI continuity."""
+    settings = ProjectSettings()
+    candidates = [
+        settings.project_root / "CONTEXT_HANDOVER.md",
+        Path("/app/CONTEXT_HANDOVER.md"),
+        Path("CONTEXT_HANDOVER.md"),
+    ]
+    for p in candidates:
+        if p.exists():
+            return p.read_text(encoding="utf-8")
+    return "Error: CONTEXT_HANDOVER.md not found on server."
 
 
 # =========================================================================
