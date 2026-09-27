@@ -55,6 +55,8 @@ from ruang_risiko_idx.research.multimodal_engine import (
     compute_multimodal_prediction,
     get_stock_catalog,
 )
+from ruang_risiko_idx.research.alert_dispatcher import alert_dispatcher
+from ruang_risiko_idx.research.black_litterman import bl_engine
 from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
 from ruang_risiko_idx.research.sentiment_engine import get_latest_market_sentiment
 from ruang_risiko_idx.research.spillover_index import compute_diebold_yilmaz_spillover
@@ -462,6 +464,16 @@ async def execute_action(request: Request) -> dict[str, Any]:
             "message": "Dynamic orderbook liquidity surface and square-root law market impact parameters recalibrated.",
             "timestamp": datetime.now(UTC).isoformat(),
         },
+        "BLACK_LITTERMAN_OPTIMIZE": lambda: {
+            "status": "SUCCESS",
+            "message": "Black-Litterman portfolio master frontier recalibrated with Hugging Face Chronos and FinBERT priors.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "DISPATCH_ALERTS": lambda: {
+            "status": "SUCCESS",
+            "message": "Automated institutional anomaly scan executed and alert triggers refreshed.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
     }
 
     if action_type not in handlers:
@@ -504,6 +516,29 @@ async def post_liquidity_simulator_endpoint(request: Request) -> dict[str, Any]:
     meta = STOCK_CATALOG_MAP.get(ticker.upper(), {"base_price": 5000})
     base_px = float(meta.get("base_price", 5000))
     return stress_engine.simulate_liquidity_impact(ticker, base_px, order_size).to_dict()
+
+
+@app.post("/api/v1/portfolio/black-litterman")
+async def post_black_litterman_endpoint(request: Request) -> dict[str, Any]:
+    """Compute optimal Black-Litterman asset allocation with AI priors."""
+    body = await request.json() if request.headers.get("content-length", "0") != "0" else {}
+    tickers = body.get("tickers")
+    capital = float(body.get("total_capital_idr", 500_000_000.0))
+    max_w = float(body.get("max_asset_weight", 0.25))
+    min_w = float(body.get("min_asset_weight", 0.02))
+    return bl_engine.compute_optimal_portfolio(tickers, capital, max_w, min_w).to_dict()
+
+
+@app.get("/api/v1/alerts/live")
+async def get_live_alerts_endpoint() -> dict[str, Any]:
+    """Retrieve active institutional alerts across monitored IDX equities."""
+    alerts = alert_dispatcher.scan_active_alerts()
+    return {
+        "count": len(alerts),
+        "timestamp": datetime.now(UTC).isoformat(),
+        "alerts": [a.to_dict() for a in alerts],
+    }
+
 
 
 

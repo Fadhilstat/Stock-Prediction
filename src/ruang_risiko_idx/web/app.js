@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadFinBERTSentiment(state.currentTicker);
   loadBrokerNetwork(state.currentTicker);
   loadStressTest(state.currentTicker);
+  loadBlackLitterman();
+  loadLiveAlerts();
   initWebSocket(state.currentTicker);
   loadSentiment();
   loadSpillover();
@@ -128,6 +130,18 @@ function initEventListeners() {
   const simLiqBtn = document.getElementById('btn-run-liquidity-sim');
   if (simLiqBtn) {
     simLiqBtn.addEventListener('click', simulateLiquidity);
+  }
+
+  // Black-Litterman Optimize Button
+  const blBtn = document.getElementById('btn-run-bl-optimize');
+  if (blBtn) {
+    blBtn.addEventListener('click', loadBlackLitterman);
+  }
+
+  // Refresh Alerts Button
+  const refAlertsBtn = document.getElementById('btn-refresh-alerts');
+  if (refAlertsBtn) {
+    refAlertsBtn.addEventListener('click', loadLiveAlerts);
   }
 
   // Ticker search filter
@@ -661,6 +675,12 @@ async function executeAction(actionType) {
       }
       if (actionType === 'STRESS_TEST_SCENARIO' || actionType === 'LIQUIDITY_SURFACE_CALIBRATE') {
         loadStressTest(state.currentTicker);
+      }
+      if (actionType === 'BLACK_LITTERMAN_OPTIMIZE') {
+        loadBlackLitterman();
+      }
+      if (actionType === 'DISPATCH_ALERTS') {
+        loadLiveAlerts();
       }
     } else {
       statusBox.innerHTML = `<span style="color:var(--color-down)">PERINGATAN / GAGAL:</span> ${data.message || data.detail || 'Operasi gagal'}`;
@@ -1295,6 +1315,144 @@ function updateLiquidityMetrics(data) {
     badgeEl.style.color = data.execution_recommendation === 'DIRECT_MARKET' ? '#00c076' : '#00e5ff';
   }
 }
+
+// -------------------------------------------------------------
+// Black-Litterman Portfolio Lab
+// -------------------------------------------------------------
+async function loadBlackLitterman() {
+  const capInput = document.getElementById('bl-total-capital');
+  const maxWInput = document.getElementById('bl-max-weight');
+  const minWInput = document.getElementById('bl-min-weight');
+
+  const capital = capInput ? parseFloat(capInput.value) || 500000000 : 500000000;
+  const maxW = maxWInput ? (parseFloat(maxWInput.value) || 25) / 100.0 : 0.25;
+  const minW = minWInput ? (parseFloat(minWInput.value) || 2) / 100.0 : 0.02;
+
+  showToast('Mengoptimasi portofolio Black-Litterman...');
+
+  try {
+    const res = await fetch('/api/v1/portfolio/black-litterman', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        total_capital_idr: capital,
+        max_asset_weight: maxW,
+        min_asset_weight: minW,
+      }),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const sharpeEl = document.getElementById('bl-sharpe-score');
+    if (sharpeEl) sharpeEl.innerText = data.portfolio_sharpe_ratio.toFixed(2);
+
+    const retEl = document.getElementById('bl-port-return');
+    if (retEl) retEl.innerText = `+${data.portfolio_expected_annual_return_pct}% / Thn`;
+
+    const volEl = document.getElementById('bl-port-vol');
+    if (volEl) volEl.innerText = `${data.portfolio_annual_volatility_pct}% / Thn`;
+
+    const varEl = document.getElementById('bl-port-var');
+    if (varEl) varEl.innerText = `${data.portfolio_var_99_annual_pct}%`;
+
+    const divEl = document.getElementById('bl-port-div');
+    if (divEl) divEl.innerText = `${data.diversification_ratio}x`;
+
+    const statusBadge = document.getElementById('bl-status-badge');
+    if (statusBadge) statusBadge.innerText = data.optimization_status.replace(/_/g, ' ');
+
+    // Sector pills
+    const secBox = document.getElementById('bl-sector-pills');
+    if (secBox && data.sector_allocations) {
+      secBox.innerHTML = '';
+      Object.entries(data.sector_allocations).forEach(([sec, pct]) => {
+        const span = document.createElement('span');
+        span.className = 'status-pill';
+        span.style.background = 'rgba(124, 77, 255, 0.2)';
+        span.style.color = '#b388ff';
+        span.innerText = `${sec}: ${pct}%`;
+        secBox.appendChild(span);
+      });
+    }
+
+    // Holdings Table
+    const tbody = document.getElementById('bl-holdings-body');
+    if (tbody && data.holdings) {
+      tbody.innerHTML = '';
+      data.holdings.forEach((h) => {
+        const tr = document.createElement('tr');
+        const isUp = h.chronos_drift_pct >= 0;
+        tr.innerHTML = `
+          <td><strong>${h.ticker}</strong></td>
+          <td>${h.name}</td>
+          <td><span class="badge-sector-mini">${h.sector}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <strong style="color:var(--color-up);width:45px;">${h.weight_pct}%</strong>
+              <div style="background:rgba(255,255,255,0.08);width:70px;height:6px;border-radius:3px;overflow:hidden;">
+                <div style="background:var(--color-up);width:${Math.min(100, h.weight_pct * 4)}%;height:100%;"></div>
+              </div>
+            </div>
+          </td>
+          <td>Rp ${Math.round(h.allocated_capital_idr).toLocaleString('id-ID')}</td>
+          <td style="color:var(--color-up);font-weight:600">+${h.expected_annual_return_pct}%</td>
+          <td><span class="${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${h.chronos_drift_pct}%</span></td>
+          <td><span class="news-badge ${h.sentiment_stance === 'BULLISH' || h.sentiment_stance === 'STRONG_BULLISH' ? 'BULLISH' : 'NEUTRAL'}">${h.sentiment_stance.replace(/_/g, ' ')}</span></td>
+          <td style="color:${h.smart_money_index >= 0 ? 'var(--color-up)' : 'var(--color-down)'}">${h.smart_money_index >= 0 ? '+' : ''}${h.smart_money_index}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    showToast('Optimasi Portofolio Black-Litterman Berhasil');
+  } catch (err) {
+    console.debug('Failed to load Black-Litterman', err);
+  }
+}
+
+// -------------------------------------------------------------
+// Institutional Signals & Anomaly Alerts
+// -------------------------------------------------------------
+async function loadLiveAlerts() {
+  try {
+    const res = await fetch('/api/v1/alerts/live');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const countBadge = document.getElementById('alerts-count-badge');
+    if (countBadge) countBadge.innerText = data.count;
+
+    const container = document.getElementById('live-alerts-container');
+    if (container && data.alerts) {
+      container.innerHTML = '';
+      data.alerts.forEach((alt) => {
+        const item = document.createElement('div');
+        item.className = 'news-item';
+        const color = alt.severity === 'CRITICAL' ? '#ff5252' : alt.severity === 'WARNING' ? '#ffb74d' : '#00e5ff';
+        item.style.borderLeft = `3px solid ${color}`;
+        item.innerHTML = `
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span class="status-pill" style="background:${color}22;color:${color}">${alt.severity}</span>
+              <strong style="color:${color}">${alt.title}</strong>
+              <span class="badge-sector-mini">${alt.ticker}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">${alt.message}</div>
+            <div style="font-size:11px;color:#82b1ff;"><strong>Tindakan Rekomendasi:</strong> ${alt.actionable_step}</div>
+          </div>
+          <div style="text-align:right;min-width:140px;">
+            <div style="font-size:11px;color:#ffd54f;font-weight:700;">${alt.metric_value}</div>
+            <div style="font-size:10px;color:var(--text-secondary);margin-top:4px;">${alt.detected_at.slice(11, 19)} UTC</div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+  } catch (err) {
+    console.debug('Failed to load live alerts', err);
+  }
+}
+
 
 
 

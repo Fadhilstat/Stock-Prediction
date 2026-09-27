@@ -211,6 +211,8 @@
           <button class="suite-tab" data-tab="tab-pareto">🎯 Pareto Portfolio</button>
           <button class="suite-tab" data-tab="tab-spillover">⚡ Diebold-Yilmaz Spillover</button>
           <button class="suite-tab" data-tab="tab-stress">🧪 Stress Lab & Slippage</button>
+          <button class="suite-tab" data-tab="tab-bl">📐 Black-Litterman Lab</button>
+          <button class="suite-tab" data-tab="tab-alerts">🔔 Sinyal & Peringatan</button>
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
 
@@ -785,6 +787,103 @@
               </table>
             </div>
           </div>
+        <!-- Tab: Black-Litterman Portfolio Lab -->
+        <div class="tab-pane" id="tab-bl">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Rasio Sharpe Portofolio Optimal</span>
+              <div class="big-score up" id="bl-sharpe-score">1.84</div>
+              <span class="score-sub" id="bl-sharpe-sub">SHARPE MAXIMIZED (AI PRIORS)</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Karakteristik & Risiko Portofolio Black-Litterman</span>
+              <p><strong>Ekspektasi Return Tahunan:</strong> <span class="up" id="bl-port-return">+24.5% / Thn</span></p>
+              <p><strong>Volatilitas Portofolio Tahunan:</strong> <span id="bl-port-vol">11.8% / Thn</span></p>
+              <p><strong>Parametric VaR 99% (1 Thn):</strong> <span class="down" id="bl-port-var">18.2%</span> | <strong>Rasio Diversifikasi:</strong> <span id="bl-port-div" style="color: #00e5ff;">1.62x</span></p>
+            </div>
+          </div>
+
+          <!-- Interactive Capital & Constraint Form -->
+          <div class="runtime-config-card" style="margin-top: 15px; border-left: 3px solid #00c076;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h5 style="color: #00c076; margin: 0;">ALOKASI MODAL & PENGATURAN FRONTIER BLACK-LITTERMAN</h5>
+              <span class="status-pill status-healthy" id="bl-status-badge" style="background: rgba(0, 192, 118, 0.25); color: #00c076;">OPTIMAL CONVERGED</span>
+            </div>
+            <div class="config-grid" style="margin-top: 12px;">
+              <div class="config-item">
+                <label for="bl-total-capital">Total Modal Investasi (IDR):</label>
+                <input type="number" id="bl-total-capital" class="form-input" min="10000000" max="50000000000" step="50000000" value="500000000">
+              </div>
+              <div class="config-item">
+                <label for="bl-max-weight">Batas Maksimal Bobot Aset Tunggal (%):</label>
+                <input type="number" id="bl-max-weight" class="form-input" min="10" max="50" step="5" value="25">
+              </div>
+              <div class="config-item">
+                <label for="bl-min-weight">Batas Minimal Bobot Aset (%):</label>
+                <input type="number" id="bl-min-weight" class="form-input" min="0" max="10" step="1" value="2">
+              </div>
+            </div>
+            <div class="config-actions" style="margin-top: 12px;">
+              <button class="btn-action-primary" id="btn-run-bl-optimize">
+                <span class="icon">🎯</span> Jalankan Optimasi Portofolio Black-Litterman
+              </button>
+            </div>
+          </div>
+
+          <!-- Sector Breakdown Distribution -->
+          <div class="runtime-config-card" style="margin-top: 15px; border-left: 3px solid #7c4dff;">
+            <h5 style="color: #b388ff; margin: 0 0 10px 0;">DISTRIBUSI ALOKASI SEKTOR INDUSTRI</h5>
+            <div id="bl-sector-pills" style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <!-- Sector pills injected via JS -->
+            </div>
+          </div>
+
+          <!-- Holdings Table -->
+          <div class="panel-card" style="margin-top: 15px;">
+            <div class="card-header">
+              <h3>DAFTAR ALOKASI SAHAM OPTIMAL (SHARPE & PRIOR EQUILIBRIUM)</h3>
+            </div>
+            <div class="table-wrap">
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th>Ticker</th>
+                    <th>Nama Emiten</th>
+                    <th>Sektor</th>
+                    <th>Bobot (%)</th>
+                    <th>Alokasi Modal (IDR)</th>
+                    <th>Exp Return / Thn</th>
+                    <th>Drift Chronos</th>
+                    <th>Sentimen FinBERT</th>
+                    <th>Smart Money (SMI)</th>
+                  </tr>
+                </thead>
+                <tbody id="bl-holdings-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Automated Market Signals & Alerts -->
+        <div class="tab-pane" id="tab-alerts">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Total Sinyal Aktif Terdeteksi</span>
+              <div class="big-score up" id="alerts-count-badge">8</div>
+              <span class="score-sub" id="alerts-sub-badge">INSTITUTIONAL RADAR</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Pemantauan Anomali Institusional Otomatis</span>
+              <p>Mendeteksi akumulasi senyap paus asing, lonjakan entropi Shannon, peluang breakout model conformal, dan manipulasi spoofing orderbook.</p>
+              <button class="btn-action-primary" id="btn-refresh-alerts" style="margin-top: 6px;">
+                <span class="icon">🔄</span> Pindai Ulang Seluruh Semesta
+              </button>
+            </div>
+          </div>
+
+          <div class="news-feed" id="live-alerts-container" style="margin-top: 15px;">
+            <!-- Live alerts injected via JavaScript -->
+          </div>
         </div>
 
         <!-- Tab 7: Web Action Console -->
@@ -877,6 +976,20 @@
                 <div class="btn-text">
                   <strong>Kalibrasi Permukaan Likuiditas Orderbook</strong>
                   <span>Estimasi parameter dampak pasar non-linear & slippage</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="BLACK_LITTERMAN_OPTIMIZE">
+                <span class="btn-icon">🎯</span>
+                <div class="btn-text">
+                  <strong>Optimasi Portofolio Black-Litterman</strong>
+                  <span>Kombinasikan prior equilibrium dan pandangan model AI</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="DISPATCH_ALERTS">
+                <span class="btn-icon">🔔</span>
+                <div class="btn-text">
+                  <strong>Pindai Sinyal & Anomali Pasar</strong>
+                  <span>Pindai akumulasi senyap, lonjakan entropi, dan spoofing</span>
                 </div>
               </button>
             </div>

@@ -289,10 +289,50 @@ def test_fastapi_endpoints():
     assert resp_act_lq.status_code == 200
     assert resp_act_lq.json()["status"] == "SUCCESS"
 
+    # Black-Litterman Portfolio Optimization API
+    resp_bl = client.post(
+        "/api/v1/portfolio/black-litterman",
+        json={
+            "tickers": ["BBCA.JK", "BBRI.JK", "BMRI.JK", "TLKM.JK"],
+            "total_capital_idr": 750_000_000.0,
+            "max_asset_weight": 0.35,
+        },
+    )
+    assert resp_bl.status_code == 200
+    bl_json = resp_bl.json()
+    assert bl_json["total_capital_idr"] == 750_000_000.0
+    assert len(bl_json["holdings"]) == 4
+    assert bl_json["portfolio_sharpe_ratio"] > 0
+    assert abs(sum(h["weight_pct"] for h in bl_json["holdings"]) - 100.0) < 1.0
+
+    # Live Alerts Dispatcher API
+    resp_alerts = client.get("/api/v1/alerts/live")
+    assert resp_alerts.status_code == 200
+    alerts_json = resp_alerts.json()
+    assert alerts_json["count"] >= 1
+    assert len(alerts_json["alerts"]) == alerts_json["count"]
+    assert "severity" in alerts_json["alerts"][0]
+
+    # Action Triggers for BL and Alerts
+    resp_act_bl = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "BLACK_LITTERMAN_OPTIMIZE"},
+    )
+    assert resp_act_bl.status_code == 200
+    assert resp_act_bl.json()["status"] == "SUCCESS"
+
+    resp_act_al = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "DISPATCH_ALERTS"},
+    )
+    assert resp_act_al.status_code == 200
+    assert resp_act_al.json()["status"] == "SUCCESS"
+
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200
     assert "text/html" in resp_index.headers.get("content-type", "")
+
 
 
 

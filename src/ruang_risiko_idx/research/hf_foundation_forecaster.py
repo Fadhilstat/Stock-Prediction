@@ -258,6 +258,8 @@ class HuggingFaceChronosForecaster:
             summary_insight=summary,
         )
 
+    run_tournament = generate_foundation_forecast
+
 
 # Global singleton instance
 hf_forecaster = HuggingFaceChronosForecaster()

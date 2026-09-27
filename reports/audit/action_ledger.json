@@ -7596,5 +7596,171 @@
     },
     "summary_message": "Hugging Face foundation forecast generated for BMRI.JK with model Hugging Face Chronos-T5 (Zero-Shot Transformer) (Horizon: 5D, RMSE: 70.89 IDR).",
     "duration_ms": 45.2
+  },
+  {
+    "action_id": "ACT-20260927-155950-9835",
+    "action_type": "SPILLOVER_INDEX_CALCULATION",
+    "triggered_at": "2026-09-27T15:59:50.543862+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Diebold-Yilmaz Total Spillover Index: 35.5%. Dominant shock transmitter is BBRI.JK (+4.3% net), while ASII.JK is the primary systemic shock receiver (-3.5% net).",
+    "duration_ms": 2.2
+  },
+  {
+    "action_id": "ACT-20260927-155950-6054",
+    "action_type": "SENTIMENT_CATALYST_REFRESH",
+    "triggered_at": "2026-09-27T15:59:50.583667+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Sentimen pasar modal terkonsolidasi dengan bias RISK_ON_ACCUMULATION (Skor: +0.48). Katalis utama didukung oleh inflow asing dan stabilitas nilai tukar Rupiah.",
+    "duration_ms": 0.06
+  },
+  {
+    "action_id": "ACT-20260927-155958-8857",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T15:59:58.972725+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data ingestion complete. Processed latest records for 6 tickers (exit code 0).",
+    "duration_ms": 8300.62
+  },
+  {
+    "action_id": "ACT-20260927-155958-5932",
+    "action_type": "BANDARMOLOGY_SCAN",
+    "triggered_at": "2026-09-27T15:59:58.998727+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Bandarmology Status for BBCA.JK: ACCUMULATION (Skor: +22.7). Top 3 Buyer Concentration (CR3) adalah 60.1%. Net Foreign Flow tercatat Rp +303.53 Miliar.",
+    "duration_ms": 0.21
+  },
+  {
+    "action_id": "ACT-20260927-160000-0643",
+    "action_type": "RUNTIME_CONFIG_UPDATE",
+    "triggered_at": "2026-09-27T16:00:00.527701+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "var_confidence_level": 0.975,
+      "max_portfolio_allocation_percent": 18.0,
+      "max_slippage_bps": 30.0,
+      "garch_vol_hard_veto_threshold": 0.05,
+      "tail_var99_veto_threshold": 0.08,
+      "active_direction_model": "xgboost",
+      "telegram_bot_token": "",
+      "telegram_chat_id": ""
+    },
+    "summary_message": "Runtime parameters updated: VaR confidence 97.5%, Max Alloc 18.0%.",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-160000-3484",
+    "action_type": "HF_FOUNDATION_FORECAST",
+    "triggered_at": "2026-09-27T16:00:00.561699+00:00",
+    "operator": "web_action_console",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BMRI.JK",
+      "model_id": "hf_chronos_transformer",
+      "horizon": 5,
+      "confidence": 0.95
+    },
+    "summary_message": "Hugging Face foundation forecast generated for BMRI.JK with model Hugging Face Chronos-T5 (Zero-Shot Transformer) (Horizon: 5D, RMSE: 70.89 IDR).",
+    "duration_ms": 45.2
+  },
+  {
+    "action_id": "ACT-20260927-161228-3826",
+    "action_type": "SPILLOVER_INDEX_CALCULATION",
+    "triggered_at": "2026-09-27T16:12:28.451478+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Diebold-Yilmaz Total Spillover Index: 35.5%. Dominant shock transmitter is BBRI.JK (+4.3% net), while ASII.JK is the primary systemic shock receiver (-3.5% net).",
+    "duration_ms": 7.03
+  },
+  {
+    "action_id": "ACT-20260927-161228-6197",
+    "action_type": "SENTIMENT_CATALYST_REFRESH",
+    "triggered_at": "2026-09-27T16:12:28.495478+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Sentimen pasar modal terkonsolidasi dengan bias RISK_ON_ACCUMULATION (Skor: +0.48). Katalis utama didukung oleh inflow asing dan stabilitas nilai tukar Rupiah.",
+    "duration_ms": 0.21
+  },
+  {
+    "action_id": "ACT-20260927-161238-9502",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T16:12:38.423986+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data ingestion complete. Processed latest records for 6 tickers (exit code 0).",
+    "duration_ms": 9807.81
+  },
+  {
+    "action_id": "ACT-20260927-161238-6678",
+    "action_type": "BANDARMOLOGY_SCAN",
+    "triggered_at": "2026-09-27T16:12:38.448985+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Bandarmology Status for BBCA.JK: ACCUMULATION (Skor: +37.1). Top 3 Buyer Concentration (CR3) adalah 55.0%. Net Foreign Flow tercatat Rp +444.48 Miliar.",
+    "duration_ms": 0.21
+  },
+  {
+    "action_id": "ACT-20260927-161238-4546",
+    "action_type": "RUNTIME_CONFIG_UPDATE",
+    "triggered_at": "2026-09-27T16:12:38.561986+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "var_confidence_level": 0.975,
+      "max_portfolio_allocation_percent": 18.0,
+      "max_slippage_bps": 30.0,
+      "garch_vol_hard_veto_threshold": 0.05,
+      "tail_var99_veto_threshold": 0.08,
+      "active_direction_model": "xgboost",
+      "telegram_bot_token": "",
+      "telegram_chat_id": ""
+    },
+    "summary_message": "Runtime parameters updated: VaR confidence 97.5%, Max Alloc 18.0%.",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-161238-2220",
+    "action_type": "HF_FOUNDATION_FORECAST",
+    "triggered_at": "2026-09-27T16:12:38.600985+00:00",
+    "operator": "web_action_console",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BMRI.JK",
+      "model_id": "hf_chronos_transformer",
+      "horizon": 5,
+      "confidence": 0.95
+    },
+    "summary_message": "Hugging Face foundation forecast generated for BMRI.JK with model Hugging Face Chronos-T5 (Zero-Shot Transformer) (Horizon: 5D, RMSE: 70.89 IDR).",
+    "duration_ms": 45.2
   }
 ]

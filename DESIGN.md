@@ -456,6 +456,38 @@ The terminal continuously projects equity resilience across 4 canonical crisis s
   $$\text{Vulnerability} = \min\left(100.0, 6.5 \cdot \overline{\text{ES}}_{0.99} + 0.45 \cdot \text{Slippage}_{\text{max}}\right)$$
   Classified into `HIGH_RESILIENCE`, `MODERATE`, `VULNERABLE`, and `CRITICAL_TAIL_RISK`.
 
+---
+
+## 17. Black-Litterman Portfolio Frontier with AI Foundation Model Prior Views
+
+Classical mean-variance optimization produces extreme, unstable corner portfolios when applied to emerging equity markets. The terminal deploys the Bayesian Black-Litterman model to stabilize asset allocation:
+1. **Market Equilibrium Prior**:
+   $$\Pi = \delta \Sigma w_{\text{mkt}}$$
+   where $\delta = 2.8$ is the market risk aversion parameter, $\Sigma$ is the synthetic asset covariance matrix, and $w_{\text{mkt}}$ is the benchmark capital weight.
+2. **AI-Conditioned Views Vector ($Q$) & Uncertainty Matrix ($\Omega$)**:
+   - The pick matrix $P$ maps $K$ asset views.
+   - Forward return views $Q$ are derived directly from Amazon Chronos-T5 transformer trajectory projections and Smart Money Index (SMI) flows.
+   - The view uncertainty diagonal $\Omega_{ii}$ is dynamically scaled by Hugging Face FinBERT Shannon Information Entropy $H(S)$:
+     $$\Omega_{ii} = \tau \Sigma_{ii} \cdot \left(\frac{H(S)_i}{1.10}\right)^{1.5}$$
+     Higher textual discord widens view uncertainty, preventing over-allocation.
+3. **Master Bayesian Equilibrium**:
+   $$\mathbb{E}[R] = \left[(\tau \Sigma)^{-1} + P^T \Omega^{-1} P\right]^{-1} \left[(\tau \Sigma)^{-1} \Pi + P^T \Omega^{-1} Q\right]$$
+4. **Constrained Quadratic Frontier**:
+   Maximized via Sequential Least Squares Quadratic Programming (SLSQP):
+   $$\max_{w} \frac{w^T \mathbb{E}[R] - r_f}{\sqrt{w^T \Sigma w}} \quad \text{s.t.} \quad \sum w_i = 1, \quad w_{\min} \le w_i \le w_{\max}$$
+
+---
+
+## 18. Automated Institutional Microstructure Signal & Anomaly Radar
+
+The system continuously scans market assets and dispatches structured alerts for immediate risk response:
+- **`STEALTH_ACCUMULATION`**: Foreign institutional whales actively absorb retail selling (Absorption Ratio $> 1.5\text{x}$, SMI $\ge +45.0$).
+- **`SPOOFING_RISK`**: Asymmetric orderbook bid layering detected with phantom spoofing score $\ge 0.45$.
+- **`SHANNON_DISCORD`**: News narrative discord spike ($H(S) \ge 1.15\text{ nats}$) indicating high probability of imminent volatility expansion.
+- **`CONFORMAL_BREAKOUT`**: Model champion projects forward drift $> +4.0\%$ with 95% conformal uncertainty bounds.
+- **`STRESS_VULNERABLE`**: Composite crisis vulnerability score $\ge 65.0/100$, triggering proactive hedging recommendations.
+
+
 
 
 
