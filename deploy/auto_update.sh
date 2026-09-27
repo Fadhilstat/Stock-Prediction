@@ -6,6 +6,11 @@ set -euo pipefail
 
 TARGET_DIR="/opt/ruang-risiko-idx"
 LOG_FILE="/var/log/rridx-autoupdate.log"
+FORCE_BUILD=false
+
+if [ "${1:-}" = "--force" ]; then
+    FORCE_BUILD=true
+fi
 
 log() {
     echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] $*" | tee -a "${LOG_FILE}" 2>/dev/null || echo "$*"
@@ -18,19 +23,19 @@ fi
 
 cd "${TARGET_DIR}"
 
-# Fetch remote changes silently
+# Fetch remote changes
 git fetch origin main --quiet 2>/dev/null || exit 0
 
 LOCAL_HASH=$(git rev-parse HEAD)
 REMOTE_HASH=$(git rev-parse origin/main)
 
-if [ "${LOCAL_HASH}" = "${REMOTE_HASH}" ]; then
+if [ "${LOCAL_HASH}" = "${REMOTE_HASH}" ] && [ "${FORCE_BUILD}" = false ]; then
     # Already up to date
     exit 0
 fi
 
 log "=========================================================="
-log "NEW UPDATE DETECTED on origin/main!"
+log "DEPLOYMENT TRIGGERED on origin/main!"
 log "Current HEAD: ${LOCAL_HASH}"
 log "Target HEAD:  ${REMOTE_HASH}"
 log "Synchronizing workspace..."
@@ -45,7 +50,7 @@ if ! docker info &> /dev/null; then
     fi
 fi
 
-log "Rebuilding and restarting app container..."
+log "Rebuilding and restarting app container with FastAPI engine..."
 ${DOCKER_COMPOSE} up -d --build app
 
 # Reconnect to edge Caddy network if Caddy is present
