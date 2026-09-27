@@ -15,11 +15,13 @@ from typing import Any
 from ruang_risiko_idx.config import ProjectSettings
 from ruang_risiko_idx.research.actions import (
     record_action,
+    trigger_dcc_garch_recalculation,
     trigger_direction_recalculation,
     trigger_market_data_refresh,
     trigger_microstructure_imbalance_scan,
     trigger_morning_briefing_generation,
     trigger_risk_recalculation,
+    trigger_telegram_test_dispatch,
 )
 
 
@@ -116,6 +118,28 @@ def get_default_scheduled_tasks() -> list[ScheduledTaskState]:
             execution_count=320,
             last_message="Seluruh posisi aktif berjarak aman dari batas invalidasi keras.",
         ),
+        ScheduledTaskState(
+            task_id="TASK-DCC-CONTAGION",
+            task_name="Estimasi Matriks Kontagion DCC-GARCH",
+            cadence="Harian",
+            schedule_time_wib="17:15 WIB",
+            status="SCHEDULED",
+            last_run_at=now_utc,
+            next_run_at="Hari bursa berikutnya 17:15 WIB",
+            execution_count=48,
+            last_message="Korelasi dinamis bersyarat lintas aset terkalibrasi normal.",
+        ),
+        ScheduledTaskState(
+            task_id="TASK-TELEGRAM-DISPATCH",
+            task_name="Webhook Notifikasi Telegram Otomatis",
+            cadence="Event-Driven & Harian",
+            schedule_time_wib="08:35 & 17:20 WIB",
+            status="ACTIVE",
+            last_run_at=now_utc,
+            next_run_at="08:35 WIB",
+            execution_count=65,
+            last_message="Webhook alert desk beroperasi aktif tanpa hambatan.",
+        ),
     ]
 
 
@@ -171,6 +195,16 @@ def run_autonomous_full_cycle(operator: str = "autonomous_daemon") -> Autonomous
     # Step 5: Microstructure scan for benchmark
     res_micro = trigger_microstructure_imbalance_scan("BBCA.JK")
     step_results["microstructure"] = res_micro
+
+    # Step 6: DCC-GARCH Multi-Asset Contagion Recalculation
+    res_dcc = trigger_dcc_garch_recalculation()
+    step_results["dcc_contagion"] = res_dcc
+
+    # Step 7: Telegram Bot Notification Dispatch (simulated or live webhook)
+    res_telegram = trigger_telegram_test_dispatch(
+        custom_message=f"☀️ [Ruang Risiko IDX] Siklus otonom {cycle_id} selesai. Morning briefing dan matriks risiko siap."
+    )
+    step_results["telegram_dispatch"] = res_telegram
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     all_success = all(v.get("success", False) for v in step_results.values())

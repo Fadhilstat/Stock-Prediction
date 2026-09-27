@@ -213,6 +213,30 @@ The annualized Sharpe Ratio incorporates the risk-free rate (BI-Rate $R_f = 6.0\
 
 $$\text{Sharpe} = \frac{\bar{R}_p - R_f}{\sigma_p} \cdot \sqrt{252}, \quad \text{Calmar} = \frac{\text{CAGR}}{\text{Maximum Drawdown}}$$
 
+### 5.8 Dynamic Conditional Correlation (DCC-GARCH)
+Following Engle (2002), time-varying covariance matrices are decomposed into conditional variances and dynamic correlations:
+
+$$H_t = D_t R_t D_t, \quad D_t = \text{diag}(\sigma_{1,t}, \dots, \sigma_{k,t})$$
+
+Quasi-correlation recursion:
+$$Q_t = (1 - \alpha - \beta)\bar{Q} + \alpha (\epsilon_{t-1} \epsilon_{t-1}') + \beta Q_{t-1}$$
+
+Dynamic correlation matrix:
+$$R_t = \text{diag}(Q_t)^{-1/2} Q_t \text{diag}(Q_t)^{-1/2}$$
+
+Systemic Contagion Index (SCI):
+$$\text{SCI}_t = \frac{2}{k(k-1)} \sum_{i < j} |\rho_{ij,t}|$$
+
+When $\text{SCI}_t \ge 0.60$, market co-movement indicates systemic contagion and portfolio diversification breakdown.
+
+### 5.9 Autonomous Telegram Webhook Dispatcher
+Automated dispatch engine for real-time mobile investor alerts:
+- Premarket Morning Briefing (08:35 WIB).
+- Dynamic Trailing Stop Ratchet trigger events.
+- Bi-Weekly 14-day model validation Brier score audits.
+- DCC Contagion Risk Spikes.
+Operates with dual-mode reliability: zero-dependency live HTTPS transmission via Telegram Bot API, with automated non-blocking fallback to audit-logged simulation in test/offline environments.
+
 ---
 
 ## 6. Flexible Equity Universe Specification
@@ -228,3 +252,4 @@ The system supports both built-in core tickers and user-specified custom tickers
 - **Arbitrary Custom Ticker Handler**:
   - Automatically appends `.JK` if omitted.
   - Dynamically synthesizes market data baselines, technical indicators, and quantile projections for newly evaluated tickers.
+

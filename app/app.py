@@ -17,15 +17,19 @@ from ruang_risiko_idx.research.actions import (
     load_action_history,
     load_runtime_config,
     record_action,
+    trigger_dcc_garch_recalculation,
     trigger_direction_recalculation,
     trigger_domain_probe,
     trigger_market_data_refresh,
     trigger_microstructure_imbalance_scan,
     trigger_morning_briefing_generation,
     trigger_risk_recalculation,
+    trigger_telegram_test_dispatch,
     update_runtime_risk_parameters,
 )
 from ruang_risiko_idx.research.alert_dispatcher import AlertPayload, dispatch_webhook_alert
+from ruang_risiko_idx.research.dcc_garch import compute_dcc_garch_matrix, generate_dcc_heatmap_figure
+from ruang_risiko_idx.research.telegram_notifier import dispatch_telegram_message
 from ruang_risiko_idx.research.automation_daemon import (
     load_automation_schedule,
     run_autonomous_full_cycle,
@@ -1271,6 +1275,36 @@ with main_tabs[1]:
     str_c4.metric("Expected Shortfall (CVaR)", f"-{stress_res.cvar_expected_shortfall_percent:.1f}%")
     st.info(f"💡 Rekomendasi Ketahanan: {stress_res.survival_recommendation}")
 
+    st.markdown("---")
+    st.markdown("##### 🌐 Matriks Kontagion Lintas Aset DCC-GARCH (Engle 2002)")
+    st.caption("Estimasi korelasi dinamis bersyarat waktu-nyata (Dynamic Conditional Correlation) untuk mengukur spillover risiko sistemik antar-emiten dan indeks acuan.")
+
+    dcc_rep = compute_dcc_garch_matrix(market_data, tickers=None)
+    dcc_c1, dcc_c2, dcc_c3 = st.columns(3)
+    dcc_c1.metric("Systemic Contagion Index (SCI)", f"{dcc_rep.systemic_contagion_index:.4f}")
+    dcc_c2.metric("Rezim Kontagion", dcc_rep.contagion_regime.replace("_", " "))
+    dcc_c3.metric(
+        "Korelasi Tertinggi",
+        f"{dcc_rep.highest_correlation_pair.current_correlation:+.2f}",
+        dcc_rep.highest_correlation_pair.pair,
+    )
+
+    dcc_fig = generate_dcc_heatmap_figure(dcc_rep)
+    st.plotly_chart(dcc_fig, use_container_width=True)
+
+    with st.expander("📐 Rumus Ekonometrika & Rationale DCC-GARCH"):
+        st.markdown(
+            r"""
+            Model DCC-GARCH memisahkan estimasi volatilitas univariat dari struktur korelasi waktu-nyata:
+            1. **Residual Ternormalisasi GARCH(1,1):** $\epsilon_{i,t} = r_{i,t} / \sigma_{i,t}$
+            2. **Evolusi Matriks Quasi-Korelasi ($Q_t$):**
+               $$Q_t = (1 - \alpha - \beta)\bar{Q} + \alpha (\epsilon_{t-1} \epsilon_{t-1}') + \beta Q_{t-1}$$
+            3. **Matriks Korelasi Dinamis Bersyarat ($R_t$):**
+               $$R_t = \text{diag}(Q_t)^{-1/2} Q_t \text{diag}(Q_t)^{-1/2}$$
+            Ketika nilai Systemic Contagion Index melonjak (> 0.60), manfaat diversifikasi portofolio mengalami keruntuhan (breakdown), menandakan perlunya perketatan ukuran posisi.
+            """
+        )
+
 # TAB 3: Makroekonomi & Sentimen Berita
 with main_tabs[2]:
     st.markdown("#### 🌐 Intelijen Makroekonomi & Sentimen Berita Terkurasi")
@@ -1808,6 +1842,24 @@ with main_tabs[7]:
                 else:
                     st.error(res["message"])
 
+        if st.button("Hitung Ulang Matriks Kontagion DCC-GARCH"):
+            with st.spinner("Mengestimasi korelasi dinamis bersyarat lintas aset..."):
+                res = trigger_dcc_garch_recalculation()
+                if res["success"]:
+                    st.success(res["message"])
+                    st.cache_data.clear()
+                else:
+                    st.error(res["message"])
+
+        if st.button("Kirim Uji Alert Webhook Telegram (Morning Briefing & Trailing)"):
+            with st.spinner("Mengirim payload uji alert via Telegram Bot API..."):
+                res = trigger_telegram_test_dispatch()
+                if res["success"]:
+                    st.success(f"{res['summary']} (Mode: {'SIMULASI' if res['is_simulated'] else 'LIVE'})")
+                    st.cache_data.clear()
+                else:
+                    st.error(res["summary"])
+
     with action_c2:
         st.markdown("##### ⚙️ Pengaturan Parameter Risiko Runtime")
         with st.form("risk_config_form"):
@@ -1838,6 +1890,19 @@ with main_tabs[7]:
                 index=0,
             )
 
+            st.markdown("**💬 Integrasi Webhook Telegram Bot**")
+            new_bot_token = st.text_input(
+                "Telegram Bot Token (Opsional / Kosongkan untuk Simulasi)",
+                value=str(runtime_config.get("telegram_bot_token", "")),
+                type="password",
+                placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ",
+            )
+            new_chat_id = st.text_input(
+                "Telegram Target Chat ID (Opsional / Saluran Investor)",
+                value=str(runtime_config.get("telegram_chat_id", "")),
+                placeholder="-100123456789 atau @channelname",
+            )
+
             submit_cfg = st.form_submit_button("Simpan Konfigurasi Baru")
             if submit_cfg:
                 cfg_res = update_runtime_risk_parameters(
@@ -1847,6 +1912,8 @@ with main_tabs[7]:
                     garch_vol_hard_veto_threshold=float(runtime_config.get("garch_vol_hard_veto_threshold", 0.045)),
                     tail_var99_veto_threshold=float(runtime_config.get("tail_var99_veto_threshold", 0.070)),
                     active_direction_model=new_active_model,
+                    telegram_bot_token=new_bot_token,
+                    telegram_chat_id=new_chat_id,
                 )
                 if cfg_res["success"]:
                     st.success(cfg_res["message"])

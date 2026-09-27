@@ -4,5 +4,7 @@
   "max_slippage_bps": 30.0,
   "garch_vol_hard_veto_threshold": 0.05,
   "tail_var99_veto_threshold": 0.08,
-  "active_direction_model": "xgboost"
+  "active_direction_model": "xgboost",
+  "telegram_bot_token": "",
+  "telegram_chat_id": ""
 }

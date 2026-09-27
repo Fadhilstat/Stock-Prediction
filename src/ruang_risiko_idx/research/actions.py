@@ -32,6 +32,8 @@ DEFAULT_RUNTIME_CONFIG: dict[str, Any] = {
     "garch_vol_hard_veto_threshold": 0.045,
     "tail_var99_veto_threshold": 0.070,
     "active_direction_model": "random_forest",
+    "telegram_bot_token": "",
+    "telegram_chat_id": "",
 }
 
 
@@ -244,16 +246,24 @@ def update_runtime_risk_parameters(
     garch_vol_hard_veto_threshold: float,
     tail_var99_veto_threshold: float,
     active_direction_model: str,
+    telegram_bot_token: str | None = None,
+    telegram_chat_id: str | None = None,
 ) -> dict[str, Any]:
     """Validate and persist runtime risk parameters from web UI."""
-    new_cfg = {
+    existing = load_runtime_config()
+    new_cfg = dict(existing)
+    new_cfg.update({
         "var_confidence_level": var_confidence_level,
         "max_portfolio_allocation_percent": max_portfolio_allocation_percent,
         "max_slippage_bps": max_slippage_bps,
         "garch_vol_hard_veto_threshold": garch_vol_hard_veto_threshold,
         "tail_var99_veto_threshold": tail_var99_veto_threshold,
         "active_direction_model": active_direction_model,
-    }
+    })
+    if telegram_bot_token is not None:
+        new_cfg["telegram_bot_token"] = telegram_bot_token
+    if telegram_chat_id is not None:
+        new_cfg["telegram_chat_id"] = telegram_chat_id
     save_runtime_config(new_cfg)
     msg = f"Runtime parameters updated: VaR confidence {var_confidence_level:.1%}, Max Alloc {max_portfolio_allocation_percent:.1f}%."
     entry = record_action(
@@ -355,5 +365,67 @@ def trigger_microstructure_imbalance_scan(ticker: str = "BBCA.JK") -> dict[str, 
         "message": msg,
         "action_id": entry.action_id,
     }
+
+
+def trigger_dcc_garch_recalculation(tickers: list[str] | None = None) -> dict[str, Any]:
+    """Execute dynamic conditional correlation recalculation across asset pairs."""
+    import time
+    from ruang_risiko_idx.research.dcc_garch import compute_dcc_garch_matrix
+
+    start = time.perf_counter()
+    settings = ProjectSettings()
+    raw_path = settings.raw_data_path
+    if not raw_path.exists():
+        raw_path = settings.project_root / "data" / "processed" / "analytics_daily.parquet"
+
+    import pandas as pd
+    price_df = pd.read_parquet(raw_path) if raw_path.exists() else pd.DataFrame()
+    report = compute_dcc_garch_matrix(price_df=price_df, tickers=tickers)
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    msg = f"DCC-GARCH matriks terkalibrasi: SCI {report.systemic_contagion_index:.4f} ({report.contagion_regime})."
+    entry = record_action(
+        action_type="DCC_GARCH_RECALCULATION",
+        status="SUCCESS",
+        summary_message=msg,
+        parameters={
+            "sci": report.systemic_contagion_index,
+            "regime": report.contagion_regime,
+            "tickers_count": len(report.tickers),
+            "highest_pair": report.highest_correlation_pair.pair,
+        },
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "sci": report.systemic_contagion_index,
+        "regime": report.contagion_regime,
+        "highest_pair": report.highest_correlation_pair.pair,
+        "highest_corr": report.highest_correlation_pair.current_correlation,
+        "tickers": report.tickers,
+        "message": msg,
+        "action_id": entry.action_id,
+    }
+
+
+def trigger_telegram_test_dispatch(
+    custom_message: str | None = None,
+    bot_token: str | None = None,
+    chat_id: str | None = None,
+) -> dict[str, Any]:
+    """Test fire an operational alert to Telegram Bot API or simulation desk."""
+    from ruang_risiko_idx.research.telegram_notifier import dispatch_telegram_message
+
+    text = custom_message or "🔔 [Ruang Risiko IDX] Uji transmisi webhook otonom berhasil. Sistem beroperasi normal."
+    result = dispatch_telegram_message(text=text, bot_token=bot_token, chat_id=chat_id)
+    return {
+        "success": result.success,
+        "is_simulated": result.is_simulated,
+        "status_code": result.status_code,
+        "summary": result.summary,
+        "preview": result.message_preview,
+        "recipient": result.recipient_chat_id,
+    }
+
 
 
