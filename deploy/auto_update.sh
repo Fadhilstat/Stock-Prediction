@@ -51,7 +51,8 @@ if ! docker info &> /dev/null; then
 fi
 
 log "Rebuilding and restarting app container with FastAPI engine..."
-${DOCKER_COMPOSE} up -d --build app
+${DOCKER_COMPOSE} rm -f -s app 2>/dev/null || true
+${DOCKER_COMPOSE} up -d --force-recreate --build app
 
 # Reconnect to edge Caddy network if Caddy is present
 if docker ps | grep -q ' caddy$'; then
