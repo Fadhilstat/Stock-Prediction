@@ -711,6 +711,35 @@ def trigger_sentiment_refresh() -> dict[str, Any]:
     }
 
 
+def trigger_bandarmology_analysis(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Execute Stockbit-grade broker summary and accumulation analysis."""
+    import time
+    from ruang_risiko_idx.research.bandarmology import analyze_broker_summary
+
+    start = time.perf_counter()
+    report = analyze_broker_summary(ticker=ticker)
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    entry = record_action(
+        action_type="BANDARMOLOGY_SCAN",
+        status="SUCCESS",
+        summary_message=report.summary_message,
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "ticker": report.ticker,
+        "regime": report.regime,
+        "bandar_score": report.bandar_score,
+        "cr3": report.concentration_ratio_3,
+        "net_foreign_flow_idr": report.net_foreign_flow_idr,
+        "message": report.summary_message,
+        "action_id": entry.action_id,
+        "report": report.to_dict(),
+    }
+
+
+
 
 
 

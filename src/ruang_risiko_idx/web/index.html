@@ -171,6 +171,7 @@
       <section class="quant-suite-section">
         <div class="suite-tabs">
           <button class="suite-tab active" data-tab="tab-sentiment">📰 Sentimen & Berita</button>
+          <button class="suite-tab" data-tab="tab-bandar">📊 Broker Summary (Bandarmology)</button>
           <button class="suite-tab" data-tab="tab-hmm">🧠 HMM Regime</button>
           <button class="suite-tab" data-tab="tab-dcc">🌐 DCC-GARCH Contagion</button>
           <button class="suite-tab" data-tab="tab-copula">📐 Copula EVT Tail Risk</button>
@@ -178,6 +179,7 @@
           <button class="suite-tab" data-tab="tab-spillover">⚡ Diebold-Yilmaz Spillover</button>
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
+
 
         <!-- Tab 1: Sentiment & Macro -->
         <div class="tab-pane active" id="tab-sentiment">
@@ -198,8 +200,46 @@
           </div>
         </div>
 
-        <!-- Tab 2: HMM Regime -->
+        <!-- Tab 2: Broker Summary (Bandarmology) -->
+        <div class="tab-pane" id="tab-bandar">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Status Bandarmology & Akumulasi</span>
+              <div class="big-score up" id="bandar-status">ACCUMULATION</div>
+              <span class="score-sub" id="bandar-score-text">Skor: +42.5 (Buyer Dominance)</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Rasio Konsentrasi & Arus Asing</span>
+              <p><strong>Top 3 Buyer Concentration (CR3):</strong> <span id="bandar-cr3">64.2%</span></p>
+              <p><strong>Net Foreign Flow:</strong> <span class="up" id="bandar-foreign">+Rp 84.50 Miliar</span></p>
+              <p><strong>Total Turnover:</strong> <span id="bandar-turnover">Rp 880.25 Miliar</span></p>
+            </div>
+          </div>
+          <div class="split-row">
+            <div class="panel-card">
+              <div class="card-header"><h3>TOP 5 BUYERS (AKUMULASI)</h3></div>
+              <div class="table-wrap">
+                <table class="audit-table">
+                  <thead><tr><th>Broker</th><th>Lot</th><th>Harga Rata-rata</th><th>Nilai (Rp)</th></tr></thead>
+                  <tbody id="bandar-buyers-body"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel-card">
+              <div class="card-header"><h3>TOP 5 SELLERS (DISTRIBUSI)</h3></div>
+              <div class="table-wrap">
+                <table class="audit-table">
+                  <thead><tr><th>Broker</th><th>Lot</th><th>Harga Rata-rata</th><th>Nilai (Rp)</th></tr></thead>
+                  <tbody id="bandar-sellers-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: HMM Regime -->
         <div class="tab-pane" id="tab-hmm">
+
           <div class="quant-grid">
             <div class="quant-info-card">
               <h4>Hidden Markov Model (3-State Gaussian Mixture)</h4>
@@ -375,7 +415,15 @@
                   <span>Scrape dan analisis polaritas berita emiten IDX</span>
                 </div>
               </button>
+              <button class="console-btn" data-action="BANDARMOLOGY_SCAN">
+                <span class="btn-icon">📊</span>
+                <div class="btn-text">
+                  <strong>Analisis Bandarmology (Broker Summary)</strong>
+                  <span>Hitung rasio konsentrasi CR3 dan net foreign flow</span>
+                </div>
+              </button>
             </div>
+
 
             <!-- Action Status Feedback Box -->
             <div class="action-status-box" id="action-status-box">

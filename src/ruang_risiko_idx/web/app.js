@@ -17,15 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
   loadMarketSummary();
   loadTickerData(state.currentTicker, state.currentTimeframe);
   loadOrderbook(state.currentTicker);
+  loadBrokerSummary(state.currentTicker);
+  initWebSocket(state.currentTicker);
   loadSentiment();
   loadSpillover();
   loadAuditHistory();
 
-  // Periodic live orderbook refresh every 4 seconds
+  // Periodic live fallback refresh every 4 seconds
   setInterval(() => {
     loadOrderbook(state.currentTicker, true);
   }, 4000);
 });
+
 
 function initEventListeners() {
   // Timeframe pills
@@ -132,10 +135,13 @@ function selectTicker(ticker) {
   });
   loadTickerData(ticker, state.currentTimeframe);
   loadOrderbook(ticker);
+  loadBrokerSummary(ticker);
+  initWebSocket(ticker);
 
   const hmmLabel = document.getElementById('hmm-ticker-label');
   if (hmmLabel) hmmLabel.innerText = ticker;
 }
+
 
 async function loadTickerData(ticker, timeframe) {
   try {
@@ -430,6 +436,7 @@ async function executeAction(actionType) {
       }
       if (actionType === 'SENTIMENT_REFRESH') loadSentiment();
       if (actionType === 'SPILLOVER_INDEX') loadSpillover();
+      if (actionType === 'BANDARMOLOGY_SCAN') loadBrokerSummary(state.currentTicker);
     } else {
       statusBox.innerHTML = `<span style="color:var(--color-down)">PERINGATAN / GAGAL:</span> ${data.message || data.detail || 'Operasi gagal'}`;
       showToast(`Gagal: ${actionType}`);
@@ -437,6 +444,98 @@ async function executeAction(actionType) {
   } catch (err) {
     statusBox.innerText = `Error koneksi: ${err.message}`;
     showToast(`Error koneksi: ${err.message}`);
+  }
+}
+
+async function loadBrokerSummary(ticker) {
+  try {
+    const res = await fetch(`/api/v1/market/broker-summary/${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const statusEl = document.getElementById('bandar-status');
+    if (statusEl) {
+      statusEl.innerText = data.regime.replace(/_/g, ' ');
+      const isAcc = data.bandar_score >= 0;
+      statusEl.className = `big-score ${isAcc ? 'up' : 'down'}`;
+    }
+
+    const scoreEl = document.getElementById('bandar-score-text');
+    if (scoreEl) {
+      scoreEl.innerText = `Skor: ${data.bandar_score >= 0 ? '+' : ''}${data.bandar_score} (${data.regime})`;
+    }
+
+    const cr3El = document.getElementById('bandar-cr3');
+    if (cr3El) cr3El.innerText = `${data.concentration_ratio_3}%`;
+
+    const forEl = document.getElementById('bandar-foreign');
+    if (forEl) {
+      const netB = data.net_foreign_flow_idr / 1e9;
+      forEl.innerText = `${netB >= 0 ? '+' : ''}Rp ${netB.toFixed(2)} Miliar`;
+      forEl.className = netB >= 0 ? 'up' : 'down';
+    }
+
+    const turnEl = document.getElementById('bandar-turnover');
+    if (turnEl) {
+      turnEl.innerText = `Rp ${(data.total_market_turnover_idr / 1e9).toFixed(2)} Miliar`;
+    }
+
+    // Buyers Table
+    const buyersBody = document.getElementById('bandar-buyers-body');
+    if (buyersBody) {
+      buyersBody.innerHTML = '';
+      (data.top_buyers || []).forEach((b) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${b.broker_code}</strong> <span style="font-size:10px;color:var(--text-secondary)">(${b.is_foreign ? 'F' : 'D'})</span></td>
+          <td>${b.lots.toLocaleString('id-ID')}</td>
+          <td>Rp ${Math.round(b.avg_price).toLocaleString('id-ID')}</td>
+          <td style="color:var(--color-up)">Rp ${(b.value_idr / 1e9).toFixed(1)}B</td>
+        `;
+        buyersBody.appendChild(tr);
+      });
+    }
+
+    // Sellers Table
+    const sellersBody = document.getElementById('bandar-sellers-body');
+    if (sellersBody) {
+      sellersBody.innerHTML = '';
+      (data.top_sellers || []).forEach((s) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${s.broker_code}</strong> <span style="font-size:10px;color:var(--text-secondary)">(${s.is_foreign ? 'F' : 'D'})</span></td>
+          <td>${s.lots.toLocaleString('id-ID')}</td>
+          <td>Rp ${Math.round(s.avg_price).toLocaleString('id-ID')}</td>
+          <td style="color:var(--color-down)">Rp ${(s.value_idr / 1e9).toFixed(1)}B</td>
+        `;
+        sellersBody.appendChild(tr);
+      });
+    }
+  } catch (err) {
+    console.error('Broker summary error:', err);
+  }
+}
+
+let activeWebSocket = null;
+function initWebSocket(ticker) {
+  if (activeWebSocket) {
+    try { activeWebSocket.close(); } catch (e) {}
+  }
+  try {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${location.host}/ws/market/${ticker}`;
+    activeWebSocket = new WebSocket(wsUrl);
+    activeWebSocket.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'ORDERBOOK_TICK' && msg.data) {
+          // Re-render orderbook with live tick
+          loadOrderbook(ticker, true);
+        }
+      } catch (e) {}
+    };
+  } catch (e) {
+    console.debug('WebSocket fallback to HTTP polling');
   }
 }
 
@@ -475,3 +574,4 @@ function showToast(msg) {
     toast.remove();
   }, 3500);
 }
+

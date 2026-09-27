@@ -111,6 +111,20 @@ def test_fastapi_endpoints():
     assert resp_action.status_code == 200
     assert resp_action.json()["success"] is True
 
+    # Broker Summary Bandarmology API
+    resp_broker = client.get("/api/v1/market/broker-summary/BBCA.JK")
+    assert resp_broker.status_code == 200
+    broker_json = resp_broker.json()
+    assert broker_json["ticker"] == "BBCA.JK"
+    assert len(broker_json["top_buyers"]) > 0
+    assert len(broker_json["top_sellers"]) > 0
+    assert "concentration_ratio_3" in broker_json
+
+    # Bandarmology Action execution endpoint
+    resp_bandar_act = client.post("/api/v1/actions/execute", json={"action": "BANDARMOLOGY_SCAN"})
+    assert resp_bandar_act.status_code == 200
+    assert resp_bandar_act.json()["success"] is True
+
     # System auto-update endpoint
     resp_update = client.post("/api/v1/system/auto-update")
     assert resp_update.status_code == 200
@@ -120,3 +134,4 @@ def test_fastapi_endpoints():
     resp_index = client.get("/")
     assert resp_index.status_code == 200
     assert "text/html" in resp_index.headers.get("content-type", "")
+

@@ -4596,5 +4596,64 @@
     },
     "summary_message": "Runtime parameters updated: VaR confidence 95.0%, Max Alloc 20.0%.",
     "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-030014-3972",
+    "action_type": "SPILLOVER_INDEX_CALCULATION",
+    "triggered_at": "2026-09-27T03:00:14.012205+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Diebold-Yilmaz Total Spillover Index: 35.5%. Dominant shock transmitter is BBRI.JK (+4.3% net), while ASII.JK is the primary systemic shock receiver (-3.5% net).",
+    "duration_ms": 3.52
+  },
+  {
+    "action_id": "ACT-20260927-030014-3441",
+    "action_type": "SENTIMENT_CATALYST_REFRESH",
+    "triggered_at": "2026-09-27T03:00:14.023211+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Sentimen pasar modal terkonsolidasi dengan bias RISK_ON_ACCUMULATION (Skor: +0.48). Katalis utama didukung oleh inflow asing dan stabilitas nilai tukar Rupiah.",
+    "duration_ms": 0.08
+  },
+  {
+    "action_id": "ACT-20260927-030024-5678",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T03:00:24.759407+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data ingestion complete. Processed latest records for 6 tickers (exit code 0).",
+    "duration_ms": 10656.17
+  },
+  {
+    "action_id": "ACT-20260927-030024-7272",
+    "action_type": "BANDARMOLOGY_SCAN",
+    "triggered_at": "2026-09-27T03:00:24.820010+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Bandarmology Status for BBCA.JK: ACCUMULATION (Skor: +22.3). Top 3 Buyer Concentration (CR3) adalah 62.5%. Net Foreign Flow tercatat Rp +211.86 Miliar.",
+    "duration_ms": 0.25
+  },
+  {
+    "action_id": "ACT-20260927-030024-7027",
+    "action_type": "AUTO_UPDATE_PULL",
+    "triggered_at": "2026-09-27T03:00:24.843011+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Auto-updater daemon checked: Workspace up-to-date with origin/main (simulated/local mode).",
+    "duration_ms": 0.69
   }
 ]

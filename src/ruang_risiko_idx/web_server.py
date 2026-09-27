@@ -12,6 +12,7 @@ import logging
 import os
 import subprocess
 import sys
+import asyncio
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -19,7 +20,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -30,6 +31,7 @@ from ruang_risiko_idx.research.actions import (
     record_action,
     trigger_algo_execution_simulation,
     trigger_auto_update_check,
+    trigger_bandarmology_analysis,
     trigger_copula_evt_scan,
     trigger_dcc_garch_recalculation,
     trigger_diebold_yilmaz_spillover,
@@ -40,9 +42,11 @@ from ruang_risiko_idx.research.actions import (
     trigger_risk_recalculation,
     trigger_sentiment_refresh,
 )
+from ruang_risiko_idx.research.bandarmology import analyze_broker_summary
 from ruang_risiko_idx.research.domain_probe import check_domain_readiness
 from ruang_risiko_idx.research.sentiment_engine import get_latest_market_sentiment
 from ruang_risiko_idx.research.spillover_index import compute_diebold_yilmaz_spillover
+
 
 logger = logging.getLogger("ruang_risiko_idx.web")
 WEB_DIR = Path(__file__).resolve().parent / "web"
@@ -254,10 +258,33 @@ async def get_orderbook(ticker: str) -> dict[str, Any]:
     }
 
 
+@app.get("/api/v1/market/broker-summary/{ticker}")
+async def get_broker_summary(ticker: str) -> dict[str, Any]:
+    """Retrieve Stockbit-grade broker summary and accumulation distribution metrics."""
+    report = analyze_broker_summary(ticker=ticker)
+    return report.to_dict()
+
+
+@app.websocket("/ws/market/{ticker}")
+async def websocket_market_stream(websocket: WebSocket, ticker: str):
+    """Real-time streaming WebSocket endpoint for orderbook and live trade ticks."""
+    await websocket.accept()
+    try:
+        while True:
+            book = await get_orderbook(ticker)
+            await websocket.send_json({"type": "ORDERBOOK_TICK", "data": book})
+            await asyncio.sleep(2.0)
+    except WebSocketDisconnect:
+        logger.debug("WebSocket client disconnected for ticker %s", ticker)
+    except Exception:
+        pass
+
+
 # =========================================================================
 # Quantitative Analytics Endpoints
 # =========================================================================
 @app.get("/api/v1/sentiment")
+
 async def get_sentiment() -> dict[str, Any]:
     """Retrieve live financial news sentiment and macroeconomic indicators."""
     report = get_latest_market_sentiment()
@@ -317,8 +344,10 @@ async def execute_action(request: Request) -> dict[str, Any]:
         "ALGO_EXECUTION": trigger_algo_execution_simulation,
         "SPILLOVER_INDEX": trigger_diebold_yilmaz_spillover,
         "SENTIMENT_REFRESH": trigger_sentiment_refresh,
+        "BANDARMOLOGY_SCAN": trigger_bandarmology_analysis,
         "AUTO_UPDATE_CHECK": trigger_auto_update_check,
     }
+
 
     if action_type not in handlers:
         raise HTTPException(status_code=400, detail=f"Unknown action type: {action_type}")
