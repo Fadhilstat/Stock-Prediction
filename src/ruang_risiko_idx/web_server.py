@@ -46,7 +46,12 @@ from ruang_risiko_idx.research.actions import (
     trigger_sentiment_refresh,
 )
 from ruang_risiko_idx.research.bandarmology import analyze_broker_summary
-from ruang_risiko_idx.research.domain_probe import check_domain_readiness
+from ruang_risiko_idx.research.multimodal_engine import (
+    IDX_STOCK_CATALOG,
+    STOCK_CATALOG_MAP,
+    compute_multimodal_prediction,
+    get_stock_catalog,
+)
 from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
 from ruang_risiko_idx.research.sentiment_engine import get_latest_market_sentiment
 from ruang_risiko_idx.research.spillover_index import compute_diebold_yilmaz_spillover
@@ -145,8 +150,40 @@ async def health_check() -> dict[str, Any]:
 # =========================================================================
 @app.get("/api/v1/market/summary")
 async def get_market_summary() -> dict[str, Any]:
-    """Retrieve market quotes, global indices carousel, and benchmark metrics."""
+    """Retrieve market quotes, global indices carousel, and benchmark metrics for all 25 IDX assets."""
     now_iso = datetime.now(UTC).isoformat()
+    
+    tickers_payload = []
+    for s in IDX_STOCK_CATALOG:
+        t = s["ticker"]
+        h = abs(hash(t + datetime.now(UTC).strftime("%Y%m%d"))) % 1000
+        chg_val = round(((h % 60) - 26) / 10.0, 2)
+        vol_lots = round(15.0 + (h % 120), 1)
+        is_up = chg_val >= 0
+        sign = "+" if is_up else ""
+        tickers_payload.append({
+            "ticker": t,
+            "name": s["name"],
+            "last_price": s["base_price"],
+            "change_pct": f"{sign}{chg_val:.2f}%",
+            "volume": f"{vol_lots:.1f}M",
+            "sector": s["sector"],
+            "sector_slug": s["sector_slug"],
+            "volatility_annual": f"{s['volatility']:.1f}%",
+            "garch_model": s.get("garch_model", "GARCH(1,1)"),
+        })
+
+    sectors_summary = [
+        {"name": "Semua Sektor", "slug": "all", "count": len(IDX_STOCK_CATALOG)},
+        {"name": "Financials", "slug": "financials", "count": 5},
+        {"name": "Energy", "slug": "energy", "count": 5},
+        {"name": "Basic Materials", "slug": "materials", "count": 4},
+        {"name": "Consumer", "slug": "consumer", "count": 4},
+        {"name": "Infrastructure", "slug": "infra", "count": 3},
+        {"name": "Industrials", "slug": "industrials", "count": 2},
+        {"name": "Technology", "slug": "tech", "count": 2},
+    ]
+
     return {
         "timestamp": now_iso,
         "world_indices": [
@@ -156,24 +193,19 @@ async def get_market_summary() -> dict[str, Any]:
             {"symbol": "Nikkei 225", "name": "Tokyo Japan", "price": "38,981.75", "change_pct": "+1.12%", "is_up": True},
             {"symbol": "USD/IDR", "name": "Rupiah Exchange", "price": "15,340.00", "change_pct": "-0.32%", "is_up": False},
         ],
-        "tickers": [
-            {"ticker": "BBCA.JK", "name": "Bank Central Asia", "last_price": 10450, "change_pct": "+1.21%", "volume": "84.2M", "sector": "Financials", "volatility_annual": "16.4%"},
-            {"ticker": "BBRI.JK", "name": "Bank Rakyat Indonesia", "last_price": 5125, "change_pct": "-0.48%", "volume": "112.5M", "sector": "Financials", "volatility_annual": "22.8%"},
-            {"ticker": "BMRI.JK", "name": "Bank Mandiri", "last_price": 7100, "change_pct": "+0.71%", "volume": "65.8M", "sector": "Financials", "volatility_annual": "19.2%"},
-            {"ticker": "TLKM.JK", "name": "Telkom Indonesia", "last_price": 3120, "change_pct": "+0.32%", "volume": "48.1M", "sector": "Telecom", "volatility_annual": "18.5%"},
-            {"ticker": "ASII.JK", "name": "Astra International", "last_price": 5050, "change_pct": "+1.51%", "volume": "39.4M", "sector": "Industrials", "volatility_annual": "21.0%"},
-        ],
+        "sectors": sectors_summary,
+        "tickers": tickers_payload,
     }
 
 
 @app.get("/api/v1/market/ohlcv/{ticker}")
 async def get_ohlcv(ticker: str, timeframe: str = "1M") -> dict[str, Any]:
-    """Retrieve historical price series and spline coordinates for TradingView chart."""
+    """Retrieve historical price series, spline coordinates, and multimodal forecast cone."""
     import numpy as np
 
     ticker_upper = ticker.upper()
-    base_prices = {"BBCA.JK": 10450, "BBRI.JK": 5125, "BMRI.JK": 7100, "TLKM.JK": 3120, "ASII.JK": 5050}
-    base = base_prices.get(ticker_upper, 5000)
+    meta = STOCK_CATALOG_MAP.get(ticker_upper, {"base_price": 5000, "name": ticker_upper, "sector": "General"})
+    base = meta.get("base_price", 5000)
 
     n_points = {"1D": 24, "1W": 7, "1M": 30, "3M": 90, "1Y": 252, "ALL": 300}.get(timeframe, 30)
 
@@ -195,6 +227,9 @@ async def get_ohlcv(ticker: str, timeframe: str = "1M") -> dict[str, Any]:
     prev_price = price_series[0]
     pct_change = round(((latest_price - prev_price) / prev_price) * 100.0, 2)
 
+    # Multimodal forecast calculation
+    pred = compute_multimodal_prediction(ticker_upper, latest_price)
+
     return {
         "ticker": ticker_upper,
         "timeframe": timeframe,
@@ -205,6 +240,18 @@ async def get_ohlcv(ticker: str, timeframe: str = "1M") -> dict[str, Any]:
         "low": low_price,
         "pct_change": pct_change,
         "currency": "IDR",
+        "forecast": {
+            "consensus": pred.consensus_stance,
+            "synergy_score": pred.synergy_score,
+            "confidence_pct": pred.confidence_pct,
+            "target_5d": pred.target_price_5d,
+            "target_10d": pred.target_price_10d,
+            "cone_upper_5d": pred.cone_upper_5d,
+            "cone_lower_5d": pred.cone_lower_5d,
+            "invalidation": pred.invalidation_price,
+            "points": pred.forecast_points,
+            "catalyst_summary": pred.catalyst_summary,
+        },
     }
 
 
@@ -217,9 +264,9 @@ def pd_to_offset(index: int, total: int):
 async def get_orderbook(ticker: str) -> dict[str, Any]:
     """Retrieve 10-level Stockbit orderbook depth ladder with Volume Order Imbalance."""
     ticker_upper = ticker.upper()
-    base_prices = {"BBCA.JK": 10450, "BBRI.JK": 5125, "BMRI.JK": 7100, "TLKM.JK": 3120, "ASII.JK": 5050}
-    current_px = base_prices.get(ticker_upper, 5000)
-    tick = 25 if current_px >= 5000 else (10 if current_px >= 2000 else 5)
+    meta = STOCK_CATALOG_MAP.get(ticker_upper, {"base_price": 5000})
+    current_px = meta.get("base_price", 5000)
+    tick = 25 if current_px >= 5000 else (10 if current_px >= 2000 else (5 if current_px >= 500 else 1))
 
     import numpy as np
     np.random.seed(int(time.time() // 5) + abs(hash(ticker_upper)) % 1000)
@@ -227,7 +274,7 @@ async def get_orderbook(ticker: str) -> dict[str, Any]:
     bids = []
     total_bid_vol = 0
     for i in range(1, 11):
-        price = current_px - (i * tick)
+        price = max(1, current_px - (i * tick))
         lots = int(np.random.randint(1200, 18500))
         total_bid_vol += lots
         bids.append({"level": i, "price": price, "lots": lots, "queue_orders": int(lots // 45)})
@@ -285,11 +332,20 @@ async def websocket_market_stream(websocket: WebSocket, ticker: str):
         pass
 
 
-# =========================================================================
-# Quantitative Analytics Endpoints
-# =========================================================================
-@app.get("/api/v1/sentiment")
+@app.get("/api/v1/prediction/multimodal/{ticker}")
+async def get_multimodal_prediction_endpoint(ticker: str) -> dict[str, Any]:
+    """Retrieve synthesized multimodal prediction across quant, text/macro, and orderbook."""
+    pred = compute_multimodal_prediction(ticker)
+    return pred.to_dict()
 
+
+@app.get("/api/v1/market/sectors")
+async def get_market_sectors_endpoint() -> list[dict[str, Any]]:
+    """Retrieve catalog of 25 prominent IDX equities with sector classifications."""
+    return get_stock_catalog()
+
+
+@app.get("/api/v1/sentiment")
 async def get_sentiment() -> dict[str, Any]:
     """Retrieve live financial news sentiment and macroeconomic indicators."""
     report = get_latest_market_sentiment()

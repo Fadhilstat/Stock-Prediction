@@ -55,7 +55,18 @@
         <span class="count-badge" id="watchlist-count">5 ASSETS</span>
       </div>
       <div class="search-box">
-        <input type="text" id="ticker-search" placeholder="Cari emiten (e.g. BBCA, BBRI)...">
+        <input type="text" id="ticker-search" placeholder="Cari emiten (e.g. BBCA, BBRI, ADRO)...">
+      </div>
+      <!-- Industry Sector Classification Filter Pills -->
+      <div class="sector-filter-container" id="sector-filter-container">
+        <button class="sector-pill active" data-sector="all">SEMUA (25)</button>
+        <button class="sector-pill" data-sector="financials">BANK & KEUANGAN</button>
+        <button class="sector-pill" data-sector="energy">ENERGI & TAMBANG</button>
+        <button class="sector-pill" data-sector="materials">BAHAN BAKU</button>
+        <button class="sector-pill" data-sector="consumer">KONSUMER</button>
+        <button class="sector-pill" data-sector="infra">INFRA & TELKO</button>
+        <button class="sector-pill" data-sector="industrials">INDUSTRI</button>
+        <button class="sector-pill" data-sector="tech">TEKNOLOGI</button>
       </div>
       <div class="stock-list" id="stock-list">
         <!-- Injected via JavaScript -->
@@ -97,7 +108,7 @@
         </div>
       </section>
 
-      <!-- TradingView Interactive Chart Area -->
+      <!-- TradingView Interactive Chart Area with Cursor Tracking -->
       <section class="chart-section">
         <div class="chart-toolbar">
           <div class="timeframe-pills" id="timeframe-selector">
@@ -109,13 +120,33 @@
             <button class="pill" data-tf="ALL">ALL</button>
           </div>
           <div class="chart-tools">
-            <span class="chart-legend">TradingView Area Spline with High/Low Price Guides</span>
+            <button class="btn-toggle-forecast active" id="btn-toggle-forecast">
+              <span class="sparkle">✨</span> Prediksi AI Multimodal (+5D Cone)
+            </button>
+            <span class="chart-legend">TradingView Spline & Coordinate Crosshair HUD</span>
+          </div>
+        </div>
+
+        <!-- Floating Chart Coordinate & Prediction HUD -->
+        <div class="chart-hud-bar" id="chart-hud-bar">
+          <div class="hud-left">
+            <span class="hud-ticker-tag" id="hud-ticker">BBCA.JK</span>
+            <span class="hud-label">Kursor: <strong id="hud-cursor-price">Rp 10,450</strong></span>
+            <span class="hud-label">Tanggal: <span id="hud-cursor-date">2026-09-27</span></span>
+            <span class="hud-label">Delta: <span class="up" id="hud-cursor-delta">+1.21%</span></span>
+          </div>
+          <div class="hud-right">
+            <span class="hud-forecast-pill" id="hud-forecast-pill">🎯 Target 5D: Rp 10,750 | Konsensus: STRONG ACCUMULATION (Sinergi: +42.5)</span>
           </div>
         </div>
 
         <div class="chart-canvas-wrapper" id="chart-wrapper">
           <svg id="tv-chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
-          <div class="chart-crosshair" id="chart-crosshair"></div>
+          <!-- Crosshair Vertical and Horizontal Tracking Lines -->
+          <div class="chart-crosshair-v" id="chart-crosshair-v"></div>
+          <div class="chart-crosshair-h" id="chart-crosshair-h"></div>
+          <div class="cursor-axis-x" id="cursor-axis-x">2026-09-27</div>
+          <div class="cursor-axis-y" id="cursor-axis-y">Rp 10,450</div>
           <div class="chart-tooltip" id="chart-tooltip"></div>
           <div class="right-price-axis" id="right-price-axis">
             <span class="axis-badge" id="axis-latest-badge">Rp 10,450</span>
@@ -170,7 +201,8 @@
       <!-- Quantitative Intelligence Suite (Tabbed Interface) -->
       <section class="quant-suite-section">
         <div class="suite-tabs">
-          <button class="suite-tab active" data-tab="tab-sentiment">📰 Sentimen & Berita</button>
+          <button class="suite-tab active" data-tab="tab-multimodal">🔮 Prediksi Multimodal AI</button>
+          <button class="suite-tab" data-tab="tab-sentiment">📰 Sentimen & Berita</button>
           <button class="suite-tab" data-tab="tab-bandar">📊 Broker Summary (Bandarmology)</button>
           <button class="suite-tab" data-tab="tab-passport">🛡️ Pre-Buy Passport</button>
           <button class="suite-tab" data-tab="tab-hmm">🧠 HMM Regime</button>
@@ -181,10 +213,111 @@
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
 
+        <!-- Tab 0: AI Multimodal Prediction & Forecast Cone -->
+        <div class="tab-pane active" id="tab-multimodal">
+          <div class="multimodal-hero-card">
+            <div class="mm-header-row">
+              <div class="mm-title-group">
+                <span class="badge-sector" id="mm-sector-badge">FINANCIALS</span>
+                <h3 id="mm-company-title">BBCA.JK - Bank Central Asia Tbk</h3>
+                <span class="mm-timestamp" id="mm-timestamp">Terakhir dikompilasi: Real-Time Non-RDC Core</span>
+              </div>
+              <div class="mm-score-box">
+                <span class="m-label">SKOR SINERGI MULTIMODAL (-100 s/d +100)</span>
+                <div class="big-score up" id="mm-synergy-score">+42.5</div>
+                <span class="score-sub" id="mm-consensus-text">STRONG ACCUMULATION (Confidence 89.2%)</span>
+              </div>
+            </div>
 
+            <!-- 3 Target Pillars -->
+            <div class="mm-targets-grid">
+              <div class="target-card">
+                <span class="t-label">TARGET 5 HARI BURSA (+5D)</span>
+                <span class="t-value up" id="mm-target-5d">Rp 10,750 (+2.87%)</span>
+                <span class="t-sub">Cone 95%: <span id="mm-cone-5d">Rp 10,120 - Rp 11,380</span></span>
+              </div>
+              <div class="target-card">
+                <span class="t-label">TARGET 10 HARI BURSA (+10D)</span>
+                <span class="t-value up" id="mm-target-10d">Rp 11,000 (+5.26%)</span>
+                <span class="t-sub">Kanal Pertumbuhan Tren Akumulasi</span>
+              </div>
+              <div class="target-card">
+                <span class="t-label">BATAS INVALIDASI KERAS (STOP)</span>
+                <span class="t-value down" id="mm-invalidation">Rp 10,100 (-3.35%)</span>
+                <span class="t-sub">Batas Pelanggaran GARCH VaR 95%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 Modality Breakdown -->
+          <div class="multimodal-grid">
+            <!-- Modality 1: Quant & Volatility -->
+            <div class="modality-card">
+              <div class="card-header">
+                <h4>1. Kuantitatif & Volatilitas (40%)</h4>
+                <span class="badge-modality" id="mm-quant-badge">XGBoost + GARCH</span>
+              </div>
+              <p class="modality-desc">Pemodelan return non-linear dengan estimasi conditional volatility heteroskedastik.</p>
+              <div class="metric-row"><span>Probabilitas Arah Naik:</span><strong class="up" id="mm-quant-prob">68.4%</strong></div>
+              <div class="metric-row"><span>Volatilitas GARCH (Tahunan):</span><strong id="mm-quant-vol">16.4%</strong></div>
+              <div class="metric-row"><span>EVT Tail Parameter (Xi):</span><strong id="mm-quant-evt">0.14</strong></div>
+              <div class="metric-row"><span>Rezim Pasar HMM:</span><strong class="up" id="mm-quant-regime">BULLISH EXPANSION</strong></div>
+            </div>
+
+            <!-- Modality 2: Macro & Textual Sentiment -->
+            <div class="modality-card">
+              <div class="card-header">
+                <h4>2. Sentimen Berita & Makro (30%)</h4>
+                <span class="badge-modality" id="mm-macro-badge">RISK-ON</span>
+              </div>
+              <p class="modality-desc">Analisis NLP teks berita IDX, rilis kinerja emiten, dan kebijakan moneter Bank Indonesia.</p>
+              <div class="metric-row"><span>Bias Sentimen Berita:</span><strong class="up" id="mm-macro-bias">ACCUMULATION (+0.48)</strong></div>
+              <div class="metric-row"><span>Siklus Moneter BI-Rate:</span><strong id="mm-macro-bi">Dovish Easing</strong></div>
+              <div class="metric-row"><span>Stabilitas Kurs Valas:</span><strong id="mm-macro-fx">USD/IDR Stabil</strong></div>
+              <div class="metric-row"><span>Korelasi Pasar Global:</span><strong class="up">S&P 500 & Nikkei Menguat</strong></div>
+            </div>
+
+            <!-- Modality 3: Microstructure & Orderflow -->
+            <div class="modality-card">
+              <div class="card-header">
+                <h4>3. Orderflow & Bandarmology (30%)</h4>
+                <span class="badge-modality" id="mm-flow-badge">ACCUMULATION</span>
+              </div>
+              <p class="modality-desc">Struktur likuiditas antrean bid/ask buku order 10 level serta konsentrasi broker institusi.</p>
+              <div class="metric-row"><span>Volume Order Imbalance (VOI):</span><strong class="up" id="mm-flow-voi">+0.1420 (Buy Pressure)</strong></div>
+              <div class="metric-row"><span>Konsentrasi Top 3 Broker (CR3):</span><strong class="up" id="mm-flow-cr3">64.2%</strong></div>
+              <div class="metric-row"><span>Net Foreign Flow:</span><strong class="up" id="mm-flow-foreign">Rp +189.8 Miliar</strong></div>
+              <div class="metric-row"><span>Deteksi Spoofing:</span><strong class="up">BERSIH (0.00%)</strong></div>
+            </div>
+          </div>
+
+          <!-- Multi-Horizon Forecast Projection Table -->
+          <div class="forecast-table-card">
+            <div class="card-header">
+              <h4>Jalur Proyeksi Harga Multi-Horizon (+1D s/d +10D Cone of Uncertainty)</h4>
+              <span class="sub">Toleransi risiko matematis dihitung berdasarkan interval konfidensi 95% GARCH(1,1).</span>
+            </div>
+            <div class="table-wrap">
+              <table class="forecast-table">
+                <thead>
+                  <tr>
+                    <th>Hari Ke Depan</th>
+                    <th>Harga Proyeksi</th>
+                    <th>Batas Atas Cone (+1.96 Sigma)</th>
+                    <th>Batas Bawah Cone (-1.96 Sigma)</th>
+                    <th>Ekspektasi Return</th>
+                  </tr>
+                </thead>
+                <tbody id="forecast-table-body">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
         <!-- Tab 1: Sentiment & Macro -->
-        <div class="tab-pane active" id="tab-sentiment">
+        <div class="tab-pane" id="tab-sentiment">
           <div class="sentiment-summary-grid">
             <div class="sentiment-score-card">
               <span class="card-title">Skor Sentimen Terkonsolidasi</span>

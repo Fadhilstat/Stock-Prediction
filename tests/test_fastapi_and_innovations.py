@@ -167,6 +167,25 @@ def test_fastapi_endpoints():
     assert resp_update_cfg.json()["success"] is True
     assert resp_update_cfg.json()["config"]["var_confidence_level"] == 0.975
 
+    # Multimodal Prediction API
+    resp_mm = client.get("/api/v1/prediction/multimodal/BBCA.JK")
+    assert resp_mm.status_code == 200
+    mm_json = resp_mm.json()
+    assert mm_json["ticker"] == "BBCA.JK"
+    assert "consensus_stance" in mm_json
+    assert "synergy_score" in mm_json
+    assert "target_price_5d" in mm_json
+    assert len(mm_json["forecast_points"]) == 10
+    assert "quant_modality" in mm_json
+    assert "macro_news_modality" in mm_json
+    assert "microstructure_modality" in mm_json
+
+    # Market Sectors API
+    resp_sectors = client.get("/api/v1/market/sectors")
+    assert resp_sectors.status_code == 200
+    sectors_json = resp_sectors.json()
+    assert len(sectors_json) == 25
+
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200
