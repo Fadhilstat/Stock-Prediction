@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruang Risiko IDX - Institutional Trading Terminal</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="tv-dark">
+  <!-- Top Navigation Bar -->
+  <header class="tv-header">
+    <div class="header-left">
+      <div class="brand-logo">
+        <span class="logo-mark">RR</span>
+        <div class="logo-text">
+          <span class="brand-title">RUANG RISIKO IDX</span>
+          <span class="brand-sub">INSTITUTIONAL QUANT TERMINAL</span>
+        </div>
+      </div>
+      <div class="market-status-pill">
+        <span class="status-dot pulse"></span>
+        <span class="status-label">IDX LIVE REGULAR</span>
+      </div>
+      <div class="engine-badge">FastAPI + Non-RDC Core</div>
+    </div>
+
+    <!-- World Indices Live Ticker Ribbon -->
+    <div class="world-ribbon" id="world-ribbon">
+      <div class="ticker-item"><span class="sym">IHSG</span> <span class="val">7,742.50</span> <span class="chg up">+0.68%</span></div>
+      <div class="ticker-item"><span class="sym">LQ45</span> <span class="val">982.10</span> <span class="chg up">+0.85%</span></div>
+      <div class="ticker-item"><span class="sym">S&P 500</span> <span class="val">5,864.20</span> <span class="chg up">+0.42%</span></div>
+      <div class="ticker-item"><span class="sym">Nikkei 225</span> <span class="val">38,981.75</span> <span class="chg up">+1.12%</span></div>
+      <div class="ticker-item"><span class="sym">USD/IDR</span> <span class="val">15,340</span> <span class="chg down">-0.32%</span></div>
+    </div>
+
+    <div class="header-right">
+      <button class="btn-action-primary" id="btn-auto-update">
+        <span class="icon">🔄</span> Auto-Deploy GitHub
+      </button>
+      <div class="user-profile">
+        <span class="domain-tag">rridx.fadhilrusydi.com</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Terminal Grid Layout -->
+  <div class="terminal-container">
+    <!-- Left Sidebar: Stockbit Watchlist -->
+    <aside class="sidebar-watchlist">
+      <div class="watchlist-header">
+        <h3>IDX LIQUID WATCHLIST</h3>
+        <span class="count-badge" id="watchlist-count">5 ASSETS</span>
+      </div>
+      <div class="search-box">
+        <input type="text" id="ticker-search" placeholder="Cari emiten (e.g. BBCA, BBRI)...">
+      </div>
+      <div class="stock-list" id="stock-list">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="sidebar-footer">
+        <div class="system-sync">
+          <span class="sync-dot"></span>
+          <span>Daemon: Polling origin/main (60s)</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center & Right Workspace -->
+    <main class="main-workspace">
+      <!-- Active Ticker Bar -->
+      <section class="ticker-hero-bar">
+        <div class="hero-left">
+          <h1 id="hero-ticker">BBCA.JK</h1>
+          <span class="hero-name" id="hero-name">Bank Central Asia Tbk</span>
+          <span class="badge-sector" id="hero-sector">Financials</span>
+        </div>
+        <div class="hero-metrics">
+          <div class="metric-block">
+            <span class="m-label">HARGA TERAKHIR</span>
+            <span class="m-value up" id="hero-price">Rp 10,450</span>
+          </div>
+          <div class="metric-block">
+            <span class="m-label">PERUBAHAN</span>
+            <span class="m-value up" id="hero-change">+1.21% (+125)</span>
+          </div>
+          <div class="metric-block">
+            <span class="m-label">VOLATILITAS GARCH</span>
+            <span class="m-value" id="hero-vol">16.4% / Thn</span>
+          </div>
+          <div class="metric-block">
+            <span class="m-label">HMM REGIME</span>
+            <span class="m-value tag-bull" id="hero-regime">BULLISH EXPANSION</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TradingView Interactive Chart Area -->
+      <section class="chart-section">
+        <div class="chart-toolbar">
+          <div class="timeframe-pills" id="timeframe-selector">
+            <button class="pill" data-tf="1D">1D</button>
+            <button class="pill" data-tf="1W">1W</button>
+            <button class="pill active" data-tf="1M">1M</button>
+            <button class="pill" data-tf="3M">3M</button>
+            <button class="pill" data-tf="1Y">1Y</button>
+            <button class="pill" data-tf="ALL">ALL</button>
+          </div>
+          <div class="chart-tools">
+            <span class="chart-legend">TradingView Area Spline with High/Low Price Guides</span>
+          </div>
+        </div>
+
+        <div class="chart-canvas-wrapper" id="chart-wrapper">
+          <svg id="tv-chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
+          <div class="chart-crosshair" id="chart-crosshair"></div>
+          <div class="chart-tooltip" id="chart-tooltip"></div>
+          <div class="right-price-axis" id="right-price-axis">
+            <span class="axis-badge" id="axis-latest-badge">Rp 10,450</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Two-Column Microstructure & Depth Section -->
+      <div class="split-row">
+        <!-- Stockbit 10-Level Orderbook Ladder -->
+        <div class="panel-card orderbook-panel">
+          <div class="card-header">
+            <h3>ORDERBOOK 10-LEVEL (BID / ASK DEPTH)</h3>
+            <span class="voi-badge" id="voi-badge">VOI: +0.1420 (BUY PRESSURE)</span>
+          </div>
+          <div class="orderbook-table-container">
+            <div class="book-side bid-side">
+              <div class="book-head">
+                <span>Antrian</span>
+                <span>Lot Bid</span>
+                <span>Bid (Rp)</span>
+              </div>
+              <div class="book-rows" id="bid-rows">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+            <div class="book-side ask-side">
+              <div class="book-head">
+                <span>Offer (Rp)</span>
+                <span>Lot Offer</span>
+                <span>Antrian</span>
+              </div>
+              <div class="book-rows" id="ask-rows">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Trade Stream & Spread -->
+        <div class="panel-card trades-panel">
+          <div class="card-header">
+            <h3>RUNNING TRADES & INTRADAY TAPE</h3>
+            <span class="spread-indicator" id="spread-indicator">Spread: Rp 25 (0.24%)</span>
+          </div>
+          <div class="trade-tape" id="trade-tape">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quantitative Intelligence Suite (Tabbed Interface) -->
+      <section class="quant-suite-section">
+        <div class="suite-tabs">
+          <button class="suite-tab active" data-tab="tab-sentiment">📰 Sentimen & Berita</button>
+          <button class="suite-tab" data-tab="tab-hmm">🧠 HMM Regime</button>
+          <button class="suite-tab" data-tab="tab-dcc">🌐 DCC-GARCH Contagion</button>
+          <button class="suite-tab" data-tab="tab-copula">📐 Copula EVT Tail Risk</button>
+          <button class="suite-tab" data-tab="tab-pareto">🎯 Pareto Portfolio</button>
+          <button class="suite-tab" data-tab="tab-spillover">⚡ Diebold-Yilmaz Spillover</button>
+          <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
+        </div>
+
+        <!-- Tab 1: Sentiment & Macro -->
+        <div class="tab-pane active" id="tab-sentiment">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Skor Sentimen Terkonsolidasi</span>
+              <div class="big-score up" id="sentiment-score">+0.48</div>
+              <span class="score-sub" id="sentiment-bias">RISK-ON ACCUMULATION</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Katalis Moneter & Makro</span>
+              <p><strong>BI-Rate:</strong> <span id="macro-bi-rate">Netral ke Dovish (Ekspektasi pelonggaran 25-50 bps)</span></p>
+              <p><strong>Rupiah (USD/IDR):</strong> <span id="macro-rupiah">Apresiasi Stabil (Rentang Rp 15.250 - Rp 15.450)</span></p>
+            </div>
+          </div>
+          <div class="news-feed" id="news-feed">
+            <!-- News injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Tab 2: HMM Regime -->
+        <div class="tab-pane" id="tab-hmm">
+          <div class="quant-grid">
+            <div class="quant-info-card">
+              <h4>Hidden Markov Model (3-State Gaussian Mixture)</h4>
+              <p>Mengidentifikasi siklus pasar tanpa asumsi linear: Bullish Expansion, Bearish High-Volatility Crash, atau Sideways Consolidation.</p>
+              <div class="regime-chips">
+                <div class="chip chip-bull">State 0: Bullish (Return +0.12%, Vol 12.4%)</div>
+                <div class="chip chip-side">State 1: Sideways (Return +0.01%, Vol 16.8%)</div>
+                <div class="chip chip-bear">State 2: Bearish Crash (Return -0.28%, Vol 34.5%)</div>
+              </div>
+            </div>
+            <div class="quant-data-card">
+              <h4>Status Regim Saat Ini (<span id="hmm-ticker-label">BBCA.JK</span>)</h4>
+              <div class="metric-row">
+                <span>Regim Dominan:</span>
+                <strong class="up">Bullish Expansion (Probabilitas 84.2%)</strong>
+              </div>
+              <div class="metric-row">
+                <span>Viterbi Persistent Days:</span>
+                <strong>18 Hari Berturut-turut</strong>
+              </div>
+              <div class="metric-row">
+                <span>Probabilitas Transisi ke Crash:</span>
+                <strong class="down">2.4% (Rendah)</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: DCC-GARCH Contagion -->
+        <div class="tab-pane" id="tab-dcc">
+          <div class="quant-grid">
+            <div class="quant-info-card">
+              <h4>DCC-GARCH Dynamic Conditional Correlation (Engle 2002)</h4>
+              <p>Menghitung korelasi dinamis harian antar aset untuk mengukur penularan risiko sistemik perbankan dan industri IDX.</p>
+              <div class="metric-row">
+                <span>Systemic Contagion Index (SCI):</span>
+                <strong class="tag-warn">44.8% (Moderate Systemic Interconnection)</strong>
+              </div>
+            </div>
+            <div class="quant-data-card">
+              <h4>Korelasi Terkini dengan IHSG</h4>
+              <div class="metric-row"><span>BBCA vs IHSG:</span><strong>0.84 (High Beta)</strong></div>
+              <div class="metric-row"><span>BBRI vs IHSG:</span><strong>0.78 (Moderate-High)</strong></div>
+              <div class="metric-row"><span>BMRI vs IHSG:</span><strong>0.81 (High)</strong></div>
+              <div class="metric-row"><span>TLKM vs IHSG:</span><strong>0.52 (Defensive Decoupling)</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Copula EVT -->
+        <div class="tab-pane" id="tab-copula">
+          <div class="quant-grid">
+            <div class="quant-info-card">
+              <h4>Copula Archimedean & Extreme Value Theory (EVT)</h4>
+              <p>Clayton Copula mengukur ketergantungan ekor bawah (asymmetric crash tail dependence). GPD Peak-Over-Threshold menghitung Expected Shortfall ekstrem.</p>
+              <div class="metric-row">
+                <span>Clayton Lower Tail Dependence:</span>
+                <strong class="down">0.38 (Asymmetric Crash Risk)</strong>
+              </div>
+              <div class="metric-row">
+                <span>GPD Tail Index (Xi):</span>
+                <strong>0.14 (Heavy-tailed distribution)</strong>
+              </div>
+            </div>
+            <div class="quant-data-card">
+              <h4>Toleransi Risiko Ekstrem (99% Confidence)</h4>
+              <div class="metric-row"><span>EVT VaR 99%:</span><strong class="down">-3.85%</strong></div>
+              <div class="metric-row"><span>EVT Expected Shortfall (CVaR 99%):</span><strong class="down">-5.12%</strong></div>
+              <div class="metric-row"><span>Rekomendasi Passport:</span><strong class="up">PASSPORT-CLEARED</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Pareto Portfolio -->
+        <div class="tab-pane" id="tab-pareto">
+          <div class="quant-grid">
+            <div class="quant-info-card">
+              <h4>Multi-Objective Pareto Frontier Allocator</h4>
+              <p>Mengoptimalkan portofolio dengan 3 fungsi objektif sekaligus: Memaksimalkan Return, Meminimalkan CVaR 99%, dan Memaksimalkan Diversification Entropy H(w).</p>
+              <div class="metric-row">
+                <span>Sharpe Ratio Optimal:</span>
+                <strong class="up">1.84</strong>
+              </div>
+              <div class="metric-row">
+                <span>Diversification Entropy:</span>
+                <strong>1.58 / 1.61 (Near Optimal Spread)</strong>
+              </div>
+            </div>
+            <div class="quant-data-card">
+              <h4>Bobot Alokasi Optimal</h4>
+              <div class="metric-row"><span>BBCA.JK:</span><strong>28.5%</strong></div>
+              <div class="metric-row"><span>BBRI.JK:</span><strong>22.0%</strong></div>
+              <div class="metric-row"><span>BMRI.JK:</span><strong>24.5%</strong></div>
+              <div class="metric-row"><span>TLKM.JK:</span><strong>15.0%</strong></div>
+              <div class="metric-row"><span>ASII.JK:</span><strong>10.0%</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 6: Spillover Index -->
+        <div class="tab-pane" id="tab-spillover">
+          <div class="quant-grid">
+            <div class="quant-info-card">
+              <h4>Diebold-Yilmaz (2012) Volatility Spillover Index</h4>
+              <p>Menganalisis transmisi guncangan volatilitas menggunakan Generalized Forecast Error Variance Decomposition (GFEVD).</p>
+              <div class="metric-row">
+                <span>Total Spillover Index (TSI):</span>
+                <strong class="up" id="spillover-tsi">48.2%</strong>
+              </div>
+              <div class="metric-row">
+                <span>Dominant Shock Transmitter:</span>
+                <strong class="up" id="spillover-trans">BBCA.JK (+12.4% Net)</strong>
+              </div>
+              <div class="metric-row">
+                <span>Dominant Shock Receiver:</span>
+                <strong class="down" id="spillover-recv">TLKM.JK (-8.6% Net)</strong>
+              </div>
+            </div>
+            <div class="quant-data-card" id="spillover-nodes-container">
+              <h4>Net Directional Spillover per Aset</h4>
+              <!-- Injected via JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 7: Web Action Console -->
+        <div class="tab-pane" id="tab-actions">
+          <div class="actions-console-card">
+            <div class="console-header">
+              <h4>KONTROL OPERASIONAL MANDIRI & DEPLOYMENT</h4>
+              <span class="sub">Setiap aksi dieksekusi secara instan via asynchronous REST API backend.</span>
+            </div>
+            <div class="action-buttons-grid">
+              <button class="console-btn" data-action="AUTO_UPDATE_CHECK">
+                <span class="btn-icon">🔄</span>
+                <div class="btn-text">
+                  <strong>Cek & Terapkan Pembaruan GitHub</strong>
+                  <span>Tarik commit terbaru dari origin/main dan rebuild</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="REFRESH_DATA">
+                <span class="btn-icon">📥</span>
+                <div class="btn-text">
+                  <strong>Perbarui Data Pasar</strong>
+                  <span>Tarik data transaksi & snapshot harga terkini</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="RECALC_RISK">
+                <span class="btn-icon">⚡</span>
+                <div class="btn-text">
+                  <strong>Hitung Ulang Model Risiko GARCH</strong>
+                  <span>Eksekusi ulang parameter VaR & CVaR 95% / 99%</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="HMM_REGIME">
+                <span class="btn-icon">🧠</span>
+                <div class="btn-text">
+                  <strong>Deteksi Ulang Regim Pasar HMM</strong>
+                  <span>Viterbi path sequence 3-state estimation</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="PARETO_PORTFOLIO">
+                <span class="btn-icon">🎯</span>
+                <div class="btn-text">
+                  <strong>Optimasi Portofolio Pareto</strong>
+                  <span>Multi-objective frontier balancing risk & entropy</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="SENTIMENT_REFRESH">
+                <span class="btn-icon">📰</span>
+                <div class="btn-text">
+                  <strong>Perbarui Sentimen Berita & Makro</strong>
+                  <span>Scrape dan analisis polaritas berita emiten IDX</span>
+                </div>
+              </button>
+            </div>
+
+            <!-- Action Status Feedback Box -->
+            <div class="action-status-box" id="action-status-box">
+              <span class="status-msg">Sistem siap. Klik tombol di atas untuk menjalankan aksi secara real-time.</span>
+            </div>
+
+            <!-- Action Audit Table -->
+            <div class="audit-trail-section">
+              <h5>Riwayat Eksekusi Tindakan Terakhir (Action Ledger)</h5>
+              <div class="table-wrap">
+                <table class="audit-table">
+                  <thead>
+                    <tr>
+                      <th>Waktu (UTC)</th>
+                      <th>Tindakan</th>
+                      <th>Status</th>
+                      <th>Durasi</th>
+                      <th>Keterangan</th>
+                    </tr>
+                  </thead>
+                  <tbody id="audit-table-body">
+                    <!-- Injected via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

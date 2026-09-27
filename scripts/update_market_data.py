@@ -26,7 +26,7 @@ from ruang_risiko_idx.data.validation import (
 )
 
 
-def parse_arguments() -> argparse.Namespace:
+def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Update daily IDX market data.")
 
     parser.add_argument(
@@ -45,7 +45,7 @@ def parse_arguments() -> argparse.Namespace:
         help="Optional list of Yahoo Finance tickers.",
     )
 
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def write_quarantine(
@@ -78,11 +78,12 @@ def write_quarantine(
     return snapshot_path
 
 
-def main() -> int:
-    args = parse_arguments()
+def main(argv: list[str] | None = None) -> int:
+    args = parse_arguments(argv)
     settings = ProjectSettings()
 
     existing = load_market_data(settings.raw_data_path)
+
 
     start_date = (
         date.fromisoformat(args.start)

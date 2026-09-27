@@ -3419,5 +3419,1182 @@
     },
     "summary_message": "Runtime parameters updated: VaR confidence 95.0%, Max Alloc 20.0%.",
     "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-021612-7887",
+    "action_type": "HMM_REGIME_DETECTION",
+    "triggered_at": "2026-09-27T02:16:12.446208+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "regime": "SIDEWAYS_COMPRESSION",
+      "probability": 0.752
+    },
+    "summary_message": "HMM Rezim terdeteksi untuk BBCA.JK: SIDEWAYS_COMPRESSION (75.2%).",
+    "duration_ms": 4705.94
+  },
+  {
+    "action_id": "ACT-20260927-021612-8675",
+    "action_type": "PARETO_PORTFOLIO_OPTIMIZATION",
+    "triggered_at": "2026-09-27T02:16:12.828329+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "ANTM.JK",
+        "ASII.JK",
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "^JKSE"
+      ],
+      "sharpe": -0.43,
+      "cvar_gain": 10.5,
+      "optimal_weights": {
+        "ANTM.JK": 33.8,
+        "ASII.JK": 36.9,
+        "BBCA.JK": 10.5,
+        "BBRI.JK": 2.0,
+        "TLKM.JK": 2.3,
+        "^JKSE": 14.5
+      }
+    },
+    "summary_message": "Optimasi Pareto selesai (6 aset): Tangency Sharpe -0.43, Reduksi Tail Risk 10.5%.",
+    "duration_ms": 352.33
+  },
+  {
+    "action_id": "ACT-20260927-021612-8436",
+    "action_type": "AUTO_UPDATE_PULL",
+    "triggered_at": "2026-09-27T02:16:12.840960+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Auto-updater daemon checked: Workspace up-to-date with origin/main (simulated/local mode).",
+    "duration_ms": 0.95
+  },
+  {
+    "action_id": "ACT-20260927-021624-7526",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T02:16:24.120372+00:00",
+    "operator": "web_operator",
+    "status": "FAILED",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data refresh failed: No module named 'ruang_risiko_idx.data.pipeline'",
+    "duration_ms": 0.78
+  },
+  {
+    "action_id": "ACT-20260927-021624-0806",
+    "action_type": "RISK_SNAPSHOT_RECALC",
+    "triggered_at": "2026-09-27T02:16:24.519978+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "GARCH volatility and VaR snapshots successfully recomputed and registered.",
+    "duration_ms": 386.36
+  },
+  {
+    "action_id": "ACT-20260927-021628-9431",
+    "action_type": "DIRECTION_SNAPSHOT_RECALC",
+    "triggered_at": "2026-09-27T02:16:28.355990+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Directional classification models re-inferred and latest snapshot registered.",
+    "duration_ms": 3824.08
+  },
+  {
+    "action_id": "ACT-20260927-021628-1844",
+    "action_type": "PREMARKET_BRIEFING_GENERATION",
+    "triggered_at": "2026-09-27T02:16:28.383989+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "digest_id": "BRIEF-20260927-021628",
+      "top_setups": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "BMRI.JK"
+      ]
+    },
+    "summary_message": "Pre-Market Morning Briefing BRIEF-20260927-021628 berhasil dikompilasi untuk 2026-09-27.",
+    "duration_ms": 0.38
+  },
+  {
+    "action_id": "ACT-20260927-021628-9579",
+    "action_type": "MICROSTRUCTURE_IMBALANCE_SCAN",
+    "triggered_at": "2026-09-27T02:16:28.422991+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "voi_lots": -2324,
+      "regime": "BALANCED_FLOW",
+      "spoofing_score": 0.0
+    },
+    "summary_message": "Microstructure Imbalance scan selesai untuk BBCA.JK: VOI -2,324 lot (BALANCED_FLOW).",
+    "duration_ms": 0.54
+  },
+  {
+    "action_id": "ACT-20260927-021628-8795",
+    "action_type": "DCC_GARCH_RECALCULATION",
+    "triggered_at": "2026-09-27T02:16:28.518994+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "sci": 0.3651,
+      "regime": "DECOUPLED_RESILIENT",
+      "tickers_count": 6,
+      "highest_pair": "BBCA.JK/BBRI.JK"
+    },
+    "summary_message": "DCC-GARCH matriks terkalibrasi: SCI 0.3651 (DECOUPLED_RESILIENT).",
+    "duration_ms": 52.76
+  },
+  {
+    "action_id": "ACT-20260927-021628-5322",
+    "action_type": "TELEGRAM_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:16:28.623039+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "chat_id": "SIMULATED_CHANNEL",
+      "preview": "\u2600\ufe0f [Ruang Risiko IDX] Siklus otonom CYCLE-20260927-021624 selesai. Morning brief...",
+      "mode": "SIMULATION"
+    },
+    "summary_message": "Telegram alert processed via simulated dispatcher (offline/dry-run mode).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-021628-8931",
+    "action_type": "AUTONOMOUS_CYCLE_EXECUTION",
+    "triggered_at": "2026-09-27T02:16:28.736037+00:00",
+    "operator": "unit_test_runner",
+    "status": "WARNING",
+    "parameters": {
+      "cycle_id": "CYCLE-20260927-021624",
+      "steps": [
+        "market_data",
+        "risk_recalc",
+        "direction_recalc",
+        "morning_briefing",
+        "microstructure",
+        "dcc_contagion",
+        "telegram_dispatch"
+      ]
+    },
+    "summary_message": "Siklus otomatisasi penuh CYCLE-20260927-021624 tuntas dalam 4617.0 ms. Status: TERDAPAT PERINGATAN.",
+    "duration_ms": 4616.97
+  },
+  {
+    "action_id": "ACT-20260927-021629-0786",
+    "action_type": "COPULA_EVT_SCAN",
+    "triggered_at": "2026-09-27T02:16:29.577233+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "lambda_l": 0.5,
+      "evt_es_99": 6.17,
+      "gpd_regime": "HEAVY_TAILED_FRECHET"
+    },
+    "summary_message": "Copula & EVT terkalibrasi untuk BBCA.JK: Tail Dep Lambda-L 0.50 (ASYMMETRIC_CRASH_VULNERABILITY), EVT-ES 99% -6.17%.",
+    "duration_ms": 59.64
+  },
+  {
+    "action_id": "ACT-20260927-021629-3017",
+    "action_type": "ALGO_EXECUTION_SIMULATION",
+    "triggered_at": "2026-09-27T02:16:29.617232+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "order_value_idr": 150000000.0,
+      "strategy": "VWAP",
+      "slippage_bps": 1.17,
+      "impact_idr": 17479.9
+    },
+    "summary_message": "Simulasi Algoritma VWAP tuntas untuk BBCA.JK (Rp 150,000,000): Slippage 1.2 bps, Efisiensi 99.0%.",
+    "duration_ms": 0.19
+  },
+  {
+    "action_id": "ACT-20260927-021629-5322",
+    "action_type": "TELEGRAM_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:16:29.815671+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "chat_id": "SIMULATED_CHANNEL",
+      "preview": "Uji pesan otomatis kuantitatif",
+      "mode": "SIMULATION"
+    },
+    "summary_message": "Telegram alert processed via simulated dispatcher (offline/dry-run mode).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-021629-8795",
+    "action_type": "DCC_GARCH_RECALCULATION",
+    "triggered_at": "2026-09-27T02:16:29.888606+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "sci": 0.3651,
+      "regime": "DECOUPLED_RESILIENT",
+      "tickers_count": 6,
+      "highest_pair": "BBCA.JK/BBRI.JK"
+    },
+    "summary_message": "DCC-GARCH matriks terkalibrasi: SCI 0.3651 (DECOUPLED_RESILIENT).",
+    "duration_ms": 34.8
+  },
+  {
+    "action_id": "ACT-20260927-021629-5322",
+    "action_type": "TELEGRAM_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:16:29.927659+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "chat_id": "SIMULATED_CHANNEL",
+      "preview": "Testing action dispatch",
+      "mode": "SIMULATION"
+    },
+    "summary_message": "Telegram alert processed via simulated dispatcher (offline/dry-run mode).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-021629-7526",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T02:16:29.971729+00:00",
+    "operator": "web_operator",
+    "status": "FAILED",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data refresh failed: No module named 'ruang_risiko_idx.data.pipeline'",
+    "duration_ms": 1.63
+  },
+  {
+    "action_id": "ACT-20260927-021630-0806",
+    "action_type": "RISK_SNAPSHOT_RECALC",
+    "triggered_at": "2026-09-27T02:16:30.639536+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "GARCH volatility and VaR snapshots successfully recomputed and registered.",
+    "duration_ms": 636.91
+  },
+  {
+    "action_id": "ACT-20260927-021634-9431",
+    "action_type": "DIRECTION_SNAPSHOT_RECALC",
+    "triggered_at": "2026-09-27T02:16:34.493542+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Directional classification models re-inferred and latest snapshot registered.",
+    "duration_ms": 3829.29
+  },
+  {
+    "action_id": "ACT-20260927-021634-0414",
+    "action_type": "PREMARKET_BRIEFING_GENERATION",
+    "triggered_at": "2026-09-27T02:16:34.509544+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "digest_id": "BRIEF-20260927-021634",
+      "top_setups": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "BMRI.JK"
+      ]
+    },
+    "summary_message": "Pre-Market Morning Briefing BRIEF-20260927-021634 berhasil dikompilasi untuk 2026-09-27.",
+    "duration_ms": 0.32
+  },
+  {
+    "action_id": "ACT-20260927-021634-9579",
+    "action_type": "MICROSTRUCTURE_IMBALANCE_SCAN",
+    "triggered_at": "2026-09-27T02:16:34.527542+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "voi_lots": -2324,
+      "regime": "BALANCED_FLOW",
+      "spoofing_score": 0.0
+    },
+    "summary_message": "Microstructure Imbalance scan selesai untuk BBCA.JK: VOI -2,324 lot (BALANCED_FLOW).",
+    "duration_ms": 0.53
+  },
+  {
+    "action_id": "ACT-20260927-021634-8795",
+    "action_type": "DCC_GARCH_RECALCULATION",
+    "triggered_at": "2026-09-27T02:16:34.566070+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "sci": 0.3651,
+      "regime": "DECOUPLED_RESILIENT",
+      "tickers_count": 6,
+      "highest_pair": "BBCA.JK/BBRI.JK"
+    },
+    "summary_message": "DCC-GARCH matriks terkalibrasi: SCI 0.3651 (DECOUPLED_RESILIENT).",
+    "duration_ms": 21.19
+  },
+  {
+    "action_id": "ACT-20260927-021634-5322",
+    "action_type": "TELEGRAM_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:16:34.584068+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "chat_id": "SIMULATED_CHANNEL",
+      "preview": "\u2600\ufe0f [Ruang Risiko IDX] Siklus otonom CYCLE-20260927-021629 selesai. Morning brief...",
+      "mode": "SIMULATION"
+    },
+    "summary_message": "Telegram alert processed via simulated dispatcher (offline/dry-run mode).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-021634-2437",
+    "action_type": "AUTONOMOUS_CYCLE_EXECUTION",
+    "triggered_at": "2026-09-27T02:16:34.602067+00:00",
+    "operator": "pytest_runner",
+    "status": "WARNING",
+    "parameters": {
+      "cycle_id": "CYCLE-20260927-021629",
+      "steps": [
+        "market_data",
+        "risk_recalc",
+        "direction_recalc",
+        "morning_briefing",
+        "microstructure",
+        "dcc_contagion",
+        "telegram_dispatch"
+      ]
+    },
+    "summary_message": "Siklus otomatisasi penuh CYCLE-20260927-021629 tuntas dalam 4631.4 ms. Status: TERDAPAT PERINGATAN.",
+    "duration_ms": 4631.4
+  },
+  {
+    "action_id": "ACT-20260927-021637-4269",
+    "action_type": "WEBHOOK_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:16:37.323477+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "ANTM.JK",
+      "event_type": "TEST_PING",
+      "status_code": 200
+    },
+    "summary_message": "Alert TEST_PING dispatched successfully to webhook (Status 200).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-021637-6045",
+    "action_type": "DOMAIN_PROBE_CHECK",
+    "triggered_at": "2026-09-27T02:16:37.805043+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "domain": "rridx.fadhilrusydi.com",
+      "resolved_ip": "103.150.12.34",
+      "tls_active": false
+    },
+    "summary_message": "DNS telah terarah ke 103.150.12.34, menunggu inisialisasi Caddy TLS pada VPS.",
+    "duration_ms": 450.23
+  },
+  {
+    "action_id": "ACT-20260927-021643-3561",
+    "action_type": "HMM_REGIME_DETECTION",
+    "triggered_at": "2026-09-27T02:16:43.790089+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "regime": "SIDEWAYS_COMPRESSION",
+      "probability": 0.752
+    },
+    "summary_message": "HMM Rezim terdeteksi untuk BBCA.JK: SIDEWAYS_COMPRESSION (75.2%).",
+    "duration_ms": 4474.9
+  },
+  {
+    "action_id": "ACT-20260927-021644-1229",
+    "action_type": "PARETO_PORTFOLIO_OPTIMIZATION",
+    "triggered_at": "2026-09-27T02:16:44.166082+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "ANTM.JK",
+        "ASII.JK",
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "^JKSE"
+      ],
+      "sharpe": -0.43,
+      "cvar_gain": 10.5,
+      "optimal_weights": {
+        "ANTM.JK": 33.8,
+        "ASII.JK": 36.9,
+        "BBCA.JK": 10.5,
+        "BBRI.JK": 2.0,
+        "TLKM.JK": 2.3,
+        "^JKSE": 14.5
+      }
+    },
+    "summary_message": "Optimasi Pareto selesai (6 aset): Tangency Sharpe -0.43, Reduksi Tail Risk 10.5%.",
+    "duration_ms": 362.56
+  },
+  {
+    "action_id": "ACT-20260927-021644-2867",
+    "action_type": "AUTO_UPDATE_PULL",
+    "triggered_at": "2026-09-27T02:16:44.180031+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Auto-updater daemon checked: Workspace up-to-date with origin/main (simulated/local mode).",
+    "duration_ms": 0.57
+  },
+  {
+    "action_id": "ACT-20260927-021644-8985",
+    "action_type": "PREMARKET_BRIEFING_GENERATION",
+    "triggered_at": "2026-09-27T02:16:44.448754+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "digest_id": "BRIEF-20260927-021644",
+      "top_setups": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "BMRI.JK"
+      ]
+    },
+    "summary_message": "Pre-Market Morning Briefing BRIEF-20260927-021644 berhasil dikompilasi untuk 2026-09-27.",
+    "duration_ms": 0.23
+  },
+  {
+    "action_id": "ACT-20260927-021644-9579",
+    "action_type": "MICROSTRUCTURE_IMBALANCE_SCAN",
+    "triggered_at": "2026-09-27T02:16:44.466753+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "voi_lots": -2324,
+      "regime": "BALANCED_FLOW",
+      "spoofing_score": 0.0
+    },
+    "summary_message": "Microstructure Imbalance scan selesai untuk BBCA.JK: VOI -2,324 lot (BALANCED_FLOW).",
+    "duration_ms": 0.44
+  },
+  {
+    "action_id": "ACT-20260927-021645-7562",
+    "action_type": "PASSPORT_CUSTOM_ISSUANCE",
+    "triggered_at": "2026-09-27T02:16:45.937506+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "passport_id": "PASSPORT-BBCA_JK-20260927-021645",
+      "ticker": "BBCA.JK",
+      "custom_invalidation": 9500.0,
+      "position_size_pct": 12.5,
+      "signature": "34537455E703448C"
+    },
+    "summary_message": "Diterbitkan Decision Passport bertanda tangan PASSPORT-BBCA_JK-20260927-021645 untuk BBCA.JK.",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-021646-7039",
+    "action_type": "RUNTIME_CONFIG_UPDATE",
+    "triggered_at": "2026-09-27T02:16:46.251633+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "var_confidence_level": 0.95,
+      "max_portfolio_allocation_percent": 20.0,
+      "max_slippage_bps": 30.0,
+      "garch_vol_hard_veto_threshold": 0.05,
+      "tail_var99_veto_threshold": 0.08,
+      "active_direction_model": "xgboost",
+      "telegram_bot_token": "",
+      "telegram_chat_id": ""
+    },
+    "summary_message": "Runtime parameters updated: VaR confidence 95.0%, Max Alloc 20.0%.",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-024924-2833",
+    "action_type": "SPILLOVER_INDEX_CALCULATION",
+    "triggered_at": "2026-09-27T02:49:24.343545+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Diebold-Yilmaz Total Spillover Index: 35.5%. Dominant shock transmitter is BBRI.JK (+4.3% net), while ASII.JK is the primary systemic shock receiver (-3.5% net).",
+    "duration_ms": 2.8
+  },
+  {
+    "action_id": "ACT-20260927-024924-2479",
+    "action_type": "SENTIMENT_CATALYST_REFRESH",
+    "triggered_at": "2026-09-27T02:49:24.373961+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Sentimen pasar modal terkonsolidasi dengan bias RISK_ON_ACCUMULATION (Skor: +0.48). Katalis utama didukung oleh inflow asing dan stabilitas nilai tukar Rupiah.",
+    "duration_ms": 0.09
+  },
+  {
+    "action_id": "ACT-20260927-024924-8907",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T02:49:24.440450+00:00",
+    "operator": "web_operator",
+    "status": "FAILED",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data refresh failed: No module named 'ruang_risiko_idx.data.pipeline'",
+    "duration_ms": 2.32
+  },
+  {
+    "action_id": "ACT-20260927-024929-2591",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T02:49:29.612295+00:00",
+    "operator": "web_operator",
+    "status": "FAILED",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data refresh failed: No module named 'ruang_risiko_idx.data.pipeline'",
+    "duration_ms": 2.28
+  },
+  {
+    "action_id": "ACT-20260927-025008-0764",
+    "action_type": "SPILLOVER_INDEX_CALCULATION",
+    "triggered_at": "2026-09-27T02:50:08.314841+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Diebold-Yilmaz Total Spillover Index: 35.5%. Dominant shock transmitter is BBRI.JK (+4.3% net), while ASII.JK is the primary systemic shock receiver (-3.5% net).",
+    "duration_ms": 2.02
+  },
+  {
+    "action_id": "ACT-20260927-025008-2115",
+    "action_type": "SENTIMENT_CATALYST_REFRESH",
+    "triggered_at": "2026-09-27T02:50:08.333841+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Sentimen pasar modal terkonsolidasi dengan bias RISK_ON_ACCUMULATION (Skor: +0.48). Katalis utama didukung oleh inflow asing dan stabilitas nilai tukar Rupiah.",
+    "duration_ms": 0.09
+  },
+  {
+    "action_id": "ACT-20260927-025051-7270",
+    "action_type": "SPILLOVER_INDEX_CALCULATION",
+    "triggered_at": "2026-09-27T02:50:51.054724+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Diebold-Yilmaz Total Spillover Index: 35.5%. Dominant shock transmitter is BBRI.JK (+4.3% net), while ASII.JK is the primary systemic shock receiver (-3.5% net).",
+    "duration_ms": 2.81
+  },
+  {
+    "action_id": "ACT-20260927-025051-3284",
+    "action_type": "SENTIMENT_CATALYST_REFRESH",
+    "triggered_at": "2026-09-27T02:50:51.080724+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Sentimen pasar modal terkonsolidasi dengan bias RISK_ON_ACCUMULATION (Skor: +0.48). Katalis utama didukung oleh inflow asing dan stabilitas nilai tukar Rupiah.",
+    "duration_ms": 0.1
+  },
+  {
+    "action_id": "ACT-20260927-025111-6393",
+    "action_type": "SPILLOVER_INDEX_CALCULATION",
+    "triggered_at": "2026-09-27T02:51:11.062643+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Diebold-Yilmaz Total Spillover Index: 35.5%. Dominant shock transmitter is BBRI.JK (+4.3% net), while ASII.JK is the primary systemic shock receiver (-3.5% net).",
+    "duration_ms": 4.14
+  },
+  {
+    "action_id": "ACT-20260927-025111-4956",
+    "action_type": "SENTIMENT_CATALYST_REFRESH",
+    "triggered_at": "2026-09-27T02:51:11.081949+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Sentimen pasar modal terkonsolidasi dengan bias RISK_ON_ACCUMULATION (Skor: +0.48). Katalis utama didukung oleh inflow asing dan stabilitas nilai tukar Rupiah.",
+    "duration_ms": 0.08
+  },
+  {
+    "action_id": "ACT-20260927-025123-0351",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T02:51:23.048766+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data ingestion complete. Processed latest records for 6 tickers (exit code 0).",
+    "duration_ms": 11875.06
+  },
+  {
+    "action_id": "ACT-20260927-025123-1186",
+    "action_type": "AUTO_UPDATE_PULL",
+    "triggered_at": "2026-09-27T02:51:23.074768+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Auto-updater daemon checked: Workspace up-to-date with origin/main (simulated/local mode).",
+    "duration_ms": 0.8
+  },
+  {
+    "action_id": "ACT-20260927-025140-0299",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T02:51:40.839866+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data ingestion complete. Processed latest records for 6 tickers (exit code 0).",
+    "duration_ms": 2532.13
+  },
+  {
+    "action_id": "ACT-20260927-025141-0174",
+    "action_type": "RISK_SNAPSHOT_RECALC",
+    "triggered_at": "2026-09-27T02:51:41.483998+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "GARCH volatility and VaR snapshots successfully recomputed and registered.",
+    "duration_ms": 624.78
+  },
+  {
+    "action_id": "ACT-20260927-025144-3607",
+    "action_type": "DIRECTION_SNAPSHOT_RECALC",
+    "triggered_at": "2026-09-27T02:51:44.901343+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Directional classification models re-inferred and latest snapshot registered.",
+    "duration_ms": 3400.27
+  },
+  {
+    "action_id": "ACT-20260927-025144-2724",
+    "action_type": "PREMARKET_BRIEFING_GENERATION",
+    "triggered_at": "2026-09-27T02:51:44.918342+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "digest_id": "BRIEF-20260927-025144",
+      "top_setups": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "BMRI.JK"
+      ]
+    },
+    "summary_message": "Pre-Market Morning Briefing BRIEF-20260927-025144 berhasil dikompilasi untuk 2026-09-27.",
+    "duration_ms": 0.18
+  },
+  {
+    "action_id": "ACT-20260927-025144-6423",
+    "action_type": "MICROSTRUCTURE_IMBALANCE_SCAN",
+    "triggered_at": "2026-09-27T02:51:44.934341+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "voi_lots": -2324,
+      "regime": "BALANCED_FLOW",
+      "spoofing_score": 0.0
+    },
+    "summary_message": "Microstructure Imbalance scan selesai untuk BBCA.JK: VOI -2,324 lot (BALANCED_FLOW).",
+    "duration_ms": 0.99
+  },
+  {
+    "action_id": "ACT-20260927-025144-5763",
+    "action_type": "DCC_GARCH_RECALCULATION",
+    "triggered_at": "2026-09-27T02:51:44.988468+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "sci": 0.3651,
+      "regime": "DECOUPLED_RESILIENT",
+      "tickers_count": 6,
+      "highest_pair": "BBCA.JK/BBRI.JK"
+    },
+    "summary_message": "DCC-GARCH matriks terkalibrasi: SCI 0.3651 (DECOUPLED_RESILIENT).",
+    "duration_ms": 38.07
+  },
+  {
+    "action_id": "ACT-20260927-025145-7734",
+    "action_type": "TELEGRAM_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:51:45.004472+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "chat_id": "SIMULATED_CHANNEL",
+      "preview": "\u2600\ufe0f [Ruang Risiko IDX] Siklus otonom CYCLE-20260927-025138 selesai. Morning brief...",
+      "mode": "SIMULATION"
+    },
+    "summary_message": "Telegram alert processed via simulated dispatcher (offline/dry-run mode).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-025145-0895",
+    "action_type": "AUTONOMOUS_CYCLE_EXECUTION",
+    "triggered_at": "2026-09-27T02:51:45.021469+00:00",
+    "operator": "unit_test_runner",
+    "status": "SUCCESS",
+    "parameters": {
+      "cycle_id": "CYCLE-20260927-025138",
+      "steps": [
+        "market_data",
+        "risk_recalc",
+        "direction_recalc",
+        "morning_briefing",
+        "microstructure",
+        "dcc_contagion",
+        "telegram_dispatch"
+      ]
+    },
+    "summary_message": "Siklus otomatisasi penuh CYCLE-20260927-025138 tuntas dalam 6714.1 ms. Status: SEMUA SUKSES.",
+    "duration_ms": 6714.15
+  },
+  {
+    "action_id": "ACT-20260927-025145-3453",
+    "action_type": "COPULA_EVT_SCAN",
+    "triggered_at": "2026-09-27T02:51:45.690532+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "lambda_l": 0.5,
+      "evt_es_99": 6.17,
+      "gpd_regime": "HEAVY_TAILED_FRECHET"
+    },
+    "summary_message": "Copula & EVT terkalibrasi untuk BBCA.JK: Tail Dep Lambda-L 0.50 (ASYMMETRIC_CRASH_VULNERABILITY), EVT-ES 99% -6.17%.",
+    "duration_ms": 40.58
+  },
+  {
+    "action_id": "ACT-20260927-025145-3600",
+    "action_type": "ALGO_EXECUTION_SIMULATION",
+    "triggered_at": "2026-09-27T02:51:45.821108+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "order_value_idr": 150000000.0,
+      "strategy": "VWAP",
+      "slippage_bps": 1.17,
+      "impact_idr": 17479.9
+    },
+    "summary_message": "Simulasi Algoritma VWAP tuntas untuk BBCA.JK (Rp 150,000,000): Slippage 1.2 bps, Efisiensi 99.0%.",
+    "duration_ms": 0.36
+  },
+  {
+    "action_id": "ACT-20260927-025145-7734",
+    "action_type": "TELEGRAM_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:51:45.958825+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "chat_id": "SIMULATED_CHANNEL",
+      "preview": "Uji pesan otomatis kuantitatif",
+      "mode": "SIMULATION"
+    },
+    "summary_message": "Telegram alert processed via simulated dispatcher (offline/dry-run mode).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-025145-5763",
+    "action_type": "DCC_GARCH_RECALCULATION",
+    "triggered_at": "2026-09-27T02:51:45.996465+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "sci": 0.3651,
+      "regime": "DECOUPLED_RESILIENT",
+      "tickers_count": 6,
+      "highest_pair": "BBCA.JK/BBRI.JK"
+    },
+    "summary_message": "DCC-GARCH matriks terkalibrasi: SCI 0.3651 (DECOUPLED_RESILIENT).",
+    "duration_ms": 18.43
+  },
+  {
+    "action_id": "ACT-20260927-025146-7734",
+    "action_type": "TELEGRAM_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:51:46.013466+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "chat_id": "SIMULATED_CHANNEL",
+      "preview": "Testing action dispatch",
+      "mode": "SIMULATION"
+    },
+    "summary_message": "Telegram alert processed via simulated dispatcher (offline/dry-run mode).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-025146-0299",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T02:51:46.529317+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data ingestion complete. Processed latest records for 6 tickers (exit code 0).",
+    "duration_ms": 494.96
+  },
+  {
+    "action_id": "ACT-20260927-025147-0174",
+    "action_type": "RISK_SNAPSHOT_RECALC",
+    "triggered_at": "2026-09-27T02:51:47.033028+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "GARCH volatility and VaR snapshots successfully recomputed and registered.",
+    "duration_ms": 487.0
+  },
+  {
+    "action_id": "ACT-20260927-025150-3607",
+    "action_type": "DIRECTION_SNAPSHOT_RECALC",
+    "triggered_at": "2026-09-27T02:51:50.197444+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Directional classification models re-inferred and latest snapshot registered.",
+    "duration_ms": 3147.58
+  },
+  {
+    "action_id": "ACT-20260927-025150-2905",
+    "action_type": "PREMARKET_BRIEFING_GENERATION",
+    "triggered_at": "2026-09-27T02:51:50.239442+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "digest_id": "BRIEF-20260927-025150",
+      "top_setups": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "BMRI.JK"
+      ]
+    },
+    "summary_message": "Pre-Market Morning Briefing BRIEF-20260927-025150 berhasil dikompilasi untuk 2026-09-27.",
+    "duration_ms": 0.17
+  },
+  {
+    "action_id": "ACT-20260927-025150-6423",
+    "action_type": "MICROSTRUCTURE_IMBALANCE_SCAN",
+    "triggered_at": "2026-09-27T02:51:50.256445+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "voi_lots": -2324,
+      "regime": "BALANCED_FLOW",
+      "spoofing_score": 0.0
+    },
+    "summary_message": "Microstructure Imbalance scan selesai untuk BBCA.JK: VOI -2,324 lot (BALANCED_FLOW).",
+    "duration_ms": 0.48
+  },
+  {
+    "action_id": "ACT-20260927-025150-5763",
+    "action_type": "DCC_GARCH_RECALCULATION",
+    "triggered_at": "2026-09-27T02:51:50.298441+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "sci": 0.3651,
+      "regime": "DECOUPLED_RESILIENT",
+      "tickers_count": 6,
+      "highest_pair": "BBCA.JK/BBRI.JK"
+    },
+    "summary_message": "DCC-GARCH matriks terkalibrasi: SCI 0.3651 (DECOUPLED_RESILIENT).",
+    "duration_ms": 25.82
+  },
+  {
+    "action_id": "ACT-20260927-025150-7734",
+    "action_type": "TELEGRAM_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:51:50.315445+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "chat_id": "SIMULATED_CHANNEL",
+      "preview": "\u2600\ufe0f [Ruang Risiko IDX] Siklus otonom CYCLE-20260927-025146 selesai. Morning brief...",
+      "mode": "SIMULATION"
+    },
+    "summary_message": "Telegram alert processed via simulated dispatcher (offline/dry-run mode).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-025150-9162",
+    "action_type": "AUTONOMOUS_CYCLE_EXECUTION",
+    "triggered_at": "2026-09-27T02:51:50.336446+00:00",
+    "operator": "pytest_runner",
+    "status": "SUCCESS",
+    "parameters": {
+      "cycle_id": "CYCLE-20260927-025146",
+      "steps": [
+        "market_data",
+        "risk_recalc",
+        "direction_recalc",
+        "morning_briefing",
+        "microstructure",
+        "dcc_contagion",
+        "telegram_dispatch"
+      ]
+    },
+    "summary_message": "Siklus otomatisasi penuh CYCLE-20260927-025146 tuntas dalam 4301.9 ms. Status: SEMUA SUKSES.",
+    "duration_ms": 4301.89
+  },
+  {
+    "action_id": "ACT-20260927-025153-2457",
+    "action_type": "WEBHOOK_ALERT_DISPATCH",
+    "triggered_at": "2026-09-27T02:51:53.214110+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "ANTM.JK",
+      "event_type": "TEST_PING",
+      "status_code": 200
+    },
+    "summary_message": "Alert TEST_PING dispatched successfully to webhook (Status 200).",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-025154-2560",
+    "action_type": "DOMAIN_PROBE_CHECK",
+    "triggered_at": "2026-09-27T02:51:54.431552+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "domain": "rridx.fadhilrusydi.com",
+      "resolved_ip": "103.150.12.34",
+      "tls_active": false
+    },
+    "summary_message": "DNS telah terarah ke 103.150.12.34, menunggu inisialisasi Caddy TLS pada VPS.",
+    "duration_ms": 1189.93
+  },
+  {
+    "action_id": "ACT-20260927-025154-3800",
+    "action_type": "SPILLOVER_INDEX_CALCULATION",
+    "triggered_at": "2026-09-27T02:51:54.509089+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Diebold-Yilmaz Total Spillover Index: 35.5%. Dominant shock transmitter is BBRI.JK (+4.3% net), while ASII.JK is the primary systemic shock receiver (-3.5% net).",
+    "duration_ms": 2.42
+  },
+  {
+    "action_id": "ACT-20260927-025154-7617",
+    "action_type": "SENTIMENT_CATALYST_REFRESH",
+    "triggered_at": "2026-09-27T02:51:54.531166+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Sentimen pasar modal terkonsolidasi dengan bias RISK_ON_ACCUMULATION (Skor: +0.48). Katalis utama didukung oleh inflow asing dan stabilitas nilai tukar Rupiah.",
+    "duration_ms": 0.09
+  },
+  {
+    "action_id": "ACT-20260927-025155-0299",
+    "action_type": "MARKET_DATA_REFRESH",
+    "triggered_at": "2026-09-27T02:51:55.144565+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "ASII.JK",
+        "ANTM.JK",
+        "^JKSE"
+      ]
+    },
+    "summary_message": "Data ingestion complete. Processed latest records for 6 tickers (exit code 0).",
+    "duration_ms": 550.9
+  },
+  {
+    "action_id": "ACT-20260927-025155-1718",
+    "action_type": "AUTO_UPDATE_PULL",
+    "triggered_at": "2026-09-27T02:51:55.164083+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Auto-updater daemon checked: Workspace up-to-date with origin/main (simulated/local mode).",
+    "duration_ms": 0.66
+  },
+  {
+    "action_id": "ACT-20260927-025203-9155",
+    "action_type": "HMM_REGIME_DETECTION",
+    "triggered_at": "2026-09-27T02:52:03.890551+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "regime": "SIDEWAYS_COMPRESSION",
+      "probability": 0.752
+    },
+    "summary_message": "HMM Rezim terdeteksi untuk BBCA.JK: SIDEWAYS_COMPRESSION (75.2%).",
+    "duration_ms": 6863.02
+  },
+  {
+    "action_id": "ACT-20260927-025204-0401",
+    "action_type": "PARETO_PORTFOLIO_OPTIMIZATION",
+    "triggered_at": "2026-09-27T02:52:04.366777+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "tickers": [
+        "ANTM.JK",
+        "ASII.JK",
+        "BBCA.JK",
+        "BBRI.JK",
+        "TLKM.JK",
+        "^JKSE"
+      ],
+      "sharpe": -0.43,
+      "cvar_gain": 10.5,
+      "optimal_weights": {
+        "ANTM.JK": 33.8,
+        "ASII.JK": 36.9,
+        "BBCA.JK": 10.5,
+        "BBRI.JK": 2.0,
+        "TLKM.JK": 2.3,
+        "^JKSE": 14.5
+      }
+    },
+    "summary_message": "Optimasi Pareto selesai (6 aset): Tangency Sharpe -0.43, Reduksi Tail Risk 10.5%.",
+    "duration_ms": 459.7
+  },
+  {
+    "action_id": "ACT-20260927-025204-1718",
+    "action_type": "AUTO_UPDATE_PULL",
+    "triggered_at": "2026-09-27T02:52:04.384306+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {},
+    "summary_message": "Auto-updater daemon checked: Workspace up-to-date with origin/main (simulated/local mode).",
+    "duration_ms": 0.59
+  },
+  {
+    "action_id": "ACT-20260927-025204-8149",
+    "action_type": "PREMARKET_BRIEFING_GENERATION",
+    "triggered_at": "2026-09-27T02:52:04.596375+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "digest_id": "BRIEF-20260927-025204",
+      "top_setups": [
+        "BBCA.JK",
+        "BBRI.JK",
+        "BMRI.JK"
+      ]
+    },
+    "summary_message": "Pre-Market Morning Briefing BRIEF-20260927-025204 berhasil dikompilasi untuk 2026-09-27.",
+    "duration_ms": 0.13
+  },
+  {
+    "action_id": "ACT-20260927-025204-6423",
+    "action_type": "MICROSTRUCTURE_IMBALANCE_SCAN",
+    "triggered_at": "2026-09-27T02:52:04.609902+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "ticker": "BBCA.JK",
+      "voi_lots": -2324,
+      "regime": "BALANCED_FLOW",
+      "spoofing_score": 0.0
+    },
+    "summary_message": "Microstructure Imbalance scan selesai untuk BBCA.JK: VOI -2,324 lot (BALANCED_FLOW).",
+    "duration_ms": 0.27
+  },
+  {
+    "action_id": "ACT-20260927-025206-6768",
+    "action_type": "PASSPORT_CUSTOM_ISSUANCE",
+    "triggered_at": "2026-09-27T02:52:06.627141+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "passport_id": "PASSPORT-BBCA_JK-20260927-025206",
+      "ticker": "BBCA.JK",
+      "custom_invalidation": 9500.0,
+      "position_size_pct": 12.5,
+      "signature": "5F003DE295E745C8"
+    },
+    "summary_message": "Diterbitkan Decision Passport bertanda tangan PASSPORT-BBCA_JK-20260927-025206 untuk BBCA.JK.",
+    "duration_ms": 0.0
+  },
+  {
+    "action_id": "ACT-20260927-025206-5722",
+    "action_type": "RUNTIME_CONFIG_UPDATE",
+    "triggered_at": "2026-09-27T02:52:06.908359+00:00",
+    "operator": "web_operator",
+    "status": "SUCCESS",
+    "parameters": {
+      "var_confidence_level": 0.95,
+      "max_portfolio_allocation_percent": 20.0,
+      "max_slippage_bps": 30.0,
+      "garch_vol_hard_veto_threshold": 0.05,
+      "tail_var99_veto_threshold": 0.08,
+      "active_direction_model": "xgboost",
+      "telegram_bot_token": "",
+      "telegram_chat_id": ""
+    },
+    "summary_message": "Runtime parameters updated: VaR confidence 95.0%, Max Alloc 20.0%.",
+    "duration_ms": 0.0
   }
 ]

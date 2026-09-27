@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from ruang_risiko_idx.research.actions import (
+    trigger_auto_update_check,
     trigger_hmm_regime_detection,
     trigger_pareto_portfolio_optimization,
 )
@@ -118,3 +119,7 @@ def test_action_triggers_hmm_and_pareto():
     assert res_pareto["success"] is True
     assert "sharpe" in res_pareto
     assert "optimal_weights" in res_pareto
+
+    res_update = trigger_auto_update_check()
+    assert res_update["success"] is True
+    assert "Auto-updater" in res_update["message"] or "completed" in res_update["message"]

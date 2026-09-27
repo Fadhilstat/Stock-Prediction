@@ -18,6 +18,7 @@ from ruang_risiko_idx.research.actions import (
     load_runtime_config,
     record_action,
     trigger_algo_execution_simulation,
+    trigger_auto_update_check,
     trigger_copula_evt_scan,
     trigger_dcc_garch_recalculation,
     trigger_direction_recalculation,
@@ -1877,6 +1878,15 @@ with main_tabs[7]:
                     st.cache_data.clear()
                 else:
                     st.warning(cycle_res.summary_message)
+
+        if st.button("🔄 Periksa Pembaruan GitHub & Auto-Update", use_container_width=True):
+            with st.spinner("Memeriksa commit baru di origin/main..."):
+                up_res = trigger_auto_update_check()
+                if up_res["success"]:
+                    st.success(up_res["message"])
+                    st.cache_data.clear()
+                else:
+                    st.warning(up_res["message"])
 
     with st.expander("📅 Jadwal & Status Eksekusi Pekerjaan Otomatis (Task Registry)"):
         sched_tasks = load_automation_schedule()

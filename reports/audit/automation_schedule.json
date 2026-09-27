@@ -5,9 +5,9 @@
     "cadence": "Harian",
     "schedule_time_wib": "16:30 WIB",
     "status": "SCHEDULED",
-    "last_run_at": "2026-09-27T02:12:37.736698+00:00",
+    "last_run_at": "2026-09-27T02:51:46.034810+00:00",
     "next_run_at": "Hari bursa berikutnya 16:30 WIB",
-    "execution_count": 60,
+    "execution_count": 64,
     "last_message": "Sinkronisasi data harga dan volume seluruh semesta IDX berhasil."
   },
   {
@@ -16,9 +16,9 @@
     "cadence": "Harian",
     "schedule_time_wib": "17:00 WIB",
     "status": "SCHEDULED",
-    "last_run_at": "2026-09-27T02:12:37.736698+00:00",
+    "last_run_at": "2026-09-27T02:51:46.034810+00:00",
     "next_run_at": "Hari bursa berikutnya 17:00 WIB",
-    "execution_count": 60,
+    "execution_count": 64,
     "last_message": "Parameter volatilitas GARCH(1,1) dan VaR 99% terkalibrasi."
   },
   {
@@ -27,9 +27,9 @@
     "cadence": "Harian",
     "schedule_time_wib": "08:30 WIB",
     "status": "SCHEDULED",
-    "last_run_at": "2026-09-27T02:12:37.736698+00:00",
+    "last_run_at": "2026-09-27T02:51:46.034810+00:00",
     "next_run_at": "Hari bursa berikutnya 08:30 WIB",
-    "execution_count": 44,
+    "execution_count": 48,
     "last_message": "Intisari pembukaan sesi I dan 3 saham pilihan siap diakses."
   },
   {
@@ -38,9 +38,9 @@
     "cadence": "2 Pekan (14 Hari Bursa)",
     "schedule_time_wib": "Setiap Jumat ke-2 18:00 WIB",
     "status": "SCHEDULED",
-    "last_run_at": "2026-09-27T02:12:37.736698+00:00",
+    "last_run_at": "2026-09-27T02:51:46.034810+00:00",
     "next_run_at": "Siklus ke-5 dijadwalkan 2 pekan mendatang",
-    "execution_count": 16,
+    "execution_count": 20,
     "last_message": "Model calibration sehat; Brier score 0.2312 di bawah batas toleransi."
   },
   {
@@ -49,9 +49,9 @@
     "cadence": "Intraday (Tiap 15 Menit)",
     "schedule_time_wib": "Jam Perdagangan BEI",
     "status": "ACTIVE",
-    "last_run_at": "2026-09-27T02:12:37.736698+00:00",
+    "last_run_at": "2026-09-27T02:51:46.034810+00:00",
     "next_run_at": "15 menit mendatang",
-    "execution_count": 332,
+    "execution_count": 336,
     "last_message": "Seluruh posisi aktif berjarak aman dari batas invalidasi keras."
   }
 ]

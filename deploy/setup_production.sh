@@ -198,12 +198,57 @@ fi
 
 echo "Waiting for container healthcheck..."
 sleep 8
-if ${DOCKER_COMPOSE} exec -T app curl -f -s http://localhost:8501/_stcore/health > /dev/null; then
+if ${DOCKER_COMPOSE} exec -T app curl -f -s http://localhost:8501/health > /dev/null; then
     echo "=========================================================="
-    echo "SUCCESS: Ruang Risiko IDX is live at https://${DOMAIN}"
+    echo "SUCCESS: Ruang Risiko IDX (FastAPI Engine) is live at https://${DOMAIN}"
     echo "Local endpoint: http://127.0.0.1:8501"
     echo "=========================================================="
 else
-    echo "NOTICE: Service started. Initial model load may take up to 30 seconds."
+    echo "NOTICE: Service started. Initial model load may take up to 20 seconds."
     echo "Check logs: ${DOCKER_COMPOSE} logs -f"
 fi
+
+# 6. Install Autonomous Continuous Auto-Updater Daemon (Systemd Timer)
+echo "=========================================================="
+echo "Installing Autonomous Continuous Auto-Updater Daemon..."
+chmod +x "${TARGET_DIR}/deploy/auto_update.sh"
+
+cat << SYSTEMD_SERVICE | $SUDO tee /etc/systemd/system/rridx-autoupdate.service > /dev/null
+[Unit]
+Description=Ruang Risiko IDX Autonomous Git Auto-Updater
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=${TARGET_DIR}
+ExecStart=/bin/bash ${TARGET_DIR}/deploy/auto_update.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+SYSTEMD_SERVICE
+
+cat << SYSTEMD_TIMER | $SUDO tee /etc/systemd/system/rridx-autoupdate.timer > /dev/null
+[Unit]
+Description=Ruang Risiko IDX Continuous Auto-Update Check Timer (Every 60s)
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target
+SYSTEMD_TIMER
+
+if command -v systemctl &> /dev/null; then
+    $SUDO systemctl daemon-reload
+    $SUDO systemctl enable --now rridx-autoupdate.timer
+    echo "SUCCESS: Auto-updater timer is active (runs every 60 seconds)."
+    echo "Every git push to main will automatically deploy to https://${DOMAIN} without manual intervention."
+    echo "=========================================================="
+fi
+
