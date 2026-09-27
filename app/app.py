@@ -17,6 +17,8 @@ from ruang_risiko_idx.research.actions import (
     load_action_history,
     load_runtime_config,
     record_action,
+    trigger_algo_execution_simulation,
+    trigger_copula_evt_scan,
     trigger_dcc_garch_recalculation,
     trigger_direction_recalculation,
     trigger_domain_probe,
@@ -28,7 +30,9 @@ from ruang_risiko_idx.research.actions import (
     update_runtime_risk_parameters,
 )
 from ruang_risiko_idx.research.alert_dispatcher import AlertPayload, dispatch_webhook_alert
+from ruang_risiko_idx.research.copula_evt import compute_copula_tail_dependence, compute_evt_peak_over_threshold
 from ruang_risiko_idx.research.dcc_garch import compute_dcc_garch_matrix, generate_dcc_heatmap_figure
+from ruang_risiko_idx.research.execution_algo import generate_execution_trajectory_chart, simulate_algorithmic_execution
 from ruang_risiko_idx.research.telegram_notifier import dispatch_telegram_message
 from ruang_risiko_idx.research.automation_daemon import (
     load_automation_schedule,
@@ -1305,6 +1309,23 @@ with main_tabs[1]:
             """
         )
 
+    st.markdown("---")
+    st.markdown("##### 📉 Copula Asymmetric Tail Dependence & Extreme Value Theory (EVT-ES)")
+    st.caption("Memodelkan ketergantungan ekor asimetris saat krisis (Clayton lower tail vs Gumbel upper tail) dan Expected Shortfall ekstrim via Generalized Pareto Distribution (POT).")
+
+    rets_stock = selected_data["close"].pct_change().dropna()
+    rets_bench = benchmark_data["close"].pct_change().dropna() if not benchmark_data.empty else rets_stock
+    copula_rep = compute_copula_tail_dependence(rets_stock, rets_bench, ticker_a=selected_ticker, ticker_b="^JKSE")
+    evt_rep = compute_evt_peak_over_threshold(rets_stock, ticker=selected_ticker)
+
+    cop_c1, cop_c2, cop_c3, cop_c4 = st.columns(4)
+    cop_c1.metric("Lower Tail Dep (Lambda-L)", f"{copula_rep.lower_tail_dependence_lambda_l:.2f}", copula_rep.tail_regime)
+    cop_c2.metric("Upper Tail Dep (Lambda-U)", f"{copula_rep.upper_tail_dependence_lambda_u:.2f}")
+    cop_c3.metric("Rasio Asimetri Ekor", f"{copula_rep.asymmetry_ratio:.2f}x", copula_rep.crash_spillover_risk)
+    cop_c4.metric("EVT Expected Shortfall (99%)", f"-{evt_rep.evt_cvar_expected_shortfall_99_pct:.2f}%", f"VaR: -{evt_rep.evt_var_99_pct:.2f}%")
+
+    st.info(f"🛡️ **Rekomendasi EVT & Tail Risk:** {evt_rep.recommendation}")
+
 # TAB 3: Makroekonomi & Sentimen Berita
 with main_tabs[2]:
     st.markdown("#### 🌐 Intelijen Makroekonomi & Sentimen Berita Terkurasi")
@@ -1740,6 +1761,38 @@ with main_tabs[6]:
     st.plotly_chart(eq_fig, use_container_width=True)
     st.caption(f"📝 Ringkasan Replay: {backtest_report.executive_summary}")
 
+    st.markdown("---")
+    st.markdown("##### 🤖 Simulator Eksekusi Algoritmik (VWAP / TWAP / POV Almgren-Chriss)")
+    st.caption("Penjadwalan pemecahan order institusional untuk meminimalkan market impact dan slippage berdasarkan kurva profil volume intraday BEI (Sesi I & II).")
+
+    algo_c1, algo_c2 = st.columns([1, 2])
+    with algo_c1:
+        algo_strat = st.radio("Strategi Eksekusi", ["VWAP", "TWAP", "POV"], horizontal=True)
+        algo_val_jt = st.slider("Total Nilai Transaksi (Juta IDR)", 50, 2000, 250, step=50)
+        algo_side = st.radio("Sisi Transaksi", ["BUY", "SELL"], horizontal=True)
+    with algo_c2:
+        algo_rep = simulate_algorithmic_execution(
+            ticker=selected_ticker,
+            current_price=tech_summary.close,
+            order_value_idr=float(algo_val_jt * 1_000_000),
+            average_daily_volume=float(selected_data["volume"].tail(20).mean()),
+            strategy=algo_strat,
+            side=algo_side,
+        )
+        met_a1, met_a2, met_a3 = st.columns(3)
+        met_a1.metric("Rata-rata Harga Terisi", f"Rp {algo_rep.expected_average_price:,.0f}")
+        met_a2.metric("Total Slippage", f"{algo_rep.total_slippage_bps:.1f} bps")
+        met_a3.metric("Skor Efisiensi", f"{algo_rep.execution_efficiency_score}%")
+
+        met_b1, met_b2 = st.columns(2)
+        met_b1.metric("Dampak Pasar Permanen", f"{algo_rep.permanent_impact_bps:.1f} bps", f"Rp {algo_rep.total_market_impact_idr:,.0f}")
+        met_b2.metric("Implementation Shortfall", f"Rp {algo_rep.implementation_shortfall_idr:,.0f}")
+
+        st.info(f"💡 {algo_rep.recommendation}")
+
+    algo_chart = generate_execution_trajectory_chart(algo_rep)
+    st.plotly_chart(algo_chart, use_container_width=True)
+
 # TAB 8: Web Action Console (Operational Control Plane)
 with main_tabs[7]:
     st.markdown("#### Web Action Console (Pusat Kontrol & Operasional)")
@@ -1859,6 +1912,24 @@ with main_tabs[7]:
                     st.cache_data.clear()
                 else:
                     st.error(res["summary"])
+
+        if st.button("Pindai Ekor Ekstrim Copula & EVT-ES"):
+            with st.spinner(f"Memindai tail dependence dan GPD untuk {selected_ticker}..."):
+                res = trigger_copula_evt_scan(selected_ticker)
+                if res["success"]:
+                    st.success(res["message"])
+                    st.cache_data.clear()
+                else:
+                    st.error(res["message"])
+
+        if st.button("Simulasikan Trajektori Algoritma Eksekusi"):
+            with st.spinner(f"Menjalankan simulasi Almgren-Chriss untuk {selected_ticker}..."):
+                res = trigger_algo_execution_simulation(selected_ticker, order_value_idr=250_000_000.0, strategy="VWAP")
+                if res["success"]:
+                    st.success(res["message"])
+                    st.cache_data.clear()
+                else:
+                    st.error(res["message"])
 
     with action_c2:
         st.markdown("##### ⚙️ Pengaturan Parameter Risiko Runtime")

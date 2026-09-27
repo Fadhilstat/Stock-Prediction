@@ -237,6 +237,27 @@ Automated dispatch engine for real-time mobile investor alerts:
 - DCC Contagion Risk Spikes.
 Operates with dual-mode reliability: zero-dependency live HTTPS transmission via Telegram Bot API, with automated non-blocking fallback to audit-logged simulation in test/offline environments.
 
+### 5.10 Copula Tail Dependence & Peak-Over-Threshold (POT) EVT
+Asymmetric crash dependence and heavy tail loss modeling:
+- Clayton Copula (Lower Crash Tail):
+  $$\lambda_L = \lim_{u \to 0^+} \mathbb{P}(U \le u \mid V \le u) = 2^{-1/\theta}$$
+- Gumbel Copula (Upper Boom Tail):
+  $$\lambda_U = \lim_{u \to 1^-} \mathbb{P}(U > u \mid V > u) = 2 - 2^{1/\theta}$$
+- Generalized Pareto Distribution (GPD) for exceedances $y = L_t - u > 0$:
+  $$F_u(y) = 1 - \left(1 + \frac{\xi y}{\beta}\right)^{-1/\xi}$$
+- EVT Value-at-Risk and Expected Shortfall:
+  $$\text{VaR}_p = u + \frac{\beta}{\xi}\left[\left(\frac{n}{N_u}(1-p)\right)^{-\xi} - 1\right], \quad \text{ES}_p = \frac{\text{VaR}_p + \beta - \xi u}{1 - \xi}$$
+
+### 5.11 Almgren-Chriss Algorithmic Execution Simulator
+Institutional block order scheduling across IDX trading sessions (09:00-11:30 and 13:30-15:30 WIB):
+- Slice sizing:
+  $$x_k = X \cdot w_k$$
+- Market impact decomposition:
+  $$\text{Permanent Impact } I_{\text{perm}} = \gamma \left(\frac{X}{\text{ADV}}\right)^{1/2}$$
+  $$\text{Temporary Impact } I_{\text{temp}, k} = \eta \left(\frac{x_k}{\tau_k \cdot \text{ADV}_k}\right)^{0.60}$$
+- Implementation Shortfall (IS):
+  $$\text{IS} = \sum_{k=1}^K x_k (P_k - P_0) + \text{Broker Fees}$$
+
 ---
 
 ## 6. Flexible Equity Universe Specification

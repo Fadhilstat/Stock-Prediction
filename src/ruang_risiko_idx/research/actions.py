@@ -428,4 +428,110 @@ def trigger_telegram_test_dispatch(
     }
 
 
+def trigger_copula_evt_scan(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Execute Copula tail dependence and EVT Peak-Over-Threshold estimation."""
+    import time
+    from ruang_risiko_idx.research.copula_evt import compute_copula_tail_dependence, compute_evt_peak_over_threshold
+
+    start = time.perf_counter()
+    settings = ProjectSettings()
+    raw_path = settings.raw_data_path
+    if not raw_path.exists():
+        raw_path = settings.project_root / "data" / "processed" / "analytics_daily.parquet"
+
+    import pandas as pd
+    price_df = pd.read_parquet(raw_path) if raw_path.exists() else pd.DataFrame()
+
+    if not price_df.empty and "ticker" in price_df.columns:
+        sub_t = price_df.loc[price_df["ticker"] == ticker].sort_values("trade_date")
+        sub_bench = price_df.loc[price_df["ticker"] == "^JKSE"].sort_values("trade_date")
+        rets_t = sub_t["close"].pct_change().dropna()
+        rets_b = sub_bench["close"].pct_change().dropna()
+    else:
+        rets_t = pd.Series([0.01, -0.02, 0.005, -0.015, 0.02] * 15)
+        rets_b = pd.Series([0.008, -0.018, 0.003, -0.012, 0.015] * 15)
+
+    copula_res = compute_copula_tail_dependence(rets_t, rets_b, ticker_a=ticker, ticker_b="^JKSE")
+    evt_res = compute_evt_peak_over_threshold(rets_t, ticker=ticker)
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    msg = (
+        f"Copula & EVT terkalibrasi untuk {ticker}: Tail Dep Lambda-L {copula_res.lower_tail_dependence_lambda_l:.2f} "
+        f"({copula_res.tail_regime}), EVT-ES 99% -{evt_res.evt_cvar_expected_shortfall_99_pct:.2f}%."
+    )
+    entry = record_action(
+        action_type="COPULA_EVT_SCAN",
+        status="SUCCESS",
+        summary_message=msg,
+        parameters={
+            "ticker": ticker,
+            "lambda_l": copula_res.lower_tail_dependence_lambda_l,
+            "evt_es_99": evt_res.evt_cvar_expected_shortfall_99_pct,
+            "gpd_regime": evt_res.gpd_shape_regime,
+        },
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "ticker": ticker,
+        "lambda_l": copula_res.lower_tail_dependence_lambda_l,
+        "lambda_u": copula_res.upper_tail_dependence_lambda_u,
+        "tail_regime": copula_res.tail_regime,
+        "evt_var_99": evt_res.evt_var_99_pct,
+        "evt_es_99": evt_res.evt_cvar_expected_shortfall_99_pct,
+        "message": msg,
+        "action_id": entry.action_id,
+    }
+
+
+def trigger_algo_execution_simulation(
+    ticker: str = "BBCA.JK",
+    order_value_idr: float = 250_000_000.0,
+    strategy: str = "VWAP",
+) -> dict[str, Any]:
+    """Execute Almgren-Chriss algorithmic order trajectory simulation."""
+    import time
+    from ruang_risiko_idx.research.execution_algo import simulate_algorithmic_execution
+
+    start = time.perf_counter()
+    report = simulate_algorithmic_execution(
+        ticker=ticker,
+        current_price=10250.0,
+        order_value_idr=order_value_idr,
+        average_daily_volume=15_000_000.0,
+        strategy=strategy,
+    )
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    msg = (
+        f"Simulasi Algoritma {strategy} tuntas untuk {ticker} (Rp {order_value_idr:,.0f}): "
+        f"Slippage {report.total_slippage_bps:.1f} bps, Efisiensi {report.execution_efficiency_score}%."
+    )
+    entry = record_action(
+        action_type="ALGO_EXECUTION_SIMULATION",
+        status="SUCCESS",
+        summary_message=msg,
+        parameters={
+            "ticker": ticker,
+            "order_value_idr": order_value_idr,
+            "strategy": strategy,
+            "slippage_bps": report.total_slippage_bps,
+            "impact_idr": report.total_market_impact_idr,
+        },
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "ticker": ticker,
+        "strategy": strategy,
+        "expected_avg_price": report.expected_average_price,
+        "slippage_bps": report.total_slippage_bps,
+        "impact_idr": report.total_market_impact_idr,
+        "efficiency_score": report.execution_efficiency_score,
+        "message": msg,
+        "action_id": entry.action_id,
+    }
+
+
+
 
