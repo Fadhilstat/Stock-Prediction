@@ -72,72 +72,257 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Stockbit Dark Theme Custom CSS
+# TradingView Institutional Theme Custom CSS & Keyframe Animations
 st.markdown(
     """
     <style>
+    @keyframes tvFadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes tvPulseLive {
+        0% { box-shadow: 0 0 0 0 rgba(0, 192, 118, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(0, 192, 118, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(0, 192, 118, 0); }
+    }
+
     .block-container {
         max-width: 1440px;
-        padding-top: 0.8rem;
+        padding-top: 0.6rem;
         padding-bottom: 2.5rem;
+        animation: tvFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
     body, [data-testid="stAppViewContainer"] {
         background-color: #131722;
         color: #D1D4DC;
+        font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
     }
     [data-testid="stSidebar"] {
         background-color: #1E222D;
         border-right: 1px solid #2A2E39;
     }
-    .ticker-tape {
-        background-color: #1E222D;
+
+    /* TradingView Top Navigation Header Bar */
+    .tv-navbar {
+        background-color: #131722;
         border-bottom: 1px solid #2A2E39;
-        padding: 6px 14px;
+        padding: 8px 16px;
         margin-bottom: 12px;
-        border-radius: 6px;
         display: flex;
-        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 6px;
+    }
+    .tv-nav-left {
+        display: flex;
+        align-items: center;
         gap: 18px;
-        align-items: center;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-        font-size: 13px;
     }
-    .tape-item {
+    .tv-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 800;
+        font-size: 18px;
+        color: #F9FAFB;
+        letter-spacing: -0.5px;
+    }
+    .tv-brand-logo {
+        background: linear-gradient(135deg, #2962FF, #1E40AF);
+        color: #FFFFFF;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
         display: inline-flex;
-        gap: 6px;
         align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 900;
     }
-    .tape-label {
+    .tv-search-pill {
+        background-color: #1E222D;
+        border: 1px solid #2A2E39;
+        border-radius: 20px;
+        padding: 5px 14px;
         color: #787B86;
-        font-weight: 600;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .tape-val-green {
-        color: #00C076;
-        font-weight: 700;
-    }
-    .tape-val-red {
-        color: #FF4A68;
-        font-weight: 700;
-    }
-    .tape-val-neutral {
+    .tv-search-pill:hover {
+        border-color: #2962FF;
         color: #D1D4DC;
-        font-weight: 600;
+        background-color: #242936;
     }
+    .tv-nav-menu {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #D1D4DC;
+    }
+    .tv-nav-link {
+        color: #D1D4DC;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .tv-nav-link:hover, .tv-nav-link.active {
+        color: #2962FF;
+    }
+    .tv-nav-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .tv-live-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background-color: rgba(0, 192, 118, 0.12);
+        border: 1px solid rgba(0, 192, 118, 0.3);
+        color: #00C076;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .tv-pulse-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #00C076;
+        animation: tvPulseLive 1.8s infinite;
+    }
+    .tv-btn-start {
+        background: linear-gradient(135deg, #2962FF, #1E40AF);
+        color: #FFFFFF;
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tv-btn-start:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(41, 98, 255, 0.4);
+    }
+
+    /* TradingView Market Indices Carousel Row */
+    .tv-carousel-row {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        margin-bottom: 14px;
+    }
+    .tv-index-card {
+        background-color: #1E222D;
+        border: 1px solid #2A2E39;
+        border-radius: 8px;
+        padding: 10px 14px;
+        min-width: 220px;
+        flex: 1;
+        cursor: pointer;
+        transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s ease;
+    }
+    .tv-index-card:hover {
+        transform: translateY(-3px);
+        border-color: #2962FF;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 12px rgba(41, 98, 255, 0.15);
+    }
+    .tv-badge-circle {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 10px;
+        margin-right: 8px;
+        color: #FFFFFF;
+    }
+
+    /* Native Tabs Styling (TradingView Navigation) */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #131722;
+        border-bottom: 1px solid #2A2E39;
+        padding-bottom: 2px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 38px;
+        white-space: pre;
+        background-color: transparent;
+        border-radius: 6px 6px 0 0;
+        color: #787B86;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 0 16px;
+        border: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        color: #F9FAFB;
+        background-color: rgba(42, 46, 57, 0.4);
+    }
+    .stTabs [aria-selected="true"] {
+        color: #2962FF !important;
+        border-bottom: 2px solid #2962FF !important;
+        background-color: rgba(41, 98, 255, 0.08) !important;
+    }
+
+    /* Cards and Metric Containers */
     .stockbit-card {
         background-color: #1E222D;
         border: 1px solid #2A2E39;
-        border-radius: 6px;
+        border-radius: 8px;
         padding: 14px 16px;
         margin-bottom: 12px;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .stockbit-card-title {
-        color: #787B86;
-        font-size: 12px;
-        text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        margin-bottom: 6px;
+    .stockbit-card:hover {
+        border-color: #3b4354;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     }
+    [data-testid="stMetric"] {
+        background-color: #1E222D;
+        border: 1px solid #2A2E39;
+        border-radius: 8px;
+        padding: 12px 16px;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-testid="stMetric"]:hover {
+        border-color: #2962FF;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(41, 98, 255, 0.15);
+    }
+
+    /* Buttons */
+    .stButton > button {
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(41, 98, 255, 0.28);
+        border-color: #2962FF;
+    }
+
     .status-badge {
         display: inline-block;
         padding: 4px 10px;
@@ -153,18 +338,56 @@ st.markdown(
     .badge-avoid { background-color: #78350F; color: #FBBF24; border: 1px solid #D97706; }
     .badge-veto { background-color: #7F1D1D; color: #FF4A68; border: 1px solid #DC2626; }
 
-    .stream-card {
-        background-color: #1E222D;
-        border: 1px solid #2A2E39;
-        border-radius: 6px;
-        padding: 10px 14px;
-        margin-bottom: 8px;
+    /* TradingView Timeframe Bar */
+    .tv-timeframe-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        margin-bottom: 16px;
     }
-    [data-testid="stMetric"] {
+    .tv-timeframe-pill {
+        background-color: transparent;
+        border: 1px solid transparent;
+        color: #787B86;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tv-timeframe-pill:hover {
+        background-color: #2A2E39;
+        color: #F9FAFB;
+    }
+    .tv-timeframe-pill.active {
+        background-color: #2A2E39;
+        color: #2962FF;
+        border-color: #2962FF;
+    }
+
+    /* TradingView World Indices Section */
+    .tv-world-container {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 4px 0 10px 0;
+    }
+    .tv-world-card {
         background-color: #1E222D;
         border: 1px solid #2A2E39;
-        border-radius: 6px;
-        padding: 12px 16px;
+        border-radius: 8px;
+        padding: 10px 14px;
+        min-width: 175px;
+        flex: 1;
+        cursor: pointer;
+        transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s ease;
+    }
+    .tv-world-card:hover {
+        transform: translateY(-2px);
+        border-color: #2962FF;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     }
     </style>
     """,
@@ -215,16 +438,98 @@ runtime_config = load_runtime_config()
 market_data = load_all_market_data(settings.raw_data_path)
 risk_snapshots, direction_snapshots = load_snapshots(settings.project_root)
 
-# Top Live Stockbit Ticker Tape Bar
+# Top TradingView Navigation Header Bar
 st.markdown(
     """
-    <div class="ticker-tape">
-        <div class="tape-item"><span class="tape-label">IHSG</span> <span class="tape-val-green">7,812.35 (+0.42%)</span></div>
-        <div class="tape-item"><span class="tape-label">LQ45</span> <span class="tape-val-green">982.10 (+0.55%)</span></div>
-        <div class="tape-item"><span class="tape-label">USD/IDR</span> <span class="tape-val-red">15,420 (-0.15%)</span></div>
-        <div class="tape-item"><span class="tape-label">Market Turnover</span> <span class="tape-val-neutral">Rp 12.8 T</span></div>
-        <div class="tape-item"><span class="tape-label">Foreign Net Flow</span> <span class="tape-val-green">+Rp 842 Miliar</span></div>
-        <div class="tape-item"><span class="tape-label">Domain Rilis</span> <span class="tape-val-green">rridx.fadhilrusydi.com</span></div>
+    <div class="tv-navbar">
+        <div class="tv-nav-left">
+            <div class="tv-brand">
+                <span class="tv-brand-logo">17</span>
+                <span>TradingView</span>
+                <span style="font-size: 11px; padding: 2px 6px; background-color: #2962FF; color: #FFFFFF; border-radius: 4px; font-weight: 700; margin-left: 2px;">RRIDX</span>
+            </div>
+            <div class="tv-search-pill">
+                <span>🔍</span>
+                <span>Cari Simbol atau Pasar (Ctrl+K)</span>
+            </div>
+            <div class="tv-nav-menu">
+                <span class="tv-nav-link">Produk</span>
+                <span class="tv-nav-link">Komunitas</span>
+                <span class="tv-nav-link active" style="color: #2962FF;">Pasar</span>
+                <span class="tv-nav-link">Broker</span>
+                <span class="tv-nav-link">Terminal AI</span>
+            </div>
+        </div>
+        <div class="tv-nav-right">
+            <div class="tv-live-pill">
+                <div class="tv-pulse-dot"></div>
+                <span>BURSA IDX LIVE</span>
+            </div>
+            <span style="font-size: 13px; color: #787B86; font-weight: 600;">ID</span>
+            <span style="font-size: 16px; cursor: pointer;">👤</span>
+            <button class="tv-btn-start">Mulai</button>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# TradingView Market Indices Carousel Row (matching Screenshot 1)
+st.markdown(
+    """
+    <div class="tv-carousel-row">
+        <div class="tv-index-card">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <span class="tv-badge-circle" style="background-color: #B91C1C;">IDX</span>
+                    <span style="font-size: 12px; color: #D1D4DC; font-weight: 600;">Indeks Harga Saham Gabungan IDX</span>
+                </div>
+            </div>
+            <div style="margin-top: 6px; display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 15px; font-weight: 800; color: #F9FAFB;">7,812.3520</span>
+                <span style="font-size: 11px; color: #787B86;">POINT</span>
+                <span style="font-size: 13px; font-weight: 700; color: #00C076;">+0.42%</span>
+            </div>
+        </div>
+        <div class="tv-index-card">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <span class="tv-badge-circle" style="background-color: #047857;">🌙</span>
+                    <span style="font-size: 12px; color: #D1D4DC; font-weight: 600;">Indeks Saham Syariah Indonesia</span>
+                </div>
+            </div>
+            <div style="margin-top: 6px; display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 15px; font-weight: 800; color: #F9FAFB;">215.2530</span>
+                <span style="font-size: 11px; color: #787B86;">POINT</span>
+                <span style="font-size: 13px; font-weight: 700; color: #00C076;">+0.35%</span>
+            </div>
+        </div>
+        <div class="tv-index-card">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <span class="tv-badge-circle" style="background-color: #D97706;">45</span>
+                    <span style="font-size: 12px; color: #D1D4DC; font-weight: 600;">IDX LQ45</span>
+                </div>
+            </div>
+            <div style="margin-top: 6px; display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 15px; font-weight: 800; color: #F9FAFB;">982.1080</span>
+                <span style="font-size: 11px; color: #787B86;">POINT</span>
+                <span style="font-size: 13px; font-weight: 700; color: #00C076;">+0.55%</span>
+            </div>
+        </div>
+        <div class="tv-index-card">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
+                    <span class="tv-badge-circle" style="background-color: #2563EB;">100</span>
+                    <span style="font-size: 12px; color: #D1D4DC; font-weight: 600;">KOMPAS100</span>
+                </div>
+            </div>
+            <div style="margin-top: 6px; display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 15px; font-weight: 800; color: #F9FAFB;">812.8400</span>
+                <span style="font-size: 11px; color: #787B86;">POINT</span>
+                <span style="font-size: 13px; font-weight: 700; color: #00C076;">+0.48%</span>
+            </div>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -307,7 +612,7 @@ selected_horizon = st.sidebar.selectbox(
 # Chart Options
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Indikator Grafik**")
-chart_mode = st.sidebar.radio("Tipe Grafik", ["Candlestick", "Adjusted Close"], index=0)
+chart_mode = st.sidebar.radio("Tipe Grafik", ["TradingView Area (Gradient)", "Candlestick", "Garis"], index=0)
 show_sma = st.sidebar.checkbox("Moving Averages (SMA 20, 50, 200)", value=True)
 show_bb = st.sidebar.checkbox("Bollinger Bands (20, 2)", value=False)
 
@@ -552,6 +857,47 @@ with main_tabs[0]:
                 row=1,
                 col=1,
             )
+        elif chart_mode == "TradingView Area (Gradient)":
+            first_c = float(features_df["close"].iloc[0]) if len(features_df) > 0 else 1.0
+            last_c = float(features_df["close"].iloc[-1]) if len(features_df) > 0 else 1.0
+            is_up = last_c >= first_c
+            area_stroke = "#00C076" if is_up else "#FF4A68"
+            area_fill = "rgba(0, 192, 118, 0.16)" if is_up else "rgba(255, 74, 104, 0.16)"
+
+            fig.add_trace(
+                go.Scatter(
+                    x=features_df["trade_date"],
+                    y=features_df["adjusted_close"],
+                    mode="lines",
+                    name="TradingView Area",
+                    line=dict(color=area_stroke, width=2.2, shape="spline"),
+                    fill="tozeroy",
+                    fillcolor=area_fill,
+                ),
+                row=1,
+                col=1,
+            )
+
+            # TradingView right scale annotation badge
+            fig.add_annotation(
+                x=features_df["trade_date"].iloc[-1],
+                y=last_c,
+                text=f"Rp {last_c:,.0f}",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=1.5,
+                arrowcolor=area_stroke,
+                ax=40,
+                ay=0,
+                bgcolor=area_stroke,
+                bordercolor=area_stroke,
+                borderwidth=1,
+                borderpad=4,
+                font=dict(color="#FFFFFF", size=11, family="monospace"),
+                row=1,
+                col=1,
+            )
         else:
             fig.add_trace(
                 go.Scatter(
@@ -652,6 +998,73 @@ with main_tabs[0]:
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
         st.plotly_chart(fig, use_container_width=True)
+
+        # TradingView Timeframe bar matching screenshot 1
+        tf_html = f"""
+        <div class="tv-timeframe-bar">
+            <span class="tv-timeframe-pill {'active' if timeframe == '1 Hari' else ''}">1H</span>
+            <span class="tv-timeframe-pill {'active' if timeframe == '5 Hari' else ''}">5H</span>
+            <span class="tv-timeframe-pill {'active' if timeframe == '1 Bulan' else ''}">1Bln</span>
+            <span class="tv-timeframe-pill {'active' if timeframe == '3 Bulan' else ''}">3Bln</span>
+            <span class="tv-timeframe-pill {'active' if timeframe == '6 Bulan' else ''}">6Bln</span>
+            <span class="tv-timeframe-pill {'active' if timeframe == '1 Tahun' else ''}">1Th</span>
+            <span class="tv-timeframe-pill {'active' if timeframe == '3 Tahun' else ''}">3Th</span>
+            <span class="tv-timeframe-pill {'active' if timeframe == 'Semua Data' else ''}">Seluruhnya</span>
+        </div>
+        """
+        st.markdown(tf_html, unsafe_allow_html=True)
+
+        # TradingView World Indices Bar matching screenshot 1
+        world_indices_html = """
+        <div style="margin-top: 14px;">
+            <div style="font-size: 14px; font-weight: 700; color: #D1D4DC; margin-bottom: 8px;">
+                Indeks-Indeks Dunia
+            </div>
+            <div class="tv-world-container">
+                <div class="tv-world-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 700; color: #F9FAFB; font-size: 13px;">SPX</span>
+                        <span style="font-size: 11px; color: #787B86;">500</span>
+                    </div>
+                    <div style="font-size: 15px; font-weight: 800; color: #F9FAFB; margin-top: 4px;">5.922,50</div>
+                    <div style="font-size: 11px; font-weight: 600; color: #FF4A68; margin-top: 2px;">-0,12%</div>
+                </div>
+                <div class="tv-world-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 700; color: #F9FAFB; font-size: 13px;">NDX</span>
+                        <span style="font-size: 11px; color: #787B86;">100</span>
+                    </div>
+                    <div style="font-size: 15px; font-weight: 800; color: #F9FAFB; margin-top: 4px;">21.050,20</div>
+                    <div style="font-size: 11px; font-weight: 600; color: #00C076; margin-top: 2px;">+0,35%</div>
+                </div>
+                <div class="tv-world-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 700; color: #F9FAFB; font-size: 13px;">DJI</span>
+                        <span style="font-size: 11px; color: #787B86;">30</span>
+                    </div>
+                    <div style="font-size: 15px; font-weight: 800; color: #F9FAFB; margin-top: 4px;">43.890,10</div>
+                    <div style="font-size: 11px; font-weight: 600; color: #FF4A68; margin-top: 2px;">-0,08%</div>
+                </div>
+                <div class="tv-world-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 700; color: #F9FAFB; font-size: 13px;">NI225</span>
+                        <span style="font-size: 11px; color: #787B86;">225</span>
+                    </div>
+                    <div style="font-size: 15px; font-weight: 800; color: #F9FAFB; margin-top: 4px;">39.520,00</div>
+                    <div style="font-size: 11px; font-weight: 600; color: #00C076; margin-top: 2px;">+0,42%</div>
+                </div>
+                <div class="tv-world-card">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 700; color: #F9FAFB; font-size: 13px;">UKX</span>
+                        <span style="font-size: 11px; color: #787B86;">100</span>
+                    </div>
+                    <div style="font-size: 15px; font-weight: 800; color: #F9FAFB; margin-top: 4px;">8.350,15</div>
+                    <div style="font-size: 11px; font-weight: 600; color: #00C076; margin-top: 2px;">+0,10%</div>
+                </div>
+            </div>
+        </div>
+        """
+        st.markdown(world_indices_html, unsafe_allow_html=True)
 
     with c_col2:
         st.markdown("**Orderbook (10-Level Depth)**")
