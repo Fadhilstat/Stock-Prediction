@@ -34,11 +34,19 @@ REMOTE_HASH=$(git rev-parse origin/main)
 # Resolve docker binary and compose early
 DOCKER_BIN="docker"
 DOCKER_COMPOSE="docker compose"
+
 if ! docker info &> /dev/null; then
     if sudo docker info &> /dev/null; then
         DOCKER_BIN="sudo docker"
-        DOCKER_COMPOSE="sudo docker compose"
     fi
+fi
+
+if ${DOCKER_BIN} compose version &>/dev/null; then
+    DOCKER_COMPOSE="${DOCKER_BIN} compose"
+elif command -v docker-compose &>/dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+elif sudo command -v docker-compose &>/dev/null; then
+    DOCKER_COMPOSE="sudo docker-compose"
 fi
 
 IS_RUNNING=$(${DOCKER_BIN} ps --filter "name=ruang_risiko_idx_app" --filter "status=running" -q 2>/dev/null || true)
@@ -54,23 +62,19 @@ log "Current HEAD: ${LOCAL_HASH}"
 log "Target HEAD:  ${REMOTE_HASH}"
 log "Synchronizing workspace..."
 
+CHANGES=$(git diff --name-only "${LOCAL_HASH}" "${REMOTE_HASH}" 2>/dev/null || echo "all")
 git reset --hard origin/main
 
-log "Updating and rebuilding app container with FastAPI engine..."
-${DOCKER_COMPOSE} up -d --build app
+if echo "${CHANGES}" | grep -qE "pyproject\.toml|Dockerfile|docker-compose\.yml" || [ -z "${IS_RUNNING}" ] || [ "${FORCE_BUILD}" = true ]; then
+    log "Dependencies or Dockerfile changed. Rebuilding container..."
+    ${DOCKER_COMPOSE} up -d --build app
+else
+    log "Code-only update. Performing fast live restart of volume-mounted container..."
+    ${DOCKER_BIN} restart ruang_risiko_idx_app || ${DOCKER_COMPOSE} restart app || ${DOCKER_COMPOSE} up -d app
+fi
 
-# Ensure edge Caddy network connection, inject routing block if missing, and flush DNS
+# Ensure edge Caddy network connection and stable upstream routing
 if ${DOCKER_BIN} ps | grep -q 'caddy'; then
-    # Connect Caddy to RRIDX network
-    ${DOCKER_BIN} network connect rridx_network signalflow-production-caddy-1 2>/dev/null || true
-    ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network signalflow-production-caddy-1 2>/dev/null || true
-
-    # Connect RRIDX app container to Caddy networks for bidirectional discovery
-    CADDY_NETWORKS=$(${DOCKER_BIN} inspect -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' signalflow-production-caddy-1 2>/dev/null || true)
-    for cnet in ${CADDY_NETWORKS}; do
-        ${DOCKER_BIN} network connect "${cnet}" ruang_risiko_idx_app 2>/dev/null || true
-    done
-
     CADDY_HOST_FILE=$(${DOCKER_BIN} inspect -f '{{range .Mounts}}{{if eq .Destination "/etc/caddy/Caddyfile"}}{{.Source}}{{end}}{{end}}' signalflow-production-caddy-1 2>/dev/null || true)
     if [ -n "${CADDY_HOST_FILE}" ] && [ -f "${CADDY_HOST_FILE}" ]; then
         python3 -c "
@@ -81,9 +85,7 @@ try:
         content = f.read()
     target_block = '''rridx.fadhilrusydi.com {
     encode zstd gzip
-    reverse_proxy ruang_risiko_idx_app:8501 46.250.231.247:8501 172.17.0.1:8501 {
-        lb_try_duration 3s
-    }
+    reverse_proxy 172.17.0.1:8501
 }'''
     if 'rridx.fadhilrusydi.com' in content:
         content = re.sub(r'rridx\.fadhilrusydi\.com\s*\{[^}]*\}', target_block, content)
