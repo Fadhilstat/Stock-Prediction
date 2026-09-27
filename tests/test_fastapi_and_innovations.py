@@ -149,6 +149,24 @@ def test_fastapi_endpoints():
     assert sync_json["status"] == "HEALTHY"
     assert "local_commit" in sync_json
 
+    # Runtime Configuration API
+    resp_cfg = client.get("/api/v1/config/runtime")
+    assert resp_cfg.status_code == 200
+    cfg_data = resp_cfg.json()
+    assert "var_confidence_level" in cfg_data
+
+    # Update Runtime Configuration
+    resp_update_cfg = client.post(
+        "/api/v1/config/runtime",
+        json={
+            "var_confidence_level": 0.975,
+            "max_portfolio_allocation_percent": 18.0,
+        },
+    )
+    assert resp_update_cfg.status_code == 200
+    assert resp_update_cfg.json()["success"] is True
+    assert resp_update_cfg.json()["config"]["var_confidence_level"] == 0.975
+
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200

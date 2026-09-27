@@ -477,6 +477,41 @@
               </button>
             </div>
 
+            <!-- Interactive Parameter Governance & Configuration -->
+            <div class="runtime-config-card">
+              <h5>PENGATURAN PARAMETER RISIKO & GOVERNANCE SISTEM</h5>
+              <div class="config-grid">
+                <div class="config-item">
+                  <label for="cfg-var-conf">Tingkat Keyakinan VaR (Confidence Level):</label>
+                  <select id="cfg-var-conf" class="form-input">
+                    <option value="0.95">95.0% VaR (Standar Harian)</option>
+                    <option value="0.975">97.5% VaR (Basel Committee)</option>
+                    <option value="0.99" selected>99.0% VaR (Stress Testing Ekstrem)</option>
+                  </select>
+                </div>
+                <div class="config-item">
+                  <label for="cfg-max-alloc">Batas Maksimal Alokasi Aset Tunggal (%):</label>
+                  <input type="number" id="cfg-max-alloc" class="form-input" min="5" max="50" step="1" value="15">
+                </div>
+                <div class="config-item">
+                  <label for="cfg-max-slippage">Toleransi Slippage Eksekusi (Bps):</label>
+                  <input type="number" id="cfg-max-slippage" class="form-input" min="5" max="100" step="5" value="25">
+                </div>
+                <div class="config-item">
+                  <label for="cfg-dir-model">Model Directional Machine Learning:</label>
+                  <select id="cfg-dir-model" class="form-input">
+                    <option value="random_forest" selected>Random Forest Ensemble</option>
+                    <option value="xgboost">XGBoost Gradient Boosting</option>
+                    <option value="logistic_regression">Logistic Regression Baseline</option>
+                  </select>
+                </div>
+              </div>
+              <div class="config-actions">
+                <button class="btn-action-primary" id="btn-save-runtime-config">
+                  <span class="icon">💾</span> Simpan & Terapkan Konfigurasi
+                </button>
+              </div>
+            </div>
 
             <!-- Action Status Feedback Box -->
             <div class="action-status-box" id="action-status-box">

@@ -12,11 +12,13 @@ dependencies = [
   "duckdb>=1.1,<2",
   "numpy>=2.0,<3",
   "pandas>=2.2,<3",
-  "plotly>=5.24,<7",
-  "pyarrow>=24,<25",
+  "plotly>=5.24,<8",
+  "pyarrow>=24,<26",
   "pyyaml>=6,<7",
   "streamlit>=1.60,<2",
-  "yfinance>=1.5,<2",
+  "yfinance>=0.2.50",
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
 ]
 
 [project.optional-dependencies]
@@ -38,7 +40,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q --basetemp=.pytest_temp"
 
 [tool.ruff]
 line-length = 100

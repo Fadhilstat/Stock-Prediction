@@ -21,18 +21,7 @@ COPY src/ ./src/
 
 # Install python package and dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e . && \
-    pip install --no-cache-dir \
-    fastapi==0.115.0 \
-    "uvicorn[standard]==0.31.0" \
-    streamlit==1.64.0 \
-    duckdb==1.5.5 \
-    xgboost==3.2.0 \
-    statsmodels==0.15.0 \
-    arch==8.0.0 \
-    plotly==7.1.0 \
-    pyarrow==25.0.1 \
-    yfinance==0.2.57
+    pip install --no-cache-dir -e ".[models]"
 
 # Ensure required application directory structure exists
 RUN mkdir -p data/raw data/processed data/snapshots data/audit reports/risk reports/ml reports/passports reports/audit

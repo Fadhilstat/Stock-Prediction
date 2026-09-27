@@ -948,6 +948,45 @@ body.tv-dark {
   to { transform: translateX(0); opacity: 1; }
 }
 
+/* Runtime Parameter Governance */
+.runtime-config-card {
+  margin-top: 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.runtime-config-card h5 {
+  font-size: 13px;
+  color: var(--text-bright);
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-item label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.config-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* Responsive adjustments */
 @media (max-width: 900px) {
   .terminal-container { grid-template-columns: 1fr; }

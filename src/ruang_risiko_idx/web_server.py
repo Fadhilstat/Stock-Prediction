@@ -28,7 +28,9 @@ from fastapi.staticfiles import StaticFiles
 from ruang_risiko_idx.config import ProjectSettings
 from ruang_risiko_idx.research.actions import (
     load_action_history,
+    load_runtime_config,
     record_action,
+    save_runtime_config,
     trigger_algo_execution_simulation,
     trigger_auto_update_check,
     trigger_bandarmology_analysis,
@@ -325,6 +327,31 @@ async def get_action_history() -> dict[str, Any]:
     """Retrieve immutable action audit history."""
     history = load_action_history(limit=25)
     return {"history": history, "count": len(history)}
+
+
+@app.get("/api/v1/config/runtime")
+async def get_runtime_configuration() -> dict[str, Any]:
+    """Retrieve current runtime parameters and risk thresholds."""
+    return load_runtime_config()
+
+
+@app.post("/api/v1/config/runtime")
+async def update_runtime_configuration(request: Request) -> dict[str, Any]:
+    """Update runtime parameters and log the modification into the audit ledger."""
+    payload = await request.json()
+    cfg = load_runtime_config()
+    cfg.update(payload)
+    saved = save_runtime_config(cfg)
+    msg = f"Runtime parameters updated: VaR confidence {float(cfg.get('var_confidence_level', 0.95))*100:.1f}%, Max Alloc {float(cfg.get('max_portfolio_allocation_percent', 15.0)):.1f}%."
+    entry = record_action(
+        action_type="RUNTIME_CONFIG_UPDATE",
+        status="SUCCESS",
+        summary_message=msg,
+        parameters=cfg,
+        operator="web_operator",
+        duration_ms=0.0,
+    )
+    return {"success": True, "config": saved, "action_id": entry.action_id, "message": msg}
 
 
 # =========================================================================

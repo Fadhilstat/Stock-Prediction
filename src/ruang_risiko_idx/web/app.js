@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSentiment();
   loadSpillover();
   loadAuditHistory();
+  loadRuntimeConfig();
   checkSyncStatus();
 
   // Periodic live fallback refresh every 4 seconds
@@ -39,6 +40,12 @@ function initEventListeners() {
   const passBtn = document.getElementById('btn-run-passport');
   if (passBtn) {
     passBtn.addEventListener('click', runPassportEvaluation);
+  }
+
+  // Runtime config save button
+  const saveCfgBtn = document.getElementById('btn-save-runtime-config');
+  if (saveCfgBtn) {
+    saveCfgBtn.addEventListener('click', saveRuntimeConfig);
   }
 
   // Timeframe pills
@@ -636,6 +643,51 @@ async function checkSyncStatus() {
       tag.innerHTML = `rridx.fadhilrusydi.com • <span style="color:var(--color-up);font-weight:700">${data.local_commit}</span>`;
     }
   } catch (e) {}
+}
+
+async function loadRuntimeConfig() {
+  try {
+    const res = await fetch('/api/v1/config/runtime');
+    if (!res.ok) return;
+    const cfg = await res.json();
+    if (document.getElementById('cfg-var-conf')) {
+      document.getElementById('cfg-var-conf').value = String(cfg.var_confidence_level || 0.99);
+    }
+    if (document.getElementById('cfg-max-alloc')) {
+      document.getElementById('cfg-max-alloc').value = cfg.max_portfolio_allocation_percent || 15;
+    }
+    if (document.getElementById('cfg-max-slippage')) {
+      document.getElementById('cfg-max-slippage').value = cfg.max_slippage_bps || 25;
+    }
+    if (document.getElementById('cfg-dir-model')) {
+      document.getElementById('cfg-dir-model').value = cfg.active_direction_model || 'random_forest';
+    }
+  } catch (e) {
+    console.debug('Failed to load runtime config', e);
+  }
+}
+
+async function saveRuntimeConfig() {
+  showToast('Menyimpan pengaturan parameter...');
+  try {
+    const payload = {
+      var_confidence_level: parseFloat(document.getElementById('cfg-var-conf').value) || 0.99,
+      max_portfolio_allocation_percent: parseFloat(document.getElementById('cfg-max-alloc').value) || 15,
+      max_slippage_bps: parseFloat(document.getElementById('cfg-max-slippage').value) || 25,
+      active_direction_model: document.getElementById('cfg-dir-model').value || 'random_forest',
+    };
+    const res = await fetch('/api/v1/config/runtime', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    showToast(data.message || 'Konfigurasi berhasil disimpan!');
+    loadAuditHistory();
+  } catch (err) {
+    showToast('Gagal menyimpan: ' + err.message);
+  }
 }
 
 
