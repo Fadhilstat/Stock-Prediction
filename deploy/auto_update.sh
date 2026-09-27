@@ -55,8 +55,8 @@ if ! docker info &> /dev/null; then
 fi
 
 log "Recreating app container with FastAPI engine..."
-${DOCKER_BIN} rm -f ruang_risiko_idx_app 2>/dev/null || true
-${DOCKER_COMPOSE} up -d --force-recreate --build app
+${DOCKER_BIN} rm -f ruang_risiko_idx_app ruang-risiko-idx-app-1 2>/dev/null || true
+${DOCKER_COMPOSE} up -d --build app
 
 # Ensure edge Caddy network connection
 if ${DOCKER_BIN} ps | grep -q 'caddy'; then
