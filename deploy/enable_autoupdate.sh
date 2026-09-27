@@ -21,6 +21,10 @@ echo "=========================================================="
 echo "  Ruang Risiko IDX: Enabling 60s Auto-Update Timer"
 echo "=========================================================="
 
+# Ensure safe.directory is configured
+git config --global --add safe.directory "${TARGET_DIR}" 2>/dev/null || true
+$SUDO git config --system --add safe.directory "${TARGET_DIR}" 2>/dev/null || true
+
 # 1. Ensure repository exists and is synchronized to origin/main
 if [ ! -d "${TARGET_DIR}/.git" ]; then
     echo "[1/4] Cloning repository to ${TARGET_DIR}..."

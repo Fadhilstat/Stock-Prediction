@@ -21,6 +21,8 @@ if [ ! -d "${TARGET_DIR}/.git" ]; then
     exit 0
 fi
 
+git config --global --add safe.directory "${TARGET_DIR}" 2>/dev/null || true
+
 cd "${TARGET_DIR}"
 
 # Fetch remote changes
