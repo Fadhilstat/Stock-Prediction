@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: ruang_risiko_idx_app
     restart: unless-stopped
     environment:
       - PORT=8501
@@ -17,7 +18,10 @@ services:
     expose:
       - "8501"
     networks:
-      - rridx_network
+      rridx_network:
+        aliases:
+          - ruang_risiko_idx_app
+          - app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/health"]
       interval: 30s
@@ -52,4 +56,5 @@ volumes:
 
 networks:
   rridx_network:
+    name: ruang-risiko-idx_rridx_network
     driver: bridge
