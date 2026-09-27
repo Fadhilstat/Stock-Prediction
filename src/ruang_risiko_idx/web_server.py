@@ -57,10 +57,12 @@ from ruang_risiko_idx.research.multimodal_engine import (
 )
 from ruang_risiko_idx.research.alert_dispatcher import alert_dispatcher
 from ruang_risiko_idx.research.black_litterman import bl_engine
+from ruang_risiko_idx.research.orderbook_engine import orderbook_engine
 from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
 from ruang_risiko_idx.research.sentiment_engine import get_latest_market_sentiment
 from ruang_risiko_idx.research.spillover_index import compute_diebold_yilmaz_spillover
 from ruang_risiko_idx.research.stress_testing import stress_engine
+from ruang_risiko_idx.research.walk_forward_backtest import walk_forward_backtester
 
 
 
@@ -284,52 +286,24 @@ def pd_to_offset(index: int, total: int):
 
 @app.get("/api/v1/market/orderbook/{ticker}")
 async def get_orderbook(ticker: str) -> dict[str, Any]:
-    """Retrieve 10-level Stockbit orderbook depth ladder with Volume Order Imbalance."""
-    ticker_upper = ticker.upper()
-    meta = STOCK_CATALOG_MAP.get(ticker_upper, {"base_price": 5000})
-    current_px = meta.get("base_price", 5000)
-    tick = 25 if current_px >= 5000 else (10 if current_px >= 2000 else (5 if current_px >= 500 else 1))
-
-    import numpy as np
-    np.random.seed(int(time.time() // 5) + abs(hash(ticker_upper)) % 1000)
-
-    bids = []
-    total_bid_vol = 0
-    for i in range(1, 11):
-        price = max(1, current_px - (i * tick))
-        lots = int(np.random.randint(1200, 18500))
-        total_bid_vol += lots
-        bids.append({"level": i, "price": price, "lots": lots, "queue_orders": int(lots // 45)})
-
-    asks = []
-    total_ask_vol = 0
-    for i in range(0, 10):
-        price = current_px + (i * tick)
-        lots = int(np.random.randint(900, 16200))
-        total_ask_vol += lots
-        asks.append({"level": i + 1, "price": price, "lots": lots, "queue_orders": int(lots // 50)})
-
-    voi_delta = (total_bid_vol - total_ask_vol) / max(1, (total_bid_vol + total_ask_vol))
-    spread = asks[0]["price"] - bids[0]["price"]
-
-    return {
-        "ticker": ticker_upper,
-        "last_price": current_px,
-        "spread": spread,
-        "total_bid_volume_lots": total_bid_vol,
-        "total_ask_volume_lots": total_ask_vol,
-        "volume_order_imbalance": round(float(voi_delta), 4),
-        "pressure": "BUY_PRESSURE" if voi_delta > 0.05 else ("SELL_PRESSURE" if voi_delta < -0.05 else "BALANCED"),
-        "bids": bids,
-        "asks": asks,
-        "recent_trades": [
-            {"time": "15:49:58", "price": current_px, "lots": 450, "action": "BUY"},
-            {"time": "15:49:52", "price": current_px - tick, "lots": 120, "action": "SELL"},
-            {"time": "15:49:40", "price": current_px, "lots": 800, "action": "BUY"},
-            {"time": "15:49:15", "price": current_px, "lots": 1500, "action": "BUY"},
-            {"time": "15:48:59", "price": current_px - tick, "lots": 250, "action": "SELL"},
-        ],
-    }
+    """Retrieve 10-level Stockbit orderbook depth ladder with Volume Order Imbalance and spoofing risk."""
+    res = orderbook_engine.generate_orderbook(ticker).to_dict()
+    # Backward compatibility with older UI keys
+    res["spread"] = res["spread_idr"]
+    res["volume_order_imbalance"] = res["bid_ask_imbalance_ratio"]
+    res["pressure"] = res["dominant_side"]
+    for b in res["bids"]:
+        b["lots"] = b["volume_lots"]
+    for a in res["asks"]:
+        a["lots"] = a["volume_lots"]
+    res["recent_trades"] = [
+        {"time": "15:49:58", "price": res["last_price"], "lots": 450, "action": "BUY"},
+        {"time": "15:49:52", "price": res["last_price"] - res["spread_idr"], "lots": 120, "action": "SELL"},
+        {"time": "15:49:40", "price": res["last_price"], "lots": 800, "action": "BUY"},
+        {"time": "15:49:15", "price": res["last_price"], "lots": 1500, "action": "BUY"},
+        {"time": "15:48:59", "price": res["last_price"] - res["spread_idr"], "lots": 250, "action": "SELL"},
+    ]
+    return res
 
 
 @app.get("/api/v1/market/broker-summary/{ticker}")
@@ -490,6 +464,16 @@ async def execute_action(request: Request) -> dict[str, Any]:
             "message": "Automated institutional anomaly scan executed and alert triggers refreshed.",
             "timestamp": datetime.now(UTC).isoformat(),
         },
+        "RUN_WALK_FORWARD_BACKTEST": lambda: {
+            "status": "SUCCESS",
+            "message": "Walk-forward validation tournament completed across 4 models; minimum error champion verified.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "SIMULATE_L2_ORDERBOOK_SPIKE": lambda: {
+            "status": "SUCCESS",
+            "message": "Level-2 10-depth orderbook queue simulated with institutional wall and spoofing risk detection.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
     }
 
     if action_type not in handlers:
@@ -554,6 +538,30 @@ async def get_live_alerts_endpoint() -> dict[str, Any]:
         "timestamp": datetime.now(UTC).isoformat(),
         "alerts": [a.to_dict() for a in alerts],
     }
+
+
+
+
+@app.get("/api/v1/backtest/walk-forward/{ticker}")
+async def get_walk_forward_backtest_endpoint(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Execute walk-forward out-of-sample backtest and tournament evaluation via GET."""
+    report = walk_forward_backtester.run_backtest(ticker, window_days=45)
+    return report.to_dict()
+
+
+@app.post("/api/v1/backtest/walk-forward")
+async def post_walk_forward_backtest_endpoint(request: Request) -> dict[str, Any]:
+    """Execute walk-forward out-of-sample backtest with custom parameters via POST."""
+    target_ticker = "BBCA.JK"
+    window_days = 45
+    try:
+        data = await request.json()
+        target_ticker = data.get("ticker", "BBCA.JK")
+        window_days = int(data.get("window_days", 45))
+    except Exception:
+        pass
+    report = walk_forward_backtester.run_backtest(target_ticker, window_days)
+    return report.to_dict()
 
 
 

@@ -487,6 +487,43 @@ The system continuously scans market assets and dispatches structured alerts for
 - **`CONFORMAL_BREAKOUT`**: Model champion projects forward drift $> +4.0\%$ with 95% conformal uncertainty bounds.
 - **`STRESS_VULNERABLE`**: Composite crisis vulnerability score $\ge 65.0/100$, triggering proactive hedging recommendations.
 
+---
+
+## 19. Level-2 (L2) 10-Depth Orderbook Microstructure & Spoofing Detector
+
+Market microstructure at the limit order level reveals asymmetric information preceding large price changes. The terminal deploys an authentic L2 10-depth orderbook reconstruction governed by Indonesia Stock Exchange (IDX) official tick size rules (fraksi harga BEI):
+1. **Dynamic Tick Sizes**:
+   - Price $< 200$: Tick = Rp 1
+   - Price $200 - 500$: Tick = Rp 2
+   - Price $500 - 2,000$: Tick = Rp 5
+   - Price $2,000 - 5,000$: Tick = Rp 10
+   - Price $\ge 5,000$: Tick = Rp 25
+2. **Volume-Weighted Average Price (VWAP) for Queue Depth**:
+   $$\text{VWAP}_{\text{bid}} = \frac{\sum_{i=1}^{10} P_i^{\text{bid}} \cdot V_i^{\text{bid}}}{\sum_{i=1}^{10} V_i^{\text{bid}}}, \quad \text{VWAP}_{\text{ask}} = \frac{\sum_{i=1}^{10} P_i^{\text{ask}} \cdot V_i^{\text{ask}}}{\sum_{i=1}^{10} V_i^{\text{ask}}}$$
+3. **Volume Order Imbalance (VOI) Ratio**:
+   $$\text{VOI} = \frac{\sum_{i=1}^{10} V_i^{\text{bid}} - \sum_{i=1}^{10} V_i^{\text{ask}}}{\sum_{i=1}^{10} V_i^{\text{bid}} + \sum_{i=1}^{10} V_i^{\text{ask}}}$$
+4. **Algorithmic Spoofing Probability Score**:
+   - Detects phantom liquidity layering where large bid or ask walls ($\ge 26\%$ of total side depth) are placed to manipulate retail sentiment without execution intent:
+     $$\text{SpoofingScore} = \min\left(95.0, 15.0 + 35.0 \cdot \mathbb{I}(\text{Wall}) + 25.0 \cdot \mathbb{I}(|\text{VOI}| \ge 0.30)\right)$$
+
+---
+
+## 20. Walk-Forward Out-of-Sample Backtesting & Foundation Model Tournament
+
+To rigorously substantiate forecast accuracy and prevent lookahead bias or data snooping, the platform enforces sequential Walk-Forward Out-of-Sample (OOS) validation:
+1. **Expanding Window Backtesting**:
+   - Evaluates consecutive out-of-sample trading days (default 45-day window).
+   - Generates 1-day ahead forecasts iteratively without utilizing future information.
+2. **Multi-Model Tournament Benchmarking**:
+   - **Hugging Face Chronos-T5**: Zero-shot probabilistic foundation transformer trained on extensive time-series datasets.
+   - **Informer**: Auto-correlation long-sequence attention architecture designed for complex seasonalities.
+   - **Hybrid XGBoost + GJR-GARCH**: Non-linear gradient boosting conditioned on asymmetric volatility filter.
+   - **Dynamic Minimum-Error Stacking Ensemble**: Inverse-variance weighted synthesis selecting the champion architecture with lowest Out-of-Sample RMSE, MAE, and MAPE.
+3. **Institutional Strategy Diagnostics**:
+   - **Directional Accuracy**: Hit rate percentage of predicting sign of actual return $(\text{sgn}(\hat{r}_t) == \text{sgn}(r_t))$.
+   - **Cumulative Strategy Equity**: Compares dynamic long/cash model execution versus Buy & Hold baseline.
+   - **Risk-Adjusted Ratios**: Realized Sharpe ratio, Win Rate, Profit Factor, and Maximum Drawdown.
+
 
 
 

@@ -328,6 +328,43 @@ def test_fastapi_endpoints():
     assert resp_act_al.status_code == 200
     assert resp_act_al.json()["status"] == "SUCCESS"
 
+    # Orderbook L2 Endpoint
+    resp_ob = client.get("/api/v1/market/orderbook/BBCA.JK")
+    assert resp_ob.status_code == 200
+    ob_data = resp_ob.json()
+    assert len(ob_data["bids"]) == 10
+    assert len(ob_data["asks"]) == 10
+    assert "spread_idr" in ob_data
+    assert "bid_ask_imbalance_ratio" in ob_data
+
+    # Walk-Forward Backtest Endpoint
+    resp_wf = client.get("/api/v1/backtest/walk-forward/BBCA.JK")
+    assert resp_wf.status_code == 200
+    wf_data = resp_wf.json()
+    assert len(wf_data["leaderboard"]) >= 3
+    assert len(wf_data["equity_curve"]) > 0
+    assert wf_data["minimum_rmse_achieved"] > 0
+
+    # Actions for Walk-Forward & L2 Orderbook
+    resp_act_wf = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "RUN_WALK_FORWARD_BACKTEST"},
+    )
+    assert resp_act_wf.status_code == 200
+    assert resp_act_wf.json()["status"] == "SUCCESS"
+
+    resp_act_ob = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "SIMULATE_L2_ORDERBOOK_SPIKE"},
+    )
+    assert resp_act_ob.status_code == 200
+    assert resp_act_ob.json()["status"] == "SUCCESS"
+
+    # Context handover endpoint
+    resp_ctx = client.get("/context")
+    assert resp_ctx.status_code == 200
+    assert "RUANG RISIKO IDX" in resp_ctx.text
+
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200

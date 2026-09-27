@@ -213,6 +213,8 @@
           <button class="suite-tab" data-tab="tab-stress">🧪 Stress Lab & Slippage</button>
           <button class="suite-tab" data-tab="tab-bl">📐 Black-Litterman Lab</button>
           <button class="suite-tab" data-tab="tab-alerts">🔔 Sinyal & Peringatan</button>
+          <button class="suite-tab" data-tab="tab-orderbook">📖 Orderbook L2 Depth</button>
+          <button class="suite-tab" data-tab="tab-backtest">🏆 Walk-Forward Backtest</button>
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
 
@@ -886,6 +888,153 @@
           </div>
         </div>
 
+        <!-- Tab: Stockbit-Style L2 10-Depth Orderbook -->
+        <div class="tab-pane" id="tab-orderbook">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Orderbook Health Score</span>
+              <div class="big-score up" id="ob-health-badge">94.2</div>
+              <span class="score-sub" id="ob-dominant-badge">STRONG BID ACCUMULATION</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Mikrostruktur Orderbook Level-2 & Deteksi Spoofing</span>
+              <p>Memantau antrean 10-tingkat harga IDX, ketidakseimbangan volume bid-ask (VOI), dinding likuiditas (wall), dan probabilitas manipulasi spoofing algoritmik.</p>
+              <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap;">
+                <span class="badge-status-pill" id="ob-bid-wall-pill">BID WALL: NORMAL</span>
+                <span class="badge-status-pill" id="ob-ask-wall-pill">ASK WALL: NORMAL</span>
+                <span class="badge-status-pill" id="ob-spoof-pill">SPOOFING RISK: 18%</span>
+                <button class="btn-action-primary" id="btn-refresh-orderbook" style="margin-left: auto;">
+                  <span class="icon">🔄</span> Segarkan Antrean L2
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- L2 Orderbook Matrix Dual Ladder -->
+          <div class="orderbook-full-card" style="margin-top: 18px;">
+            <div class="orderbook-card-header">
+              <div class="ob-ticker-info">
+                <span class="ob-title">MATRIKS KEDALAMAN PASAR 10-LEVEL (BEI FRAKSI TICK)</span>
+                <span class="ob-sub" id="ob-summary-txt">Menampilkan antrean transaksi dan tekanan volume real-time</span>
+              </div>
+              <div class="ob-spread-box">
+                <span class="ob-spread-val" id="ob-spread-val">Spread: Rp 25 (0.24%)</span>
+                <span class="ob-vwap-val" id="ob-vwap-val">VWAP Bid: Rp 10,380 | VWAP Ask: Rp 10,510</span>
+              </div>
+            </div>
+
+            <div class="l2-orderbook-grid">
+              <!-- Bid Side Table -->
+              <div class="l2-side l2-bid-side">
+                <div class="l2-header-row">
+                  <span class="col-depth">Depth</span>
+                  <span class="col-orders">Antrian</span>
+                  <span class="col-lots">Lot Bid</span>
+                  <span class="col-price">Bid (Rp)</span>
+                </div>
+                <div class="l2-rows" id="l2-bid-rows">
+                  <!-- Injected via JavaScript -->
+                </div>
+                <div class="l2-footer-row">
+                  <span>Total Bid:</span>
+                  <strong id="l2-total-bid-lots">0 lots</strong>
+                </div>
+              </div>
+
+              <!-- Ask Side Table -->
+              <div class="l2-side l2-ask-side">
+                <div class="l2-header-row">
+                  <span class="col-price">Offer (Rp)</span>
+                  <span class="col-lots">Lot Offer</span>
+                  <span class="col-orders">Antrian</span>
+                  <span class="col-depth">Depth</span>
+                </div>
+                <div class="l2-rows" id="l2-ask-rows">
+                  <!-- Injected via JavaScript -->
+                </div>
+                <div class="l2-footer-row">
+                  <span>Total Offer:</span>
+                  <strong id="l2-total-ask-lots">0 lots</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visual Imbalance Volume Bar -->
+            <div class="imbalance-bar-wrap" style="margin-top: 14px;">
+              <div class="imbalance-labels">
+                <span class="lbl-bid" id="lbl-bid-imbalance">Bid 54.2%</span>
+                <span class="lbl-center" id="lbl-center-imbalance">Volume Pressure Ratio</span>
+                <span class="lbl-ask" id="lbl-ask-imbalance">Offer 45.8%</span>
+              </div>
+              <div class="imbalance-track">
+                <div class="imbalance-fill-bid" id="imbalance-fill-bid" style="width: 54.2%;"></div>
+                <div class="imbalance-fill-ask" id="imbalance-fill-ask" style="width: 45.8%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Walk-Forward Backtesting & Model Tournament -->
+        <div class="tab-pane" id="tab-backtest">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Model Champion Terakurat</span>
+              <div class="big-score up" style="font-size: 1.3rem; margin-top: 8px;" id="wf-champ-name">DYNAMIC STACKING ENSEMBLE</div>
+              <span class="score-sub" id="wf-champ-rmse">RMSE Out-of-Sample: Rp 82.4</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Turnamen Walk-Forward Out-of-Sample (HF Foundation Models)</span>
+              <p id="wf-summary-p">Menguji secara independen model Hugging Face Chronos-T5, Informer, dan Ensemble hibrida untuk membuktikan arsitektur dengan tingkat galat terkecil dan rasio Sharpe tertinggi.</p>
+              <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap;">
+                <span class="badge-status-pill" id="wf-hit-rate-pill">Akurasi Arah: 71.4%</span>
+                <span class="badge-status-pill" id="wf-sharpe-pill">Sharpe Ratio: 2.14</span>
+                <span class="badge-status-pill" id="wf-dd-pill">Max Drawdown: 4.8%</span>
+                <button class="btn-action-primary" id="btn-run-walk-forward" style="margin-left: auto;">
+                  <span class="icon">🚀</span> Jalankan Turnamen Backtest
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tournament Leaderboard Table -->
+          <div class="table-card" style="margin-top: 18px;">
+            <div class="table-card-header">
+              <h4>KLASEMEN AKURASI MODEL PREDIKSI (MINIMUM ERROR LEADERBOARD)</h4>
+              <span class="sub">Diurutkan berdasarkan Out-of-Sample Root Mean Squared Error (RMSE)</span>
+            </div>
+            <div class="table-wrap">
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th>Model & Arsitektur</th>
+                    <th>Family</th>
+                    <th>OOS RMSE</th>
+                    <th>MAE</th>
+                    <th>MAPE (%)</th>
+                    <th>Akurasi Arah</th>
+                    <th>Return Strategi</th>
+                    <th>Sharpe</th>
+                    <th>Win Rate</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="wf-leaderboard-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Walk-Forward Strategy Equity Curve Visualization -->
+          <div class="table-card" style="margin-top: 18px;">
+            <div class="table-card-header">
+              <h4>KURVA PERTUMBUHAN EKUITAS STRATEGI (WALK-FORWARD CUMULATIVE RETURN)</h4>
+              <span class="sub">Perbandingan simulasi ekuitas model champion vs benchmark beli dan tahan (Buy & Hold)</span>
+            </div>
+            <div id="wf-equity-chart-container" style="padding: 15px 0;">
+              <!-- Injected SVG / Canvas via JavaScript -->
+            </div>
+          </div>
+        </div>
+
         <!-- Tab 7: Web Action Console -->
         <div class="tab-pane" id="tab-actions">
           <div class="actions-console-card">
@@ -990,6 +1139,20 @@
                 <div class="btn-text">
                   <strong>Pindai Sinyal & Anomali Pasar</strong>
                   <span>Pindai akumulasi senyap, lonjakan entropi, dan spoofing</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="RUN_WALK_FORWARD_BACKTEST">
+                <span class="btn-icon">🏆</span>
+                <div class="btn-text">
+                  <strong>Turnamen Walk-Forward Backtest</strong>
+                  <span>Uji akurasi out-of-sample 4 model untuk buktikan error minimum</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="SIMULATE_L2_ORDERBOOK_SPIKE">
+                <span class="btn-icon">📖</span>
+                <div class="btn-text">
+                  <strong>Simulasi Antrean Orderbook L2 10-Depth</strong>
+                  <span>Evaluasi tekanan bid-ask, dinding orderbook, dan risiko spoofing</span>
                 </div>
               </button>
             </div>

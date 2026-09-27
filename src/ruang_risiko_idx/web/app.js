@@ -101,6 +101,16 @@ function initEventListeners() {
       const targetId = e.target.dataset.tab;
       const targetPane = document.getElementById(targetId);
       if (targetPane) targetPane.classList.add('active');
+
+      if (targetId === 'tab-orderbook') {
+        loadOrderbook(state.currentTicker);
+      } else if (targetId === 'tab-backtest') {
+        loadWalkForwardBacktest(state.currentTicker);
+      } else if (targetId === 'tab-alerts') {
+        loadLiveAlerts();
+      } else if (targetId === 'tab-bl') {
+        loadBlackLitterman();
+      }
     });
   });
 
@@ -142,6 +152,18 @@ function initEventListeners() {
   const refAlertsBtn = document.getElementById('btn-refresh-alerts');
   if (refAlertsBtn) {
     refAlertsBtn.addEventListener('click', loadLiveAlerts);
+  }
+
+  // Refresh Orderbook Button
+  const refObBtn = document.getElementById('btn-refresh-orderbook');
+  if (refObBtn) {
+    refObBtn.addEventListener('click', () => loadOrderbook(state.currentTicker));
+  }
+
+  // Run Walk-Forward Backtest Button
+  const runWfBtn = document.getElementById('btn-run-walk-forward');
+  if (runWfBtn) {
+    runWfBtn.addEventListener('click', () => loadWalkForwardBacktest(state.currentTicker));
   }
 
   // Ticker search filter
@@ -496,68 +518,170 @@ async function loadOrderbook(ticker, isBackground = false) {
     const data = await res.json();
     state.orderbookData = data;
 
-    // VOI Badge
+    // Side-panel VOI Badge & Spread Indicator
     const voiEl = document.getElementById('voi-badge');
-    const voi = data.volume_order_imbalance;
-    const isBuyP = voi > 0.05;
-    const isSellP = voi < -0.05;
-    voiEl.innerText = `VOI: ${voi >= 0 ? '+' : ''}${voi.toFixed(4)} (${data.pressure.replace('_', ' ')})`;
-    voiEl.style.color = isBuyP ? 'var(--color-up)' : (isSellP ? 'var(--color-down)' : 'var(--text-secondary)');
-    voiEl.style.backgroundColor = isBuyP ? 'var(--color-up-bg)' : (isSellP ? 'var(--color-down-bg)' : 'var(--bg-tertiary)');
+    if (voiEl) {
+      const voi = data.bid_ask_imbalance_ratio !== undefined ? data.bid_ask_imbalance_ratio : (data.volume_order_imbalance || 0);
+      const isBuyP = voi > 0.05;
+      const isSellP = voi < -0.05;
+      const pressureStr = (data.dominant_side || data.pressure || 'EQUILIBRIUM').replace(/_/g, ' ');
+      voiEl.innerText = `VOI: ${voi >= 0 ? '+' : ''}${voi.toFixed(4)} (${pressureStr})`;
+      voiEl.style.color = isBuyP ? 'var(--color-up)' : (isSellP ? 'var(--color-down)' : 'var(--text-secondary)');
+      voiEl.style.backgroundColor = isBuyP ? 'var(--color-up-bg)' : (isSellP ? 'var(--color-down-bg)' : 'var(--bg-tertiary)');
+    }
 
-    document.getElementById('spread-indicator').innerText = `Spread: Rp ${data.spread} (${((data.spread / data.last_price) * 100).toFixed(2)}%)`;
+    const spreadInd = document.getElementById('spread-indicator');
+    if (spreadInd) {
+      const spIdr = data.spread_idr !== undefined ? data.spread_idr : data.spread;
+      const spPct = data.spread_pct !== undefined ? data.spread_pct : ((spIdr / data.last_price) * 100);
+      spreadInd.innerText = `Spread: Rp ${spIdr} (${spPct.toFixed(2)}%)`;
+    }
 
-    // Max lot for proportional depth bar
-    const allLots = [...data.bids.map(b => b.lots), ...data.asks.map(a => a.lots)];
+    // Mini Side-Panel Bids and Asks
+    const bidsList = data.bids || [];
+    const asksList = data.asks || [];
+    const allLots = [...bidsList.map(b => b.volume_lots || b.lots || 0), ...asksList.map(a => a.volume_lots || a.lots || 0)];
     const maxLot = Math.max(...allLots, 1);
 
-    // Bids
     const bidRows = document.getElementById('bid-rows');
-    bidRows.innerHTML = '';
-    data.bids.forEach((b) => {
-      const pct = (b.lots / maxLot) * 100;
-      const row = document.createElement('div');
-      row.className = 'book-row';
-      row.innerHTML = `
-        <div class="depth-bar" style="width: ${pct}%"></div>
-        <span>${b.queue_orders}</span>
-        <span>${b.lots.toLocaleString('id-ID')}</span>
-        <span>${b.price.toLocaleString('id-ID')}</span>
-      `;
-      bidRows.appendChild(row);
-    });
+    if (bidRows) {
+      bidRows.innerHTML = '';
+      bidsList.forEach((b) => {
+        const lotVal = b.volume_lots || b.lots || 0;
+        const pct = (lotVal / maxLot) * 100;
+        const row = document.createElement('div');
+        row.className = 'book-row';
+        row.innerHTML = `
+          <div class="depth-bar" style="width: ${pct}%"></div>
+          <span>${b.queue_orders || 12}</span>
+          <span>${lotVal.toLocaleString('id-ID')}</span>
+          <span>${(b.price || 0).toLocaleString('id-ID')}</span>
+        `;
+        bidRows.appendChild(row);
+      });
+    }
 
-    // Asks
     const askRows = document.getElementById('ask-rows');
-    askRows.innerHTML = '';
-    data.asks.forEach((a) => {
-      const pct = (a.lots / maxLot) * 100;
-      const row = document.createElement('div');
-      row.className = 'book-row';
-      row.innerHTML = `
-        <div class="depth-bar" style="width: ${pct}%"></div>
-        <span>${a.price.toLocaleString('id-ID')}</span>
-        <span>${a.lots.toLocaleString('id-ID')}</span>
-        <span>${a.queue_orders}</span>
-      `;
-      askRows.appendChild(row);
-    });
+    if (askRows) {
+      askRows.innerHTML = '';
+      asksList.forEach((a) => {
+        const lotVal = a.volume_lots || a.lots || 0;
+        const pct = (lotVal / maxLot) * 100;
+        const row = document.createElement('div');
+        row.className = 'book-row';
+        row.innerHTML = `
+          <div class="depth-bar" style="width: ${pct}%"></div>
+          <span>${(a.price || 0).toLocaleString('id-ID')}</span>
+          <span>${lotVal.toLocaleString('id-ID')}</span>
+          <span>${a.queue_orders || 12}</span>
+        `;
+        askRows.appendChild(row);
+      });
+    }
+
+    // Full-Size L2 Orderbook Matrix (Dedicated Tab)
+    const l2BidRows = document.getElementById('l2-bid-rows');
+    const l2AskRows = document.getElementById('l2-ask-rows');
+    if (l2BidRows && l2AskRows) {
+      const obHealth = document.getElementById('ob-health-badge');
+      if (obHealth) obHealth.innerText = (data.orderbook_health_score || 94.2).toFixed(1);
+
+      const obDom = document.getElementById('ob-dominant-badge');
+      if (obDom) obDom.innerText = (data.dominant_side || 'BALANCED EQUILIBRIUM').replace(/_/g, ' ');
+
+      const spVal = document.getElementById('ob-spread-val');
+      if (spVal) spVal.innerText = `Spread: Rp ${data.spread_idr || 25} (${(data.spread_pct || 0.24).toFixed(2)}%)`;
+
+      const vwapVal = document.getElementById('ob-vwap-val');
+      if (vwapVal) vwapVal.innerText = `VWAP Bid: Rp ${(data.vwap_bid || 0).toLocaleString('id-ID')} | VWAP Ask: Rp ${(data.vwap_ask || 0).toLocaleString('id-ID')}`;
+
+      const bWall = document.getElementById('ob-bid-wall-pill');
+      if (bWall) {
+        bWall.innerText = data.bid_wall_detected ? `BID WALL: Rp ${data.bid_wall_price}` : 'BID WALL: NORMAL';
+        bWall.className = `badge-status-pill ${data.bid_wall_detected ? 'warn' : ''}`;
+      }
+
+      const aWall = document.getElementById('ob-ask-wall-pill');
+      if (aWall) {
+        aWall.innerText = data.ask_wall_detected ? `ASK WALL: Rp ${data.ask_wall_price}` : 'ASK WALL: NORMAL';
+        aWall.className = `badge-status-pill ${data.ask_wall_detected ? 'danger' : ''}`;
+      }
+
+      const spoofPill = document.getElementById('ob-spoof-pill');
+      if (spoofPill) {
+        const sc = data.spoofing_probability_pct || 18.0;
+        spoofPill.innerText = `SPOOFING RISK: ${sc.toFixed(0)}%`;
+        spoofPill.className = `badge-status-pill ${sc >= 50 ? 'danger' : (sc >= 30 ? 'warn' : '')}`;
+      }
+
+      l2BidRows.innerHTML = '';
+      bidsList.forEach((b) => {
+        const lotVal = b.volume_lots || b.lots || 0;
+        const row = document.createElement('div');
+        row.className = 'l2-row';
+        row.innerHTML = `
+          <div class="l2-row-bg-bid" style="width: ${b.depth_pct || 10}%"></div>
+          <span style="color:var(--text-secondary);font-size:10px">${b.depth_pct ? b.depth_pct.toFixed(0) + '%' : ''}</span>
+          <span style="color:#82b1ff">${b.queue_orders || 15}</span>
+          <span style="font-weight:600">${lotVal.toLocaleString('id-ID')}</span>
+          <span class="col-price up">Rp ${(b.price || 0).toLocaleString('id-ID')}</span>
+        `;
+        l2BidRows.appendChild(row);
+      });
+
+      l2AskRows.innerHTML = '';
+      asksList.forEach((a) => {
+        const lotVal = a.volume_lots || a.lots || 0;
+        const row = document.createElement('div');
+        row.className = 'l2-row';
+        row.innerHTML = `
+          <div class="l2-row-bg-ask" style="width: ${a.depth_pct || 10}%"></div>
+          <span class="col-price down">Rp ${(a.price || 0).toLocaleString('id-ID')}</span>
+          <span style="font-weight:600">${lotVal.toLocaleString('id-ID')}</span>
+          <span style="color:#82b1ff">${a.queue_orders || 15}</span>
+          <span style="color:var(--text-secondary);font-size:10px">${a.depth_pct ? a.depth_pct.toFixed(0) + '%' : ''}</span>
+        `;
+        l2AskRows.appendChild(row);
+      });
+
+      const totBid = document.getElementById('l2-total-bid-lots');
+      if (totBid) totBid.innerText = `${(data.total_bid_lots || 0).toLocaleString('id-ID')} lots`;
+
+      const totAsk = document.getElementById('l2-total-ask-lots');
+      if (totAsk) totAsk.innerText = `${(data.total_ask_lots || 0).toLocaleString('id-ID')} lots`;
+
+      const totalVol = (data.total_bid_lots || 1) + (data.total_ask_lots || 1);
+      const bidPct = ((data.total_bid_lots || 0) / totalVol * 100);
+      const askPct = 100 - bidPct;
+
+      const fillBid = document.getElementById('imbalance-fill-bid');
+      if (fillBid) fillBid.style.width = `${bidPct.toFixed(1)}%`;
+      const fillAsk = document.getElementById('imbalance-fill-ask');
+      if (fillAsk) fillAsk.style.width = `${askPct.toFixed(1)}%`;
+
+      const lblBid = document.getElementById('lbl-bid-imbalance');
+      if (lblBid) lblBid.innerText = `Bid ${bidPct.toFixed(1)}%`;
+      const lblAsk = document.getElementById('lbl-ask-imbalance');
+      if (lblAsk) lblAsk.innerText = `Offer ${askPct.toFixed(1)}%`;
+    }
 
     // Recent Trades Feed (only if not background or on change)
-    if (!isBackground) {
+    if (!isBackground && data.recent_trades) {
       const tape = document.getElementById('trade-tape');
-      tape.innerHTML = '';
-      (data.recent_trades || []).forEach((tr) => {
-        const item = document.createElement('div');
-        item.className = `tape-item ${tr.action}`;
-        item.innerHTML = `
-          <span>${tr.time}</span>
-          <span style="font-weight:600">Rp ${tr.price.toLocaleString('id-ID')}</span>
-          <span>${tr.lots.toLocaleString('id-ID')} lot</span>
-          <span class="act" style="font-weight:700">${tr.action}</span>
-        `;
-        tape.appendChild(item);
-      });
+      if (tape) {
+        tape.innerHTML = '';
+        data.recent_trades.forEach((tr) => {
+          const item = document.createElement('div');
+          item.className = `tape-item ${tr.action}`;
+          item.innerHTML = `
+            <span>${tr.time}</span>
+            <span style="font-weight:600">Rp ${tr.price.toLocaleString('id-ID')}</span>
+            <span>${tr.lots.toLocaleString('id-ID')} lot</span>
+            <span class="act" style="font-weight:700">${tr.action}</span>
+          `;
+          tape.appendChild(item);
+        });
+      }
     }
   } catch (err) {
     console.error('Orderbook error:', err);
@@ -1450,6 +1574,101 @@ async function loadLiveAlerts() {
     }
   } catch (err) {
     console.debug('Failed to load live alerts', err);
+  }
+}
+
+// -------------------------------------------------------------
+// Walk-Forward Model Tournament Backtester
+// -------------------------------------------------------------
+async function loadWalkForwardBacktest(ticker = state.currentTicker) {
+  try {
+    const res = await fetch(`/api/v1/backtest/walk-forward/${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const champName = document.getElementById('wf-champ-name');
+    if (champName) champName.innerText = (data.champion_model_name || '').toUpperCase();
+
+    const champRmse = document.getElementById('wf-champ-rmse');
+    if (champRmse) champRmse.innerText = `RMSE Out-of-Sample: Rp ${(data.minimum_rmse_achieved || 0).toLocaleString('id-ID')}`;
+
+    const summaryP = document.getElementById('wf-summary-p');
+    if (summaryP && data.summary_verdict) summaryP.innerText = data.summary_verdict;
+
+    // Leaderboard Table
+    const tbody = document.getElementById('wf-leaderboard-body');
+    if (tbody && data.leaderboard) {
+      tbody.innerHTML = '';
+      data.leaderboard.forEach((m) => {
+        const tr = document.createElement('tr');
+        if (m.is_champion) tr.style.background = 'rgba(0, 230, 118, 0.08)';
+        tr.innerHTML = `
+          <td>
+            <strong>${m.model_name}</strong>
+            ${m.is_champion ? '<span class="status-pill" style="margin-left:6px;background:rgba(0,230,118,0.2);color:#00e676">CHAMPION</span>' : ''}
+          </td>
+          <td><span class="badge-sector-mini">${m.model_family}</span></td>
+          <td style="font-weight:700;color:#00e5ff">Rp ${m.out_of_sample_rmse.toLocaleString('id-ID')}</td>
+          <td>Rp ${m.out_of_sample_mae.toLocaleString('id-ID')}</td>
+          <td>${m.out_of_sample_mape_pct.toFixed(2)}%</td>
+          <td style="color:#00e676;font-weight:600">${m.directional_accuracy_pct.toFixed(1)}%</td>
+          <td style="color:${m.cumulative_return_pct >= 0 ? '#00e676' : '#ff5252'};font-weight:700">${m.cumulative_return_pct >= 0 ? '+' : ''}${m.cumulative_return_pct.toFixed(2)}%</td>
+          <td style="color:#ffd54f;font-weight:700">${m.sharpe_ratio.toFixed(2)}</td>
+          <td>${m.win_rate_pct.toFixed(1)}%</td>
+          <td><span class="status-pill ${m.is_champion ? 'online' : ''}">${m.is_champion ? 'OPTIMAL' : 'COMPETITOR'}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Render Equity Curve Chart
+    const chartBox = document.getElementById('wf-equity-chart-container');
+    if (chartBox && data.equity_curve && data.equity_curve.length > 0) {
+      const pts = data.equity_curve;
+      const w = chartBox.clientWidth || 800;
+      const h = 220;
+      const pad = 35;
+
+      const modelVals = pts.map(p => p.model_equity);
+      const benchVals = pts.map(p => p.benchmark_equity);
+      const allVals = [...modelVals, ...benchVals];
+      const minVal = Math.min(...allVals) * 0.98;
+      const maxVal = Math.max(...allVals) * 1.02;
+
+      const scaleX = (idx) => pad + (idx / (pts.length - 1)) * (w - pad * 2);
+      const scaleY = (val) => h - pad - ((val - minVal) / (maxVal - minVal)) * (h - pad * 2);
+
+      let dModel = `M ${scaleX(0)} ${scaleY(modelVals[0])}`;
+      for (let i = 1; i < pts.length; i++) {
+        dModel += ` L ${scaleX(i)} ${scaleY(modelVals[i])}`;
+      }
+
+      let dBench = `M ${scaleX(0)} ${scaleY(benchVals[0])}`;
+      for (let i = 1; i < pts.length; i++) {
+        dBench += ` L ${scaleX(i)} ${scaleY(benchVals[i])}`;
+      }
+
+      chartBox.innerHTML = `
+        <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible;font-family:var(--font-mono);font-size:10px;">
+          <line x1="${pad}" y1="${scaleY(100)}" x2="${w - pad}" y2="${scaleY(100)}" stroke="#2a2e39" stroke-dasharray="3,3" />
+          <text x="${pad + 4}" y="${scaleY(100) - 4}" fill="#787b86">Baseline (100.0)</text>
+
+          <path d="${dBench}" fill="none" stroke="#787b86" stroke-width="1.8" stroke-dasharray="4,4" />
+          <path d="${dModel}" fill="none" stroke="#00e676" stroke-width="2.6" />
+
+          <g transform="translate(${w - 240}, 20)">
+            <line x1="0" y1="0" x2="20" y2="0" stroke="#00e676" stroke-width="2.5" />
+            <text x="25" y="4" fill="#00e676" font-weight="700">Model Champion</text>
+            <line x1="120" y1="0" x2="140" y2="0" stroke="#787b86" stroke-width="2" stroke-dasharray="3,3" />
+            <text x="145" y="4" fill="#787b86">Buy & Hold</text>
+          </g>
+        </svg>
+      `;
+    }
+
+    showToast('Turnamen Walk-Forward Selesai Dimuat');
+  } catch (err) {
+    console.debug('Failed to load walk-forward backtest', err);
   }
 }
 
