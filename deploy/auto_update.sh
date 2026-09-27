@@ -28,11 +28,20 @@ cd "${TARGET_DIR}"
 # Fetch remote changes
 git fetch origin main --quiet 2>/dev/null || exit 0
 
-LOCAL_HASH=$(git rev-parse HEAD)
-REMOTE_HASH=$(git rev-parse origin/main)
+# Resolve docker binary and compose early
+DOCKER_BIN="docker"
+DOCKER_COMPOSE="docker compose"
+if ! docker info &> /dev/null; then
+    if sudo docker info &> /dev/null; then
+        DOCKER_BIN="sudo docker"
+        DOCKER_COMPOSE="sudo docker compose"
+    fi
+fi
 
-if [ "${LOCAL_HASH}" = "${REMOTE_HASH}" ] && [ "${FORCE_BUILD}" = false ]; then
-    # Already up to date
+IS_RUNNING=$(${DOCKER_BIN} ps --filter "name=ruang_risiko_idx_app" --filter "status=running" -q 2>/dev/null || true)
+
+if [ "${LOCAL_HASH}" = "${REMOTE_HASH}" ] && [ "${FORCE_BUILD}" = false ] && [ -n "${IS_RUNNING}" ]; then
+    # Already up to date and running healthy
     exit 0
 fi
 
@@ -43,16 +52,6 @@ log "Target HEAD:  ${REMOTE_HASH}"
 log "Synchronizing workspace..."
 
 git reset --hard origin/main
-
-# Resolve docker binary and compose
-DOCKER_BIN="docker"
-DOCKER_COMPOSE="docker compose"
-if ! docker info &> /dev/null; then
-    if sudo docker info &> /dev/null; then
-        DOCKER_BIN="sudo docker"
-        DOCKER_COMPOSE="sudo docker compose"
-    fi
-fi
 
 log "Recreating app container with FastAPI engine..."
 ${DOCKER_BIN} rm -f ruang_risiko_idx_app ruang-risiko-idx-app-1 2>/dev/null || true
