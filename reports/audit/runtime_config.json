@@ -1,6 +1,6 @@
 {
-  "var_confidence_level": 0.975,
-  "max_portfolio_allocation_percent": 18.0,
+  "var_confidence_level": 0.95,
+  "max_portfolio_allocation_percent": 20.0,
   "max_slippage_bps": 30.0,
   "garch_vol_hard_veto_threshold": 0.05,
   "tail_var99_veto_threshold": 0.08,

@@ -112,6 +112,8 @@ function initEventListeners() {
         loadSectorRotation();
       } else if (targetId === 'tab-crossing') {
         loadCrossingTrades(state.currentTicker);
+      } else if (targetId === 'tab-hedging') {
+        loadHedgingPlan();
       } else if (targetId === 'tab-alerts') {
         loadLiveAlerts();
       } else if (targetId === 'tab-bl') {
@@ -119,6 +121,12 @@ function initEventListeners() {
       }
     });
   });
+
+  // Re-calculate Hedging Button
+  const btnRecalcHedge = document.getElementById('btn-recalc-hedge');
+  if (btnRecalcHedge) {
+    btnRecalcHedge.addEventListener('click', loadHedgingPlan);
+  }
 
   // Chart Mode Buttons (Area vs Candlestick + Conformal Cone)
   const btnArea = document.getElementById('btn-chart-area');
@@ -2156,6 +2164,77 @@ async function loadCrossingTrades(ticker) {
     showToast('Data Pasar Negosiasi & Dark Pool Dimuat');
   } catch (err) {
     console.debug('Failed to load crossing trades', err);
+  }
+}
+
+// -------------------------------------------------------------
+// Dynamic Beta Hedging & Downside Insurance Loader
+// -------------------------------------------------------------
+async function loadHedgingPlan() {
+  try {
+    const capInput = document.getElementById('hedge-capital-input');
+    const betaSelect = document.getElementById('hedge-target-beta');
+    const volInput = document.getElementById('hedge-vol-override');
+
+    const cap = capInput ? parseFloat(capInput.value) || 500000000.0 : 500000000.0;
+    const targetBeta = betaSelect ? parseFloat(betaSelect.value) || 0.0 : 0.0;
+    const volOverride = volInput ? parseFloat(volInput.value) || 15.0 : 15.0;
+
+    const res = await fetch('/api/v1/portfolio/hedge-calculator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        portfolio_value_idr: cap,
+        target_beta: targetBeta,
+        ihsg_volatility: volOverride,
+      }),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const betaVal = document.getElementById('port-beta-val');
+    if (betaVal) betaVal.innerText = data.portfolio_beta.toFixed(3);
+
+    const regimeVal = document.getElementById('hedge-regime-val');
+    if (regimeVal) regimeVal.innerText = `REGIM VOLATILITAS: ${data.garch_volatility_regime}`;
+
+    const ratioVal = document.getElementById('hedge-ratio-val');
+    if (ratioVal) ratioVal.innerText = `${data.recommended_hedge_ratio_pct.toFixed(1)}%`;
+
+    const reqVal = document.getElementById('hedge-req-val');
+    if (reqVal) reqVal.innerText = `Rp ${(data.required_hedge_value_idr / 1e6).toFixed(1)} Juta`;
+
+    const ddComp = document.getElementById('hedge-dd-comp');
+    if (ddComp) ddComp.innerText = `${data.estimated_unhedged_max_dd_pct.toFixed(1)}% -> ${data.estimated_hedged_max_dd_pct.toFixed(1)}%`;
+
+    const cashBuffer = document.getElementById('hedge-cash-buffer');
+    if (cashBuffer) cashBuffer.innerText = `Rp ${(data.synthetic_cash_buffer_idr / 1e6).toFixed(1)} Juta`;
+
+    const tbody = document.getElementById('hedging-holdings-body');
+    if (tbody && data.holdings) {
+      tbody.innerHTML = '';
+      data.holdings.forEach((h) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${h.ticker}</strong></td>
+          <td style="font-family:var(--font-mono)">${h.weight_pct.toFixed(1)}%</td>
+          <td style="font-family:var(--font-mono);font-weight:700;color:${h.market_beta >= 1.0 ? '#ffd54f' : '#00e5ff'}">${h.market_beta.toFixed(2)}</td>
+          <td style="font-family:var(--font-mono)">${h.correlation_with_ihsg.toFixed(2)}</td>
+          <td style="font-family:var(--font-mono)">${h.annual_volatility_pct.toFixed(1)}%</td>
+          <td style="font-family:var(--font-mono);font-weight:600;color:#00e5ff">${h.weighted_beta_contribution.toFixed(3)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    const verdictEl = document.getElementById('hedging-verdict-text');
+    if (verdictEl && data.hedging_verdict) {
+      verdictEl.innerText = data.hedging_verdict;
+    }
+
+    showToast('Parameter Lindung Nilai Portofolio Selesai Dihitung');
+  } catch (err) {
+    console.debug('Failed to load hedging plan', err);
   }
 }
 

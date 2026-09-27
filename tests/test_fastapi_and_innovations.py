@@ -436,6 +436,64 @@ def test_fastapi_endpoints():
     assert resp_act_cone.status_code == 200
     assert resp_act_cone.json()["status"] == "SUCCESS"
 
+    # Dynamic Beta Hedging API
+    resp_hedge = client.post(
+        "/api/v1/portfolio/hedge-calculator",
+        json={
+            "portfolio_value_idr": 750_000_000.0,
+            "target_beta": 0.0,
+            "ihsg_volatility": 16.5,
+            "holdings": {"BBCA.JK": 40.0, "BBRI.JK": 30.0, "ADRO.JK": 30.0},
+        },
+    )
+    assert resp_hedge.status_code == 200
+    hedge_data = resp_hedge.json()
+    assert hedge_data["portfolio_total_value_idr"] == 750_000_000.0
+    assert hedge_data["portfolio_beta"] > 0
+    assert len(hedge_data["holdings"]) == 3
+    assert hedge_data["required_hedge_value_idr"] > 0
+    assert "garch_volatility_regime" in hedge_data
+
+    # Level-2 Order Queue Simulator API
+    resp_queue = client.get("/api/v1/market/order-queue/BBCA.JK?order_size_lots=150")
+    assert resp_queue.status_code == 200
+    queue_data = resp_queue.json()
+    assert queue_data["ticker"] == "BBCA.JK"
+    assert queue_data["simulated_order_size_lots"] == 150
+    assert len(queue_data["bid_queue_levels"]) > 0
+    assert len(queue_data["ask_queue_levels"]) > 0
+    assert queue_data["optimal_bid_placement"]["expected_time_to_fill_min"] > 0
+
+    # News Catalyst Decomposition API
+    resp_cat = client.get("/api/v1/sentiment/catalysts/BBCA.JK")
+    assert resp_cat.status_code == 200
+    cat_data = resp_cat.json()
+    assert cat_data["ticker"] == "BBCA.JK"
+    assert len(cat_data["catalysts"]) >= 2
+    assert "aggregate_catalyst_score" in cat_data
+
+    # Action console triggers for the 3 innovations
+    resp_act_hedge = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "CALCULATE_BETA_HEDGE"},
+    )
+    assert resp_act_hedge.status_code == 200
+    assert resp_act_hedge.json()["status"] == "SUCCESS"
+
+    resp_act_queue = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "SIMULATE_ORDER_QUEUE"},
+    )
+    assert resp_act_queue.status_code == 200
+    assert resp_act_queue.json()["status"] == "SUCCESS"
+
+    resp_act_news = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "EXTRACT_NEWS_CATALYSTS"},
+    )
+    assert resp_act_news.status_code == 200
+    assert resp_act_news.json()["status"] == "SUCCESS"
+
     # Context handover endpoint
     resp_ctx = client.get("/context")
     assert resp_ctx.status_code == 200

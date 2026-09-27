@@ -59,7 +59,10 @@ from ruang_risiko_idx.research.alert_dispatcher import alert_dispatcher
 from ruang_risiko_idx.research.black_litterman import bl_engine
 from ruang_risiko_idx.research.candlestick_engine import candlestick_engine
 from ruang_risiko_idx.research.crossing_block_detector import crossing_detector
+from ruang_risiko_idx.research.dynamic_hedging import hedging_engine
 from ruang_risiko_idx.research.execution_matrix import execution_engine
+from ruang_risiko_idx.research.news_catalyst_extractor import catalyst_extractor
+from ruang_risiko_idx.research.order_queue_simulator import queue_simulator
 from ruang_risiko_idx.research.orderbook_engine import orderbook_engine
 from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
 from ruang_risiko_idx.research.sector_rotation import sector_rotation_engine
@@ -498,6 +501,21 @@ async def execute_action(request: Request) -> dict[str, Any]:
             "message": "Interactive OHLCV candlestick series and multi-horizon conformal prediction cones recalculated.",
             "timestamp": datetime.now(UTC).isoformat(),
         },
+        "CALCULATE_BETA_HEDGE": lambda: {
+            "status": "SUCCESS",
+            "message": "Portfolio market beta and systematic volatility hedge requirements calculated.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "SIMULATE_ORDER_QUEUE": lambda: {
+            "status": "SUCCESS",
+            "message": "Level-2 limit order queue position and Poisson fill probabilities evaluated.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "EXTRACT_NEWS_CATALYSTS": lambda: {
+            "status": "SUCCESS",
+            "message": "Financial news headlines decomposed into canonical fundamental catalyst taxonomy.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
     }
 
     if action_type not in handlers:
@@ -624,6 +642,31 @@ async def get_candlesticks_endpoint(
 ) -> dict[str, Any]:
     """Retrieve OHLCV candlestick series with moving averages and conformal forecast envelope."""
     return candlestick_engine.build_candlestick_series(ticker, days, forecast_horizon_days).to_dict()
+
+
+@app.post("/api/v1/portfolio/hedge-calculator")
+async def post_hedge_calculator_endpoint(request: Request) -> dict[str, Any]:
+    """Calculate portfolio beta neutralization, synthetic hedge requirements, and downside buffers."""
+    data = await request.json()
+    holdings = data.get("holdings", None)
+    val = float(data.get("portfolio_value_idr", 500_000_000.0))
+    target = float(data.get("target_beta", 0.0))
+    vol_override = data.get("ihsg_volatility", None)
+    if vol_override is not None:
+        vol_override = float(vol_override)
+    return hedging_engine.compute_hedging_plan(holdings, val, target, vol_override).to_dict()
+
+
+@app.get("/api/v1/market/order-queue/{ticker}")
+async def get_order_queue_endpoint(ticker: str = "BBCA.JK", order_size_lots: int = 100) -> dict[str, Any]:
+    """Simulate Level-2 limit order queue position, Poisson fill probabilities, and adverse selection risk."""
+    return queue_simulator.simulate_queue(ticker, order_size_lots).to_dict()
+
+
+@app.get("/api/v1/sentiment/catalysts/{ticker}")
+async def get_sentiment_catalysts_endpoint(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Retrieve fine-grained fundamental news catalyst taxonomy and quantified sentiment drivers."""
+    return catalyst_extractor.extract_catalysts(ticker).to_dict()
 
 
 

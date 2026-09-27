@@ -222,6 +222,7 @@
           <button class="suite-tab" data-tab="tab-execution">🎯 Target & Eksekusi</button>
           <button class="suite-tab" data-tab="tab-sectors">🔄 Rotasi Sektor RRG</button>
           <button class="suite-tab" data-tab="tab-crossing">🐋 Dark Pool Pasar Nego</button>
+          <button class="suite-tab" data-tab="tab-hedging">🛡️ Dynamic Beta Hedging</button>
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
 
@@ -1222,6 +1223,98 @@
           </div>
         </div>
 
+        <!-- Tab: Dynamic Portfolio Beta Hedging & Downside Insurance -->
+        <div class="tab-pane" id="tab-hedging">
+          <div class="multimodal-hero-card">
+            <div class="mm-header-row">
+              <div class="mm-title-group">
+                <span class="badge-sector" style="background: rgba(255, 145, 0, 0.2); color: #ff9100;">SISTEM MANAJEMEN RISIKO SISTEMIK</span>
+                <h3>DYNAMIC BETA HEDGING & DOWNSIDE INSURANCE</h3>
+                <span class="mm-timestamp" id="hedging-timestamp">Terakhir dikompilasi: Real-Time Non-RDC Core</span>
+              </div>
+              <div class="mm-score-box">
+                <span class="m-label">BETA PASAR PORTOFOLIO (VS IHSG)</span>
+                <div class="big-score" id="port-beta-val" style="color: #ffd54f;">1.025</div>
+                <span class="score-sub" id="hedge-regime-val">REGIM VOLATILITAS: MODERATE</span>
+              </div>
+            </div>
+
+            <!-- Key Metric Cards -->
+            <div class="mm-targets-grid">
+              <div class="target-card">
+                <span class="t-label">REKOMENDASI HEDGE RATIO</span>
+                <span class="t-value" id="hedge-ratio-val" style="color: #00e5ff;">60.0%</span>
+                <span class="t-sub">Nilai Hedge: <span id="hedge-req-val">Rp 307.5 Juta</span></span>
+              </div>
+              <div class="target-card">
+                <span class="t-label">ESTIMASI MAX DRAWDOWN TERPANGKAS</span>
+                <span class="t-value up" id="hedge-dd-comp">25.1% &rarr; 10.0%</span>
+                <span class="t-sub">Perlindungan guncangan IHSG ekstrem</span>
+              </div>
+              <div class="target-card">
+                <span class="t-label">ALTERNATIF BUFFER KAS SINTETIK</span>
+                <span class="t-value" id="hedge-cash-buffer" style="color: #00e676;">Rp 292.8 Juta</span>
+                <span class="t-sub">Alokasi kas likuid untuk beta netral</span>
+              </div>
+            </div>
+
+            <!-- Interactive Portfolio Hedging Control -->
+            <div class="runtime-config-card" style="margin-top: 16px;">
+              <h5>SIMULASI PARAMETER LINDUNG NILAI PORTOFOLIO</h5>
+              <div class="config-grid">
+                <div class="config-item">
+                  <label for="hedge-capital-input">Total Modal Portofolio (IDR):</label>
+                  <input type="number" id="hedge-capital-input" class="form-input" min="10000000" step="10000000" value="500000000">
+                </div>
+                <div class="config-item">
+                  <label for="hedge-target-beta">Target Beta Portofolio Pasca-Hedge:</label>
+                  <select id="hedge-target-beta" class="form-input">
+                    <option value="0.0" selected>0.00 (Beta Netral Penuh / Zero Market Risk)</option>
+                    <option value="0.3">0.30 (Defensif Konservatif)</option>
+                    <option value="0.6">0.60 (Moderately Hedged)</option>
+                  </select>
+                </div>
+                <div class="config-item">
+                  <label for="hedge-vol-override">Asumsi Volatilitas IHSG (%):</label>
+                  <input type="number" id="hedge-vol-override" class="form-input" min="10" max="45" step="1" value="15">
+                </div>
+              </div>
+              <div class="config-actions">
+                <button class="btn-action-primary" id="btn-recalc-hedge">
+                  <span class="icon">🛡️</span> Hitung Ulang Parameter Lindung Nilai
+                </button>
+              </div>
+            </div>
+
+            <!-- Holdings Beta Contribution Table -->
+            <div class="audit-trail-section" style="margin-top: 16px;">
+              <h5>Dekomposisi Risiko Beta Emiten dalam Portofolio</h5>
+              <div class="table-wrap">
+                <table class="audit-table">
+                  <thead>
+                    <tr>
+                      <th>Ticker</th>
+                      <th>Bobot (%)</th>
+                      <th>Beta Saham</th>
+                      <th>Korelasi IHSG</th>
+                      <th>Volatilitas Tahunan</th>
+                      <th>Kontribusi Beta</th>
+                    </tr>
+                  </thead>
+                  <tbody id="hedging-holdings-body">
+                    <!-- Injected via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Verdict Box -->
+            <div class="verdict-banner" style="margin-top: 16px; padding: 12px 16px; background: rgba(255, 145, 0, 0.08); border-left: 3px solid #ff9100; border-radius: 4px;">
+              <span id="hedging-verdict-text" style="color: #eceff1; font-size: 13px;">Memuat kalkulasi lindung nilai...</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Tab 7: Web Action Console -->
         <div class="tab-pane" id="tab-actions">
           <div class="actions-console-card">
@@ -1368,6 +1461,27 @@
                 <div class="btn-text">
                   <strong>Hitung Ulang Candlestick & Conformal Cone</strong>
                   <span>Kalkulasi SMA20/EMA50 dan batas probabilitas forecast 80%/95%</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="CALCULATE_BETA_HEDGE">
+                <span class="btn-icon">🛡️</span>
+                <div class="btn-text">
+                  <strong>Hitung Parameter Beta-Neutral Hedging</strong>
+                  <span>Evaluasi eksposur beta pasar dan rasio lindung nilai modal</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="SIMULATE_ORDER_QUEUE">
+                <span class="btn-icon">⏱️</span>
+                <div class="btn-text">
+                  <strong>Simulasi Antrean Limit Order L2</strong>
+                  <span>Estimasi waktu antrean Poisson dan adverse selection</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="EXTRACT_NEWS_CATALYSTS">
+                <span class="btn-icon">📰</span>
+                <div class="btn-text">
+                  <strong>Dekomposisi Katalis Berita Fundamental</strong>
+                  <span>Klasifikasikan dividen, laba kuartal, regulasi, dan makro FX</span>
                 </div>
               </button>
             </div>

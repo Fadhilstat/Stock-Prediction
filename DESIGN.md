@@ -614,6 +614,60 @@ Professional trading operations require high-density visual telemetry combining 
      - **TP1 (Break-Even Lock)**: Green dashed line (`#00e676`)
      - **Stop Loss (ATR Calibrated)**: Red dashed line (`#ff5252`)
 
+---
+
+## 25. Dynamic Portfolio Beta-Neutral Hedging & Downside Insurance
+
+### 25.1 Systematic Risk Mitigation Objective
+During acute macroeconomic crisis events (e.g. abrupt foreign capital flight, currency depreciation, or sovereign yield spikes), unhedged long portfolios on the Indonesia Stock Exchange experience correlated downside drawdowns. The Dynamic Beta Hedging Engine derives minimum-variance hedge ratios against the benchmark IHSG (^JKSE) to immunize equity portfolios while preserving stock-picking alpha.
+
+### 25.2 Mathematical Formulation
+1. **Portfolio Market Beta**:
+   $$\beta_p = \sum_{i=1}^N w_i \beta_i = \sum_{i=1}^N w_i \frac{\text{Cov}(r_i, r_m)}{\sigma_m^2}$$
+2. **Conditional Hedge Ratio Trigger**:
+   - $\sigma_{\text{IHSG}} \ge 22.0\% \implies \text{Regime: HIGH\_CRISIS} \implies h^* = 100\%$
+   - $16.0\% \le \sigma_{\text{IHSG}} < 22.0\% \implies \text{Regime: MODERATE} \implies h^* = 60\%$
+   - $\sigma_{\text{IHSG}} < 16.0\% \implies \text{Regime: LOW} \implies h^* = 30\%$
+3. **Required Synthetic Hedging Value**:
+   $$V_{\text{hedge}} = V_{\text{portfolio}} \times (\beta_p - \beta_{\text{target}}) \times h^*$$
+4. **Drawdown Protection Bound**:
+   $$\text{Max DD}_{\text{hedged}} = (\beta_p - (\beta_p - \beta_{\text{target}}) h^*) \times (1.65 \times \sigma_{\text{IHSG}})$$
+
+---
+
+## 26. Level-2 Limit Order Queue Position Simulator & Adverse Selection Risk
+
+### 26.1 Microstructure Execution Dynamics
+Passive limit orders earn the bid-ask spread but endure execution delay and adverse selection risk (the risk of being filled predominantly when market price breaks through the level). The Queue Simulator models queue progression across the 10-level IDX orderbook.
+
+### 26.2 Queue Depletion & Fill Probability
+1. **Effective Queue Position**:
+   $$Q_{\text{ahead}} = \sum_{k=1}^{L-1} V_k + V_{\text{order\_level}}$$
+2. **Poisson Trade Arrival Intensity**:
+   Given an empirical trade consumption rate $\lambda_{\text{lots/min}}$ at tick depth $L$:
+   $$\lambda_{\text{effective}} = \frac{\lambda_{\text{base}}}{L}$$
+3. **Cumulative Fill Probability**:
+   $$P(\text{Fill} \le T) = 1 - \exp\left( -\frac{\lambda_{\text{effective}} \times T}{Q_{\text{ahead}}} \right)$$
+4. **Expected Time-to-Fill**:
+   $$\mathbb{E}[T_{\text{fill}}] = \frac{Q_{\text{ahead}}}{\lambda_{\text{effective}}} \quad (\text{minutes})$$
+
+---
+
+## 27. Fundamental News Catalyst Taxonomy & Impact Persistence
+
+### 27.1 Categorical Decomposition Taxonomy
+Rather than relying on generic sentiment polarity, institutional quantitative analysis classifies market announcements into 6 structural corporate event categories:
+1. **DIVIDEND_DISTRIBUTION**: Yield magnitude, cumulative ex-date price drop expectations.
+2. **EARNINGS_SURPRISE**: Net income and revenue delta vs consensus forecasts.
+3. **REGULATORY_INTERVENTION**: OJK capital adequacy mandates, export tariffs, and tax policy.
+4. **MACRO_FX_INTEREST_RATE**: Bank Indonesia rate decisions and USD/IDR currency volatility.
+5. **MERGERS_ACQUISITIONS**: Controlling stake changes and mandatory tender offers.
+6. **DEBT_RESTRUCTURING**: Corporate bond issuances, debt covenants, and credit ratings.
+
+### 27.2 Quantified Impact Score
+Each event is mapped to an impact severity vector $s \in [-1.0, +1.0]$ and an expected persistence horizon ($H \in \{1\text{D\_IMMEDIATE}, 5\text{D\_SWING}, 20\text{D\_STRUCTURAL}\}$).
+
+
 
 
 
