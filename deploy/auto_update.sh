@@ -56,8 +56,7 @@ log "Synchronizing workspace..."
 
 git reset --hard origin/main
 
-log "Recreating app container with FastAPI engine..."
-${DOCKER_BIN} rm -f ruang_risiko_idx_app ruang-risiko-idx-app-1 2>/dev/null || true
+log "Updating and rebuilding app container with FastAPI engine..."
 ${DOCKER_COMPOSE} up -d --build app
 
 # Ensure edge Caddy network connection, inject routing block if missing, and flush DNS
@@ -82,7 +81,9 @@ try:
         content = f.read()
     target_block = '''rridx.fadhilrusydi.com {
     encode zstd gzip
-    reverse_proxy 172.17.0.1:8501
+    reverse_proxy ruang_risiko_idx_app:8501 46.250.231.247:8501 172.17.0.1:8501 {
+        lb_try_duration 3s
+    }
 }'''
     if 'rridx.fadhilrusydi.com' in content:
         content = re.sub(r'rridx\.fadhilrusydi\.com\s*\{[^}]*\}', target_block, content)
@@ -95,7 +96,9 @@ except Exception:
 " "${CADDY_HOST_FILE}" 2>/dev/null || true
     fi
 
-    ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload 2>/dev/null || true
+    ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || \
+    ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload 2>/dev/null || \
+    ${DOCKER_BIN} restart signalflow-production-caddy-1 2>/dev/null || true
 fi
 
 NEW_HASH=$(git rev-parse HEAD)
