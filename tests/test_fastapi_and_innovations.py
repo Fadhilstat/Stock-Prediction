@@ -186,6 +186,40 @@ def test_fastapi_endpoints():
     sectors_json = resp_sectors.json()
     assert len(sectors_json) == 25
 
+    # Hugging Face Model Benchmark API
+    resp_hf = client.get("/api/v1/models/benchmark/BMRI.JK")
+    assert resp_hf.status_code == 200
+    hf_json = resp_hf.json()
+    assert hf_json["ticker"] == "BMRI.JK"
+    assert "champion_model_name" in hf_json
+    assert "champion_metrics" in hf_json
+    assert hf_json["champion_metrics"]["rmse"] > 0
+    assert len(hf_json["leaderboard"]) >= 3
+    assert len(hf_json["forecast_points"]) == 10
+
+    # Hugging Face On-Demand Custom Forecast API
+    resp_custom_fc = client.post(
+        "/api/v1/models/forecast",
+        json={
+            "ticker": "BMRI.JK",
+            "model_id": "hf_chronos_transformer",
+            "horizon_days": 5,
+            "confidence_level": 0.95,
+        },
+    )
+    assert resp_custom_fc.status_code == 200
+    custom_fc_json = resp_custom_fc.json()
+    assert len(custom_fc_json["forecast_points"]) == 5
+    assert custom_fc_json["conformal_coverage_pct"] == 95.0
+
+    # Execute Action with HF model recalibrate
+    resp_act_hf = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "HF_MODEL_RECALIBRATE"},
+    )
+    assert resp_act_hf.status_code == 200
+    assert resp_act_hf.json()["status"] == "SUCCESS"
+
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200

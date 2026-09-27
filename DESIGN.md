@@ -293,3 +293,90 @@ The system supports both built-in core tickers and user-specified custom tickers
   - Automatically appends `.JK` if omitted.
   - Dynamically synthesizes market data baselines, technical indicators, and quantile projections for newly evaluated tickers.
 
+---
+
+## 7. Hugging Face Foundation Time-Series Forecasters & Tournament Optimization
+
+Ruang Risiko IDX incorporates state-of-the-art foundation models and transformer architectures from Hugging Face for financial time-series forecasting:
+
+1. **Amazon Chronos-T5 (Zero-Shot Time-Series Transformer)**:
+   - Tokenizes real-valued price time-series via uniform scaling and quantization into discrete token vocabularies.
+   - Employs a pretrained encoder-decoder T5 architecture trained on billions of time-series observations across diverse macro and micro regimes.
+   - Yields robust generalization without catastrophic overfitting on noisy IDX asset returns.
+
+2. **Informer Long-Sequence Attention Network**:
+   - ProbSparse self-attention mechanism reducing standard transformer complexity from $\mathcal{O}(L^2)$ to $\mathcal{O}(L \ln L)$.
+   - Captures long-range macroeconomic cyclicality and persistent autocorrelation structures across trading sessions.
+
+3. **Hybrid XGBoost + GJR-GARCH(1,1) Volatility Filter**:
+   - Gradient boosted decision trees modeling non-linear return drifts, filtered by asymmetric GJR-GARCH innovations.
+   - Directly models the leverage effect where negative market shocks generate larger volatility spikes than equivalent positive moves.
+
+4. **Dynamic Minimum-Error Stacking Ensemble (Tournament Champion)**:
+   - Evaluates each candidate model in real time across Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), Mean Absolute Percentage Error (MAPE), and Mean Absolute Scaled Error (MASE).
+   - Dynamically weights models inversely proportional to validation variance:
+     $$w_m = \frac{1/\text{RMSE}_m^2}{\sum_{k=1}^M (1/\text{RMSE}_k^2)}$$
+   - Selects the champion model that minimizes expected forecasting error.
+
+---
+
+## 8. Conformal Prediction Error Minimization & Calibration
+
+To eliminate deceptive pseudo-certainty, price predictions are bounded by conformal prediction intervals guaranteeing finite-sample coverage validity:
+- Given nonconformity scores $\alpha_i = |y_i - \hat{y}_i| / \hat{\sigma}_i$, the conformal quantile $\hat{q}_{1-\alpha}$ is determined empirically:
+  $$\hat{q}_{1-\alpha} = \text{Quantile}\left(1 - \alpha; \alpha_1, \dots, \alpha_n\right)$$
+- The calibrated prediction interval for step $t+h$ satisfies:
+  $$\mathbb{P}\left(Y_{t+h} \in \left[\hat{y}_{t+h} - \hat{q}_{1-\alpha}\hat{\sigma}_{t+h}, \hat{y}_{t+h} + \hat{q}_{1-\alpha}\hat{\sigma}_{t+h}\right]\right) \ge 1 - \alpha$$
+- Yields institutional-grade forward uncertainty cones with 95% statistical coverage.
+
+---
+
+## 9. Multimodal 3-Pillar Fusion Engine
+
+The decision engine combines three orthogonal sources of market truth:
+1. **Modality 1: Quantitative Technical & Volatility (Weight: 40%)**:
+   - GARCH(1,1) conditional volatility, RSI-14 momentum, and EVT extreme tail index $\xi$.
+2. **Modality 2: Textual Financial News & Macroeconomic Sentiment (Weight: 30%)**:
+   - Natural language processing on financial headlines, BI-Rate stance, and USD/IDR currency outlook.
+3. **Modality 3: Microstructure & Bandar Orderflow (Weight: 30%)**:
+   - Top-3 broker buyer/seller concentration ratio (CR3), Net Foreign Institutional Flow, and Volume Order Imbalance (VOI).
+- **Consensus Synergy Score**:
+  $$S_{\text{multimodal}} = 0.40 \cdot S_{\text{quant}} + 0.30 \cdot S_{\text{macro}} + 0.30 \cdot S_{\text{bandar}}$$
+  Categorized into: `STRONG_ACCUMULATION`, `ACCUMULATION`, `NEUTRAL_WATCH`, `DISTRIBUTION`, and `STRONG_DISTRIBUTION`.
+
+---
+
+## 10. 25-Stock Industry Sector Classification
+
+The terminal categorizes 25 prominent liquid IDX equities into 7 market sectors:
+- **Financials**: `BBCA.JK`, `BBRI.JK`, `BMRI.JK`, `BBNI.JK`, `BRIS.JK`
+- **Energy**: `ADRO.JK`, `PTBA.JK`, `ITMG.JK`, `MEDC.JK`, `PGAS.JK`
+- **Basic Materials**: `ANTM.JK`, `MDKA.JK`, `INCO.JK`, `BRPT.JK`
+- **Consumer**: `ICBP.JK`, `INDF.JK`, `UNVR.JK`, `MYOR.JK`
+- **Infrastructure**: `TLKM.JK`, `ISAT.JK`, `TOWR.JK`
+- **Industrials**: `ASII.JK`, `UNTR.JK`
+- **Technology**: `GOTO.JK`, `BUKA.JK`
+
+---
+
+## 11. Stockbit Institutional Terminal UI/UX Design System
+
+The terminal reflects the ergonomics of Stockbit and TradingView:
+- **Bidirectional Crosshair Tracking**: High-precision cursor tracker displaying exact date (X-axis tag) and price level (Y-axis tag).
+- **Floating Coordinate HUD Bar**: Real-time ticker status, cursor price, delta percentage, and forward target bounds.
+- **Stockbit 10-Level Orderbook Depth Ladder**: Visual queue volume bars, cumulative Bid/Ask imbalance gauge, and bid-ask spread indicators.
+- **Real-Time Intraday Running Trades Tape**: Live transaction stream tagged with broker codes, lot sizes, and trade classifications.
+
+---
+
+## 12. Interactive Web Action Console & Continuous Zero-Manual Lifecycle
+
+- **Web Action Console**:
+  - Live execution of system routines (Data Refresh, Risk Recalculation, HMM Estimation, Pareto Optimization, HF Model Recalibration).
+  - Hyperparameter tuning (VaR confidence levels, portfolio allocation caps, slippage limits, and ML model selectors).
+  - Immutable action ledger audit trail recording operator, latency, execution timestamp, and status.
+- **Continuous Zero-Manual Auto-Update Lifecycle**:
+  - Background systemd timer (`rridx-autoupdate.timer`) checking GitHub repository every 60 seconds.
+  - Automatic container recreation and seamless Caddy reverse proxy routing without requiring manual VPS terminal intervention.
+
+

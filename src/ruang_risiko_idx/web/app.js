@@ -114,6 +114,12 @@ function initEventListeners() {
     });
   }
 
+  // Hugging Face Custom Forecast Button
+  const runHfBtn = document.getElementById('btn-run-hf-forecast');
+  if (runHfBtn) {
+    runHfBtn.addEventListener('click', runCustomHfForecast);
+  }
+
   // Ticker search filter
   const searchInput = document.getElementById('ticker-search');
   if (searchInput) {
@@ -202,6 +208,7 @@ function selectTicker(ticker) {
   loadOrderbook(ticker);
   loadBrokerSummary(ticker);
   loadMultimodalPrediction(ticker);
+  loadHfModelBenchmark(ticker);
   initWebSocket(ticker);
 
   const hmmLabel = document.getElementById('hmm-ticker-label');
@@ -953,6 +960,99 @@ async function loadMultimodalPrediction(ticker) {
     }
   } catch (err) {
     console.error('Multimodal prediction error:', err);
+  }
+}
+
+// -------------------------------------------------------------
+// Hugging Face Model Tournament Benchmark & On-Demand Forecaster
+// -------------------------------------------------------------
+async function loadHfModelBenchmark(ticker) {
+  try {
+    const res = await fetch(`/api/v1/models/benchmark/${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const champBadge = document.getElementById('hf-champion-badge');
+    if (champBadge) {
+      champBadge.innerText = `CHAMPION: ${data.champion_model_name} (RMSE: Rp ${data.champion_metrics.rmse.toLocaleString('id-ID')})`;
+    }
+
+    const tbody = document.getElementById('hf-leaderboard-body');
+    if (tbody && data.leaderboard) {
+      tbody.innerHTML = '';
+      data.leaderboard.forEach((m) => {
+        const tr = document.createElement('tr');
+        if (m.is_champion) tr.style.backgroundColor = 'rgba(0, 192, 118, 0.12)';
+        tr.innerHTML = `
+          <td><strong>${m.model_name}</strong></td>
+          <td><span class="badge-modality">${m.model_family}</span></td>
+          <td><strong style="color:#00e5ff">Rp ${m.rmse.toLocaleString('id-ID')}</strong></td>
+          <td>Rp ${m.mae.toLocaleString('id-ID')}</td>
+          <td>${m.mape_pct}%</td>
+          <td>${m.mase}</td>
+          <td><span class="up">${m.directional_accuracy_pct}%</span></td>
+          <td>${m.is_champion ? '<span class="status-pill status-healthy" style="background:rgba(0,192,118,0.25);color:#00c076">CHAMPION</span>' : '<span style="color:var(--text-secondary)">Candidate</span>'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  } catch (err) {
+    console.debug('Failed to load HF benchmark', err);
+  }
+}
+
+async function runCustomHfForecast() {
+  const statusEl = document.getElementById('hf-run-status');
+  const modelSelect = document.getElementById('hf-model-select');
+  const horizonSelect = document.getElementById('hf-horizon-select');
+  const confSelect = document.getElementById('hf-conf-select');
+
+  const modelId = modelSelect ? modelSelect.value : 'dynamic_champion_ensemble';
+  const horizon = horizonSelect ? parseInt(horizonSelect.value, 10) : 10;
+  const conf = confSelect ? parseFloat(confSelect.value) : 0.95;
+
+  if (statusEl) statusEl.innerText = 'Menghitung forward error bounds...';
+  showToast('Menjalankan peramalan Hugging Face...');
+
+  try {
+    const res = await fetch('/api/v1/models/forecast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ticker: state.currentTicker,
+        model_id: modelId,
+        horizon_days: horizon,
+        confidence_level: conf,
+      }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (statusEl) {
+      statusEl.innerText = `Selesai (${data.champion_metrics.latency_ms} ms) | RMSE: Rp ${data.champion_metrics.rmse.toLocaleString('id-ID')} | Coverage: ${data.conformal_coverage_pct}%`;
+    }
+    showToast(`Sukses: Peramalan ${data.champion_model_name}`);
+
+    // Update forecast table with custom points
+    const tbody = document.getElementById('forecast-table-body');
+    if (tbody && data.forecast_points) {
+      tbody.innerHTML = '';
+      data.forecast_points.forEach((pt) => {
+        const tr = document.createElement('tr');
+        const isUp = pt.projected_drift_pct >= 0;
+        tr.innerHTML = `
+          <td><strong>+${pt.step} Hari Bursa (${pt.date_offset})</strong></td>
+          <td><strong style="color:${isUp ? 'var(--color-up)' : 'var(--color-down)'}">Rp ${pt.point_forecast.toLocaleString('id-ID')}</strong></td>
+          <td style="color:#00e5ff">Rp ${pt.upper_95.toLocaleString('id-ID')}</td>
+          <td style="color:#ff5252">Rp ${pt.lower_95.toLocaleString('id-ID')}</td>
+          <td><span class="${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${pt.projected_drift_pct}%</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    loadAuditHistory();
+  } catch (err) {
+    if (statusEl) statusEl.innerText = 'Gagal: ' + err.message;
+    showToast('Gagal: ' + err.message);
   }
 }
 
