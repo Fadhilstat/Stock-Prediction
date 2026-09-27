@@ -58,10 +58,11 @@ log "Recreating app container with FastAPI engine..."
 ${DOCKER_BIN} rm -f ruang_risiko_idx_app ruang-risiko-idx-app-1 2>/dev/null || true
 ${DOCKER_COMPOSE} up -d --build app
 
-# Ensure edge Caddy network connection
+# Ensure edge Caddy network connection and flush DNS
 if ${DOCKER_BIN} ps | grep -q 'caddy'; then
     ${DOCKER_BIN} network connect rridx_network signalflow-production-caddy-1 2>/dev/null || true
     ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network signalflow-production-caddy-1 2>/dev/null || true
+    ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload 2>/dev/null || true
 fi
 
 NEW_HASH=$(git rev-parse HEAD)

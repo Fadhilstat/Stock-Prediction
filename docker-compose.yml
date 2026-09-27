@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: ruang_risiko_idx_app
     restart: unless-stopped
     environment:
       - PORT=8501
@@ -17,10 +18,7 @@ services:
     expose:
       - "8501"
     networks:
-      default:
-        aliases:
-          - ruang_risiko_idx_app
-          - app
+      - default
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/health"]
       interval: 30s
