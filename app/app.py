@@ -22,9 +22,11 @@ from ruang_risiko_idx.research.actions import (
     trigger_dcc_garch_recalculation,
     trigger_direction_recalculation,
     trigger_domain_probe,
+    trigger_hmm_regime_detection,
     trigger_market_data_refresh,
     trigger_microstructure_imbalance_scan,
     trigger_morning_briefing_generation,
+    trigger_pareto_portfolio_optimization,
     trigger_risk_recalculation,
     trigger_telegram_test_dispatch,
     update_runtime_risk_parameters,
@@ -33,6 +35,8 @@ from ruang_risiko_idx.research.alert_dispatcher import AlertPayload, dispatch_we
 from ruang_risiko_idx.research.copula_evt import compute_copula_tail_dependence, compute_evt_peak_over_threshold
 from ruang_risiko_idx.research.dcc_garch import compute_dcc_garch_matrix, generate_dcc_heatmap_figure
 from ruang_risiko_idx.research.execution_algo import generate_execution_trajectory_chart, simulate_algorithmic_execution
+from ruang_risiko_idx.research.hmm_regime import compute_hmm_regime_classification
+from ruang_risiko_idx.research.pareto_portfolio import generate_pareto_frontier_chart, optimize_pareto_portfolio_frontier
 from ruang_risiko_idx.research.telegram_notifier import dispatch_telegram_message
 from ruang_risiko_idx.research.automation_daemon import (
     load_automation_schedule,
@@ -1326,6 +1330,31 @@ with main_tabs[1]:
 
     st.info(f"🛡️ **Rekomendasi EVT & Tail Risk:** {evt_rep.recommendation}")
 
+    st.markdown("---")
+    st.markdown("##### 🔮 Deteksi Rezim Pasar Hidden Markov Model (HMM 3-State)")
+    st.caption("Klasifikasi probabilistik rezim pasar laten (Bullish Trend, High-Volatility Bear, Sideways Compression) menggunakan estimasi Gaussian Mixture dan Viterbi path decoding.")
+
+    hmm_rep = compute_hmm_regime_classification(selected_data["close"], ticker=selected_ticker)
+    hmm_c1, hmm_c2, hmm_c3, hmm_c4 = st.columns(4)
+    hmm_c1.metric("Rezim Aktif Terdeteksi", hmm_rep.current_regime.replace("_", " "))
+    hmm_c2.metric("Keyakinan Posterior", f"{hmm_rep.current_regime_probability:.1%}")
+    cur_state = next(s for s in hmm_rep.states if s.state_label == hmm_rep.current_regime)
+    hmm_c3.metric("Rerata Return Harian", f"{cur_state.mean_daily_return_pct:+.2f}%")
+    hmm_c4.metric("Ekspektasi Durasi Rezim", f"{cur_state.expected_duration_days:.0f} Hari")
+
+    st.info(f"💡 **Interpretasi Strategis Rezim:** {hmm_rep.regime_interpretation}")
+
+    with st.expander("📊 Matriks Transisi Probabilitas HMM & Profil 3-Rezim"):
+        trans_df = pd.DataFrame(
+            hmm_rep.transition_matrix,
+            index=["Dari Bullish", "Dari Sideways", "Dari Bearish"],
+            columns=["Ke Bullish", "Ke Sideways", "Ke Bearish"],
+        )
+        st.markdown("**Matriks Probabilitas Transisi Harian ($P_{ij}$):**")
+        st.dataframe(trans_df.style.format("{:.1%}"), use_container_width=True)
+
+        st.markdown(f"**Jalur Status Terkini (10 Hari Terakhir Viterbi):** `{' -> '.join(hmm_rep.viterbi_state_sequence[-10:])}`")
+
 # TAB 3: Makroekonomi & Sentimen Berita
 with main_tabs[2]:
     st.markdown("#### 🌐 Intelijen Makroekonomi & Sentimen Berita Terkurasi")
@@ -1793,6 +1822,28 @@ with main_tabs[6]:
     algo_chart = generate_execution_trajectory_chart(algo_rep)
     st.plotly_chart(algo_chart, use_container_width=True)
 
+    st.markdown("---")
+    st.markdown("##### ⚖️ Optimasi Portofolio Multi-Objektif Pareto (Mean-CVaR & Diversifikasi Entropi)")
+    st.caption("Menyeimbangkan ekspektasi imbal hasil (Return), risiko ekor ekstrim (CVaR 99%), dan regularisasi entropi diversifikasi untuk menghindari pemusatan aset.")
+
+    pareto_rep = optimize_pareto_portfolio_frontier(market_data, num_points=12)
+    p_opt = pareto_rep.optimal_tangency_point
+
+    par_c1, par_c2, par_c3, par_c4 = st.columns(4)
+    par_c1.metric("Tangency Sharpe Ratio", f"{p_opt.sharpe_ratio:.2f}")
+    par_c2.metric("Ekspektasi Return Tahunan", f"+{p_opt.expected_annual_return_pct:.1f}%")
+    par_c3.metric("Beban Tail Risk CVaR 99%", f"-{p_opt.cvar_99_annual_loss_pct:.1f}%")
+    par_c4.metric("Reduksi Tail Risk vs 1/N", f"{pareto_rep.diversification_gain_pct:.1f}%")
+
+    st.info(f"💡 **Rekomendasi Alokasi Pareto:** {pareto_rep.recommendation}")
+
+    par_fig = generate_pareto_frontier_chart(pareto_rep)
+    st.plotly_chart(par_fig, use_container_width=True)
+
+    with st.expander("💼 Rincian Bobot Portofolio Optimal Tangency"):
+        weights_data = [{"Kode Saham": k, "Alokasi Bobot (%)": f"{v:.1f}%"} for k, v in p_opt.weights.items() if v > 1.0]
+        st.dataframe(pd.DataFrame(weights_data), use_container_width=True, hide_index=True)
+
 # TAB 8: Web Action Console (Operational Control Plane)
 with main_tabs[7]:
     st.markdown("#### Web Action Console (Pusat Kontrol & Operasional)")
@@ -1925,6 +1976,24 @@ with main_tabs[7]:
         if st.button("Simulasikan Trajektori Algoritma Eksekusi"):
             with st.spinner(f"Menjalankan simulasi Almgren-Chriss untuk {selected_ticker}..."):
                 res = trigger_algo_execution_simulation(selected_ticker, order_value_idr=250_000_000.0, strategy="VWAP")
+                if res["success"]:
+                    st.success(res["message"])
+                    st.cache_data.clear()
+                else:
+                    st.error(res["message"])
+
+        if st.button("Pindai Rezim Pasar HMM (3-State Gaussian)"):
+            with st.spinner(f"Mengklasifikasikan rezim laten untuk {selected_ticker}..."):
+                res = trigger_hmm_regime_detection(selected_ticker)
+                if res["success"]:
+                    st.success(res["message"])
+                    st.cache_data.clear()
+                else:
+                    st.error(res["message"])
+
+        if st.button("Jalankan Optimasi Portofolio Pareto Frontier"):
+            with st.spinner("Menyelesaikan kurva Pareto Mean-CVaR & Entropi..."):
+                res = trigger_pareto_portfolio_optimization()
                 if res["success"]:
                     st.success(res["message"])
                     st.cache_data.clear()

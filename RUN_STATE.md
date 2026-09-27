@@ -1,13 +1,13 @@
 # Ruang Risiko IDX Durable Run State
 
 Project: Ruang Risiko IDX
-Updated: 2026-09-27T09:02:00+07:00
+Updated: 2026-09-27T09:12:00+07:00
 Branch: main
-HEAD: copula asymmetric tail dependence and almgren-chriss algorithmic execution simulator
-Current Product State: COPULA_EVT_AND_ALGO_EXECUTION_RELEASE
+HEAD: hmm 3-state gaussian regime switching and multi-objective pareto portfolio optimizer
+Current Product State: HMM_REGIME_AND_PARETO_PORTFOLIO_RELEASE
 Current Release State: PRODUCTION_LIVE_AND_ENHANCED
-Current Milestone: Copula Tail Dependence, EVT Expected Shortfall, and Algorithmic Execution Simulator Shipped
-Last Completed Action: Delivered Archimedean Copula (Clayton/Gumbel) asymmetric crash dependence, Generalized Pareto Distribution (GPD) Peak-Over-Threshold (POT) EVT Expected Shortfall, and Almgren-Chriss Algorithmic Execution Simulator (VWAP/TWAP/POV) with 2-panel Plotly trajectory schedule. All unit tests passed. Zero em dash compliance verified. Ready to push to origin/main.
+Current Milestone: HMM Regime Switching & Multi-Objective Pareto Portfolio Optimization Shipped
+Last Completed Action: Delivered Hidden Markov Model (HMM) 3-state Gaussian mixture regime switching engine with Viterbi decoding and Multi-Objective Pareto Frontier portfolio optimizer (Mean-CVaR & Diversification Entropy) with interactive Plotly frontier curve and asset weights breakdown. All unit tests passed. Zero em dash compliance verified. Ready to push to origin/main.
 Current Action: Commit, push to origin/main with user approval, and trigger VPS deployment.
 NEXT_ACTION: Proactively introduce next quantitative risk innovation batch.
 FINISH_GATE State: PASS (all criteria validated)

@@ -533,5 +533,97 @@ def trigger_algo_execution_simulation(
     }
 
 
+def trigger_hmm_regime_detection(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Execute Hidden Markov Model 3-state Gaussian mixture regime classification."""
+    import time
+    from ruang_risiko_idx.research.hmm_regime import compute_hmm_regime_classification
+
+    start = time.perf_counter()
+    settings = ProjectSettings()
+    raw_path = settings.raw_data_path
+    if not raw_path.exists():
+        raw_path = settings.project_root / "data" / "processed" / "analytics_daily.parquet"
+
+    import pandas as pd
+    price_df = pd.read_parquet(raw_path) if raw_path.exists() else pd.DataFrame()
+
+    if not price_df.empty and "ticker" in price_df.columns:
+        sub_t = price_df.loc[price_df["ticker"] == ticker].sort_values("trade_date")
+        price_series = sub_t["close"]
+    else:
+        price_series = pd.Series([10000.0 * (1.0005 ** i) for i in range(100)])
+
+    report = compute_hmm_regime_classification(price_series, ticker=ticker)
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    msg = f"HMM Rezim terdeteksi untuk {ticker}: {report.current_regime} ({report.current_regime_probability:.1%})."
+    entry = record_action(
+        action_type="HMM_REGIME_DETECTION",
+        status="SUCCESS",
+        summary_message=msg,
+        parameters={
+            "ticker": ticker,
+            "regime": report.current_regime,
+            "probability": report.current_regime_probability,
+        },
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "ticker": ticker,
+        "current_regime": report.current_regime,
+        "probability": report.current_regime_probability,
+        "interpretation": report.regime_interpretation,
+        "message": msg,
+        "action_id": entry.action_id,
+    }
+
+
+def trigger_pareto_portfolio_optimization(tickers: list[str] | None = None) -> dict[str, Any]:
+    """Execute Multi-Objective Pareto Frontier portfolio optimization."""
+    import time
+    from ruang_risiko_idx.research.pareto_portfolio import optimize_pareto_portfolio_frontier
+
+    start = time.perf_counter()
+    settings = ProjectSettings()
+    raw_path = settings.raw_data_path
+    if not raw_path.exists():
+        raw_path = settings.project_root / "data" / "processed" / "analytics_daily.parquet"
+
+    import pandas as pd
+    price_df = pd.read_parquet(raw_path) if raw_path.exists() else pd.DataFrame()
+
+    report = optimize_pareto_portfolio_frontier(price_df, tickers=tickers)
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    msg = (
+        f"Optimasi Pareto selesai ({len(report.tickers)} aset): Tangency Sharpe "
+        f"{report.optimal_tangency_point.sharpe_ratio:.2f}, Reduksi Tail Risk {report.diversification_gain_pct:.1f}%."
+    )
+    entry = record_action(
+        action_type="PARETO_PORTFOLIO_OPTIMIZATION",
+        status="SUCCESS",
+        summary_message=msg,
+        parameters={
+            "tickers": report.tickers,
+            "sharpe": report.optimal_tangency_point.sharpe_ratio,
+            "cvar_gain": report.diversification_gain_pct,
+            "optimal_weights": report.optimal_tangency_point.weights,
+        },
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "tickers": report.tickers,
+        "sharpe": report.optimal_tangency_point.sharpe_ratio,
+        "expected_return": report.optimal_tangency_point.expected_annual_return_pct,
+        "cvar_99": report.optimal_tangency_point.cvar_99_annual_loss_pct,
+        "optimal_weights": report.optimal_tangency_point.weights,
+        "message": msg,
+        "action_id": entry.action_id,
+    }
+
+
+
 
 

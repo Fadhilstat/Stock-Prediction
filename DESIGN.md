@@ -258,6 +258,25 @@ Institutional block order scheduling across IDX trading sessions (09:00-11:30 an
 - Implementation Shortfall (IS):
   $$\text{IS} = \sum_{k=1}^K x_k (P_k - P_0) + \text{Broker Fees}$$
 
+### 5.12 Hidden Markov Model (HMM) Regime Switching
+Probabilistic detection of latent market states $S_t \in \{\text{Bull}, \text{Sideways}, \text{Bear}\}$:
+- Emission distribution:
+  $$r_t \mid S_t = k \sim \mathcal{N}(\mu_k, \sigma_k^2)$$
+- Transition probability matrix:
+  $$P_{ij} = \mathbb{P}(S_{t+1} = j \mid S_t = i), \quad \mathbb{E}[\text{Duration}_i] = \frac{1}{1 - P_{ii}}$$
+- Viterbi optimal path decoding:
+  $$V_t(j) = \max_{1 \le i \le 3} \left[V_{t-1}(i) \cdot P_{ij}\right] \cdot \mathcal{N}(r_t \mid \mu_j, \sigma_j^2)$$
+
+### 5.13 Multi-Objective Pareto Portfolio Optimization
+Non-dominated Mean-CVaR portfolio frontier with entropy regularization:
+- Objective function:
+  $$\min_{w} \quad \text{CVaR}_{0.99}(w) - \lambda_H \cdot H(w)$$
+- Constraints:
+  $$\mu' w = R_{\text{target}}, \quad \sum_{i=1}^k w_i = 1, \quad 0.02 \le w_i \le 0.40$$
+- Diversification Entropy:
+  $$H(w) = -\sum_{i=1}^k w_i \ln(w_i)$$
+Eliminates corner portfolio allocations and significantly mitigates tail loss exposure relative to equal-weight benchmarks.
+
 ---
 
 ## 6. Flexible Equity Universe Specification
