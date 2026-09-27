@@ -524,6 +524,50 @@ To rigorously substantiate forecast accuracy and prevent lookahead bias or data 
    - **Cumulative Strategy Equity**: Compares dynamic long/cash model execution versus Buy & Hold baseline.
    - **Risk-Adjusted Ratios**: Realized Sharpe ratio, Win Rate, Profit Factor, and Maximum Drawdown.
 
+---
+
+## 21. Quantitative Trade Execution Plan & ATR-Calibrated Multi-Horizon TP/SL Ladder
+
+### 21.1 Overview and Purpose
+Institutional execution requires mathematically rigorous entry, risk containment, and take-profit milestones rather than arbitrary heuristics. The Quantitative Trade Execution Plan provides algorithmic execution guidance calibrated to the stock's Average True Range (ATR) and customized to the trader's total capital and risk tolerance per trade.
+
+### 21.2 Mathematical Formulation
+1. **Volatility-Adjusted Position Sizing**:
+   $$\text{Risk Capital (IDR)} = \text{Total Capital} \times \frac{\text{Risk Per Trade \%}}{100}$$
+   $$\text{Risk Per Share (IDR)} = \max(\text{Entry Price} - \text{Stop Loss Price}, 1)$$
+   $$\text{Max Position Lots} = \left\lfloor \frac{\text{Risk Capital}}{\text{Risk Per Share} \times 100} \right\rfloor$$
+2. **ATR-Calibrated Trailing Stop Loss**:
+   $$\text{Stop Loss} = \text{Entry Price} - (k_{\text{SL}} \times \text{ATR}_{14})$$
+   where $k_{\text{SL}} \approx 1.5$ standard deviations of daily price volatility.
+3. **Multi-Horizon Profit Targets**:
+   - **TP1 (Quick Tactical / Breakeven Lock, 1.5R)**: $\text{Entry} + 1.5 \times (\text{Entry} - \text{SL})$
+   - **TP2 (Primary Horizon / Trend Target, 2.5R)**: $\text{Entry} + 2.5 \times (\text{Entry} - \text{SL})$
+   - **TP3 (Runner / Institutional Extension, 4.0R)**: $\text{Entry} + 4.0 \times (\text{Entry} - \text{SL})$
+4. **Pullback Entry Zone**:
+   - Aggressive Entry: Current Market Ask Price.
+   - Conservative Entry: Support zone at $\text{Current Price} - (0.5 \times \text{ATR}_{14})$.
+
+---
+
+## 22. Relative Rotation Graph (RRG) & Cross-Sector Institutional Flow Matrix
+
+### 22.1 Overview and Purpose
+Capital in the Indonesia Stock Exchange (IDX) continually rotates across sectors based on macroeconomic regimes, commodity cycles, interest rates, and institutional liquidity flows. The Relative Rotation Graph (RRG) plots sectors across two orthogonal dimensions to identify sector leadership transitions before they reflect in headline index moves.
+
+### 22.2 Mathematical Metrics
+1. **Relative Strength Ratio (RS-Ratio)**:
+   $$\text{RS-Ratio}_t = 100 + \left( \frac{\text{Sector Price}_t / \text{IHSG}_t}{\text{SMA}_{n}(\text{Sector Price} / \text{IHSG})} - 1 \right) \times 100$$
+2. **Relative Strength Momentum (RS-Momentum)**:
+   $$\text{RS-Momentum}_t = 100 + \left( \frac{\text{RS-Ratio}_t}{\text{SMA}_{m}(\text{RS-Ratio})} - 1 \right) \times 100$$
+3. **Four-Quadrant Institutional Rotation Classification**:
+   - **Leading (RS-Ratio $\ge 100$, RS-Momentum $\ge 100$)**: Outperforming benchmark with accelerating momentum. Prime overweight candidate.
+   - **Weakening (RS-Ratio $\ge 100$, RS-Momentum $< 100$)**: Outperforming benchmark but losing relative velocity. Profit-taking stage.
+   - **Lagging (RS-Ratio $< 100$, RS-Momentum $< 100$)**: Underperforming benchmark with negative momentum. Avoid or underweight.
+   - **Improving (RS-Ratio $< 100$, RS-Momentum $\ge 100$)**: Underperforming benchmark but rapidly gaining relative velocity. Early accumulation candidate.
+4. **Institutional Net Foreign Flow Overlay**:
+   Integrates 5-day rolling net foreign institutional buying or selling (IDR Billion) to validate whether sector price momentum is supported by real institutional accumulation.
+
+
 
 
 

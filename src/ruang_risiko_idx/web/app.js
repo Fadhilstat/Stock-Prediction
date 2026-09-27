@@ -106,6 +106,10 @@ function initEventListeners() {
         loadOrderbook(state.currentTicker);
       } else if (targetId === 'tab-backtest') {
         loadWalkForwardBacktest(state.currentTicker);
+      } else if (targetId === 'tab-execution') {
+        loadExecutionPlan(state.currentTicker);
+      } else if (targetId === 'tab-sectors') {
+        loadSectorRotation();
       } else if (targetId === 'tab-alerts') {
         loadLiveAlerts();
       } else if (targetId === 'tab-bl') {
@@ -164,6 +168,18 @@ function initEventListeners() {
   const runWfBtn = document.getElementById('btn-run-walk-forward');
   if (runWfBtn) {
     runWfBtn.addEventListener('click', () => loadWalkForwardBacktest(state.currentTicker));
+  }
+
+  // Refresh Execution Plan Button
+  const refExecBtn = document.getElementById('btn-refresh-execution');
+  if (refExecBtn) {
+    refExecBtn.addEventListener('click', () => loadExecutionPlan(state.currentTicker));
+  }
+
+  // Refresh Sector Rotation Button
+  const refSecBtn = document.getElementById('btn-refresh-sectors');
+  if (refSecBtn) {
+    refSecBtn.addEventListener('click', loadSectorRotation);
   }
 
   // Ticker search filter
@@ -258,6 +274,7 @@ function selectTicker(ticker) {
   loadFinBERTSentiment(ticker);
   loadBrokerNetwork(ticker);
   loadStressTest(ticker);
+  loadExecutionPlan(ticker);
   initWebSocket(ticker);
 
   const hmmLabel = document.getElementById('hmm-ticker-label');
@@ -1669,6 +1686,132 @@ async function loadWalkForwardBacktest(ticker = state.currentTicker) {
     showToast('Turnamen Walk-Forward Selesai Dimuat');
   } catch (err) {
     console.debug('Failed to load walk-forward backtest', err);
+  }
+}
+
+// -------------------------------------------------------------
+// Quantitative Trade Execution Plan & Conformal Targets
+// -------------------------------------------------------------
+async function loadExecutionPlan(ticker = state.currentTicker) {
+  try {
+    const res = await fetch(`/api/v1/execution/plan/${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const rrEl = document.getElementById('exec-rr-ratio');
+    if (rrEl) rrEl.innerText = `${data.risk_reward_ratio.toFixed(2)} : 1`;
+
+    const statusBadge = document.getElementById('exec-status-badge');
+    if (statusBadge) statusBadge.innerText = data.execution_status.replace(/_/g, ' ');
+
+    const verdictEl = document.getElementById('exec-verdict-txt');
+    if (verdictEl && data.execution_verdict) verdictEl.innerText = data.execution_verdict;
+
+    const entryPill = document.getElementById('exec-entry-pill');
+    if (entryPill) entryPill.innerText = `ENTRY: Rp ${data.entry_zone_low.toLocaleString('id-ID')} - ${data.entry_zone_high.toLocaleString('id-ID')}`;
+
+    const slPill = document.getElementById('exec-sl-pill');
+    if (slPill) slPill.innerText = `SL: Rp ${data.stop_loss_price.toLocaleString('id-ID')} (-${data.stop_loss_risk_pct.toFixed(2)}%)`;
+
+    const sizingPill = document.getElementById('exec-sizing-pill');
+    if (sizingPill) sizingPill.innerText = `POSISI: ${data.recommended_position_lots.toLocaleString('id-ID')} lot (Rp ${(data.recommended_position_idr / 1e6).toFixed(1)} jt)`;
+
+    // TP1
+    if (data.take_profit_1) {
+      const tp1 = data.take_profit_1;
+      const p1 = document.getElementById('tp1-price');
+      if (p1) p1.innerText = `Rp ${tp1.target_price.toLocaleString('id-ID')}`;
+      const g1 = document.getElementById('tp1-gain');
+      if (g1) g1.innerText = `+${tp1.expected_gain_loss_pct.toFixed(2)}% Potensi Cuan`;
+      const d1 = document.getElementById('tp1-desc');
+      if (d1) d1.innerText = tp1.description;
+    }
+
+    // TP2
+    if (data.take_profit_2) {
+      const tp2 = data.take_profit_2;
+      const p2 = document.getElementById('tp2-price');
+      if (p2) p2.innerText = `Rp ${tp2.target_price.toLocaleString('id-ID')}`;
+      const g2 = document.getElementById('tp2-gain');
+      if (g2) g2.innerText = `+${tp2.expected_gain_loss_pct.toFixed(2)}% Potensi Cuan`;
+      const d2 = document.getElementById('tp2-desc');
+      if (d2) d2.innerText = tp2.description;
+    }
+
+    // TP3
+    if (data.take_profit_3) {
+      const tp3 = data.take_profit_3;
+      const p3 = document.getElementById('tp3-price');
+      if (p3) p3.innerText = `Rp ${tp3.target_price.toLocaleString('id-ID')}`;
+      const g3 = document.getElementById('tp3-gain');
+      if (g3) g3.innerText = `+${tp3.expected_gain_loss_pct.toFixed(2)}% Potensi Cuan`;
+      const d3 = document.getElementById('tp3-desc');
+      if (d3) d3.innerText = tp3.description;
+    }
+
+    showToast('Rencana Eksekusi Kuantitatif Selesai Dihitung');
+  } catch (err) {
+    console.debug('Failed to load execution plan', err);
+  }
+}
+
+// -------------------------------------------------------------
+// Sector Rotation & Relative Momentum (RRG) Matrix
+// -------------------------------------------------------------
+async function loadSectorRotation() {
+  try {
+    const res = await fetch('/api/v1/market/sector-rotation');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const leadingBadge = document.getElementById('rrg-leading-badge');
+    if (leadingBadge && data.leading_sectors) {
+      leadingBadge.innerText = data.leading_sectors.join(' & ').toUpperCase();
+    }
+
+    const benchTxt = document.getElementById('rrg-bench-txt');
+    if (benchTxt) {
+      benchTxt.innerText = `Benchmark: ${data.benchmark_index} ${data.benchmark_price} (${data.benchmark_change_pct})`;
+    }
+
+    const summaryP = document.getElementById('rrg-summary-p');
+    if (summaryP && data.rotation_summary) {
+      summaryP.innerText = data.rotation_summary;
+    }
+
+    const tbody = document.getElementById('rrg-sectors-body');
+    if (tbody && data.sectors) {
+      tbody.innerHTML = '';
+      data.sectors.forEach((sec) => {
+        const tr = document.createElement('tr');
+        const quadColor = sec.color_code || '#00e676';
+        tr.innerHTML = `
+          <td>
+            <strong>${sec.sector_name}</strong>
+            <span class="badge-sector-mini" style="margin-left:6px">${sec.dominant_stock}</span>
+          </td>
+          <td>
+            <span class="status-pill" style="background:${quadColor}22;color:${quadColor};border:1px solid ${quadColor}55;">
+              ${sec.quadrant}
+            </span>
+          </td>
+          <td style="font-weight:700;font-family:var(--font-mono)">${sec.rs_ratio.toFixed(2)}</td>
+          <td style="font-family:var(--font-mono);color:${sec.rs_momentum >= 100 ? '#00e676' : '#ffd54f'}">${sec.rs_momentum.toFixed(2)}</td>
+          <td style="font-weight:700;color:${sec.net_foreign_flow_billion_idr >= 0 ? '#00e676' : '#ff5252'}">
+            ${sec.net_foreign_flow_billion_idr >= 0 ? '+' : ''}${sec.net_foreign_flow_billion_idr.toFixed(1)} Miliar
+          </td>
+          <td style="color:${sec.relative_performance_1m_pct >= 0 ? '#00e676' : '#ff5252'};font-weight:600">
+            ${sec.relative_performance_1m_pct >= 0 ? '+' : ''}${sec.relative_performance_1m_pct.toFixed(2)}%
+          </td>
+          <td style="font-size:11px;color:var(--text-secondary)">${sec.action_guidance}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    showToast('Rotasi Sektor RRG Berhasil Dimuat');
+  } catch (err) {
+    console.debug('Failed to load sector rotation', err);
   }
 }
 

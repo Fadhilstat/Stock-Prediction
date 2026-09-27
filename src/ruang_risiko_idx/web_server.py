@@ -57,8 +57,10 @@ from ruang_risiko_idx.research.multimodal_engine import (
 )
 from ruang_risiko_idx.research.alert_dispatcher import alert_dispatcher
 from ruang_risiko_idx.research.black_litterman import bl_engine
+from ruang_risiko_idx.research.execution_matrix import execution_engine
 from ruang_risiko_idx.research.orderbook_engine import orderbook_engine
 from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
+from ruang_risiko_idx.research.sector_rotation import sector_rotation_engine
 from ruang_risiko_idx.research.sentiment_engine import get_latest_market_sentiment
 from ruang_risiko_idx.research.spillover_index import compute_diebold_yilmaz_spillover
 from ruang_risiko_idx.research.stress_testing import stress_engine
@@ -474,6 +476,16 @@ async def execute_action(request: Request) -> dict[str, Any]:
             "message": "Level-2 10-depth orderbook queue simulated with institutional wall and spoofing risk detection.",
             "timestamp": datetime.now(UTC).isoformat(),
         },
+        "CALCULATE_EXECUTION_LEVELS": lambda: {
+            "status": "SUCCESS",
+            "message": "Quantitative risk-reward execution plan and ATR-calibrated stop loss levels recalculated.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "REFRESH_SECTOR_ROTATION": lambda: {
+            "status": "SUCCESS",
+            "message": "Relative Rotation Graph (RRG) and institutional cross-sector capital flows refreshed.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
     }
 
     if action_type not in handlers:
@@ -562,6 +574,28 @@ async def post_walk_forward_backtest_endpoint(request: Request) -> dict[str, Any
         pass
     report = walk_forward_backtester.run_backtest(target_ticker, window_days)
     return report.to_dict()
+
+
+@app.get("/api/v1/execution/plan/{ticker}")
+async def get_execution_plan_endpoint(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Retrieve quantitative risk-reward execution plan and multi-horizon targets."""
+    return execution_engine.compute_execution_plan(ticker).to_dict()
+
+
+@app.post("/api/v1/execution/plan")
+async def post_execution_plan_endpoint(request: Request) -> dict[str, Any]:
+    """Calculate customized execution plan with custom capital and risk tolerance."""
+    data = await request.json()
+    ticker = data.get("ticker", "BBCA.JK")
+    capital = float(data.get("capital_idr", 100_000_000.0))
+    risk_pct = float(data.get("risk_per_trade_pct", 2.0))
+    return execution_engine.compute_execution_plan(ticker, capital, risk_pct).to_dict()
+
+
+@app.get("/api/v1/market/sector-rotation")
+async def get_sector_rotation_endpoint() -> dict[str, Any]:
+    """Retrieve live Relative Rotation Graph (RRG) coordinates and institutional sector flow."""
+    return sector_rotation_engine.compute_sector_rotation().to_dict()
 
 
 

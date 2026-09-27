@@ -360,6 +360,49 @@ def test_fastapi_endpoints():
     assert resp_act_ob.status_code == 200
     assert resp_act_ob.json()["status"] == "SUCCESS"
 
+    # Execution Plan API (GET & POST)
+    resp_exec_get = client.get("/api/v1/execution/plan/BBCA.JK")
+    assert resp_exec_get.status_code == 200
+    exec_data = resp_exec_get.json()
+    assert exec_data["ticker"] == "BBCA.JK"
+    assert "targets" in exec_data
+    assert len(exec_data["targets"]) == 3
+    assert exec_data["max_position_lots"] > 0
+    assert exec_data["risk_reward_ratio_tp1"] > 0
+
+    resp_exec_post = client.post(
+        "/api/v1/execution/plan",
+        json={"ticker": "BBRI.JK", "capital_idr": 250_000_000.0, "risk_per_trade_pct": 1.5},
+    )
+    assert resp_exec_post.status_code == 200
+    exec_post_data = resp_exec_post.json()
+    assert exec_post_data["ticker"] == "BBRI.JK"
+    assert exec_post_data["total_capital_idr"] == 250_000_000.0
+    assert exec_post_data["risk_per_trade_pct"] == 1.5
+
+    # Sector Rotation RRG API
+    resp_sec = client.get("/api/v1/market/sector-rotation")
+    assert resp_sec.status_code == 200
+    sec_data = resp_sec.json()
+    assert len(sec_data["sectors"]) >= 6
+    assert "leading_count" in sec_data
+    assert "lagging_count" in sec_data
+
+    # Execution & Sector Rotation Action Triggers
+    resp_act_exec = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "CALCULATE_EXECUTION_LEVELS"},
+    )
+    assert resp_act_exec.status_code == 200
+    assert resp_act_exec.json()["status"] == "SUCCESS"
+
+    resp_act_sec = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "REFRESH_SECTOR_ROTATION"},
+    )
+    assert resp_act_sec.status_code == 200
+    assert resp_act_sec.json()["status"] == "SUCCESS"
+
     # Context handover endpoint
     resp_ctx = client.get("/context")
     assert resp_ctx.status_code == 200

@@ -215,6 +215,8 @@
           <button class="suite-tab" data-tab="tab-alerts">🔔 Sinyal & Peringatan</button>
           <button class="suite-tab" data-tab="tab-orderbook">📖 Orderbook L2 Depth</button>
           <button class="suite-tab" data-tab="tab-backtest">🏆 Walk-Forward Backtest</button>
+          <button class="suite-tab" data-tab="tab-execution">🎯 Target & Eksekusi</button>
+          <button class="suite-tab" data-tab="tab-sectors">🔄 Rotasi Sektor RRG</button>
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
 
@@ -1033,6 +1035,113 @@
               <!-- Injected SVG / Canvas via JavaScript -->
             </div>
           </div>
+        <!-- Tab: Quantitative Trade Execution & Conformal Targets -->
+        <div class="tab-pane" id="tab-execution">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Risk-Reward Ratio Target</span>
+              <div class="big-score up" id="exec-rr-ratio">2.85 : 1</div>
+              <span class="score-sub" id="exec-status-badge">HIGH CONVICTION SETUP</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Matriks Eksekusi Kuantitatif & Target Take-Profit Asimetris</span>
+              <p id="exec-verdict-txt">Rencana perdagangan institusional mengintegrasikan batas zona beli (entry zone), stop-loss berbasis ATR, dan tiga target take-profit berbobot probabilitas.</p>
+              <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap;">
+                <span class="badge-status-pill" id="exec-entry-pill">ENTRY: Rp 10,400 - 10,475</span>
+                <span class="badge-status-pill danger" id="exec-sl-pill">SL: Rp 10,125 (-3.11%)</span>
+                <span class="badge-status-pill" id="exec-sizing-pill">POSISI: 65 lot (Rp 67.9 jt)</span>
+                <button class="btn-action-primary" id="btn-refresh-execution" style="margin-left: auto;">
+                  <span class="icon">🔄</span> Hitung Ulang Target
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multi-Horizon TP Ladder Cards Grid -->
+          <div class="quant-grid" style="margin-top: 18px;">
+            <div class="quant-card">
+              <div class="qc-head">
+                <span class="qc-title" id="tp1-title">TP1 (Konservatif / Parsial)</span>
+                <span class="status-pill online">Prob: 78%</span>
+              </div>
+              <div class="qc-body">
+                <div class="big-score up" id="tp1-price" style="font-size: 1.5rem;">Rp 10,750</div>
+                <div style="font-size: 11px; color: #00e676; font-weight: 700; margin: 4px 0;" id="tp1-gain">+2.87% Potensi Cuan</div>
+                <p id="tp1-desc" style="font-size: 11px; color: var(--text-secondary);">Kunci keuntungan parsial (alokasi 40%) dan geser stop-loss ke titik impas (break-even).</p>
+              </div>
+            </div>
+
+            <div class="quant-card" style="border-color: rgba(0, 229, 255, 0.4);">
+              <div class="qc-head">
+                <span class="qc-title" id="tp2-title" style="color: #00e5ff;">TP2 (Target Utama Swing)</span>
+                <span class="status-pill" style="background: rgba(0,229,255,0.2); color: #00e5ff;">Prob: 59%</span>
+              </div>
+              <div class="qc-body">
+                <div class="big-score up" id="tp2-price" style="font-size: 1.5rem; color: #00e5ff;">Rp 11,050</div>
+                <div style="font-size: 11px; color: #00e5ff; font-weight: 700; margin: 4px 0;" id="tp2-gain">+5.74% Potensi Cuan</div>
+                <p id="tp2-desc" style="font-size: 11px; color: var(--text-secondary);">Target utama multi-day swing berdasarkan batas atas interval keyakinan conformal 80%.</p>
+              </div>
+            </div>
+
+            <div class="quant-card" style="border-color: rgba(255, 213, 79, 0.4);">
+              <div class="qc-head">
+                <span class="qc-title" id="tp3-title" style="color: #ffd54f;">TP3 (Trend Runner Breakout)</span>
+                <span class="status-pill" style="background: rgba(255,213,79,0.2); color: #ffd54f;">Prob: 34%</span>
+              </div>
+              <div class="qc-body">
+                <div class="big-score up" id="tp3-price" style="font-size: 1.5rem; color: #ffd54f;">Rp 11,425</div>
+                <div style="font-size: 11px; color: #ffd54f; font-weight: 700; margin: 4px 0;" id="tp3-gain">+9.33% Potensi Cuan</div>
+                <p id="tp3-desc" style="font-size: 11px; color: var(--text-secondary);">Gunakan trailing stop dinamis mengikuti garis MA20 untuk memaksimalkan reli ekstrem.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Sector Rotation & Relative Momentum (RRG) -->
+        <div class="tab-pane" id="tab-sectors">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Sektor Pemimpin Pasar (Leading)</span>
+              <div class="big-score up" style="font-size: 1.25rem; margin-top: 8px;" id="rrg-leading-badge">FINANCIALS & BASIC MATERIALS</div>
+              <span class="score-sub" id="rrg-bench-txt">Benchmark: IHSG 7,742.50 (+0.68%)</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Matriks Rotasi Sektor & Relative Strength Momentum (RRG)</span>
+              <p id="rrg-summary-p">Memetakan rotasi modal institusional lintas 7 sektor BEI ke dalam 4 kuadran: Leading (akselerasi kuat), Weakening (mulai jenuh), Lagging (tertekan), dan Improving (pemulihan momentum).</p>
+              <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center; flex-wrap: wrap;">
+                <span class="badge-status-pill" style="color: #00e676; border-color: #00e67644;">Kuadran Leading: Akumulasi</span>
+                <span class="badge-status-pill" style="color: #00e5ff; border-color: #00e5ff44;">Kuadran Improving: Cicil Beli</span>
+                <span class="badge-status-pill" style="color: #ff5252; border-color: #ff525244;">Kuadran Lagging: Hindari</span>
+                <button class="btn-action-primary" id="btn-refresh-sectors" style="margin-left: auto;">
+                  <span class="icon">🔄</span> Pindai Rotasi Sektor
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sector Rotation Table Leaderboard -->
+          <div class="table-card" style="margin-top: 18px;">
+            <div class="table-card-header">
+              <h4>KLASEMEN ROTASI SEKTOR BEI (RELATIVE STRENGTH VS IHSG)</h4>
+              <span class="sub">Diurutkan berdasarkan Relative Strength Ratio (RS-Ratio) dan momentum modal asing</span>
+            </div>
+            <div class="table-wrap">
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th>Sektor & Emiten Penggerak</th>
+                    <th>Kuadran RRG</th>
+                    <th>RS-Ratio</th>
+                    <th>RS-Momentum</th>
+                    <th>Net Foreign Flow</th>
+                    <th>Kinerja 1 Bulan</th>
+                    <th>Panduan Tindakan Institusional</th>
+                  </tr>
+                </thead>
+                <tbody id="rrg-sectors-body"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- Tab 7: Web Action Console -->
@@ -1153,6 +1262,20 @@
                 <div class="btn-text">
                   <strong>Simulasi Antrean Orderbook L2 10-Depth</strong>
                   <span>Evaluasi tekanan bid-ask, dinding orderbook, dan risiko spoofing</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="CALCULATE_EXECUTION_LEVELS">
+                <span class="btn-icon">🎯</span>
+                <div class="btn-text">
+                  <strong>Hitung Ulang Rencana Eksekusi & Target TP/SL</strong>
+                  <span>Kalkulasi entry zone, trailing ATR stop-loss, dan rasio R:R</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="REFRESH_SECTOR_ROTATION">
+                <span class="btn-icon">🔄</span>
+                <div class="btn-text">
+                  <strong>Pindai Rotasi Sektor & Relative Momentum RRG</strong>
+                  <span>Analisis aliran modal institusional lintas 7 sektor BEI</span>
                 </div>
               </button>
             </div>
