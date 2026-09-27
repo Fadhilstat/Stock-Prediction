@@ -42,21 +42,28 @@ log "Synchronizing workspace..."
 
 git reset --hard origin/main
 
-# Resolve docker compose binary
+# Resolve docker binary and compose
+DOCKER_BIN="docker"
 DOCKER_COMPOSE="docker compose"
 if ! docker info &> /dev/null; then
     if sudo docker info &> /dev/null; then
+        DOCKER_BIN="sudo docker"
         DOCKER_COMPOSE="sudo docker compose"
     fi
 fi
+
+log "Purging any lingering or conflicting containers..."
+${DOCKER_BIN} rm -f ruang_risiko_idx_app 2>/dev/null || true
+${DOCKER_BIN} ps -a --filter "name=ruang_risiko_idx" -q | xargs -r ${DOCKER_BIN} rm -f 2>/dev/null || true
 
 log "Rebuilding and restarting app container with FastAPI engine..."
 ${DOCKER_COMPOSE} rm -f -s app 2>/dev/null || true
 ${DOCKER_COMPOSE} up -d --force-recreate --build app
 
-# Reconnect to edge Caddy network if Caddy is present
-if docker ps | grep -q ' caddy$'; then
-    docker network connect ruang-risiko-idx_rridx_network caddy 2>/dev/null || true
+# Ensure edge Caddy network connection
+if ${DOCKER_BIN} ps | grep -q 'caddy'; then
+    ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network signalflow-production-caddy-1 2>/dev/null || true
+    ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network ruang_risiko_idx_proxy 2>/dev/null || true
 fi
 
 NEW_HASH=$(git rev-parse HEAD)

@@ -79,7 +79,7 @@ if command -v systemctl &> /dev/null; then
 fi
 
 # Run auto-update with force to ensure the latest FastAPI container is up immediately
-/bin/bash "${TARGET_DIR}/deploy/auto_update.sh" --force || true
+$SUDO /bin/bash "${TARGET_DIR}/deploy/auto_update.sh" --force || true
 
 echo "=========================================================="
 echo "SUCCESS: Auto-updater is ACTIVE on the VPS."
