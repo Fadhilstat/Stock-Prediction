@@ -62,12 +62,21 @@ ${DOCKER_COMPOSE} up -d --build app
 
 # Ensure edge Caddy network connection, inject routing block if missing, and flush DNS
 if ${DOCKER_BIN} ps | grep -q 'caddy'; then
+    # Connect Caddy to RRIDX network
     ${DOCKER_BIN} network connect rridx_network signalflow-production-caddy-1 2>/dev/null || true
     ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network signalflow-production-caddy-1 2>/dev/null || true
 
+    # Connect RRIDX app container to Caddy networks for bidirectional discovery
+    CADDY_NETWORKS=$(${DOCKER_BIN} inspect -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' signalflow-production-caddy-1 2>/dev/null || true)
+    for cnet in ${CADDY_NETWORKS}; do
+        ${DOCKER_BIN} network connect "${cnet}" ruang_risiko_idx_app 2>/dev/null || true
+    done
+
     CADDY_HOST_FILE=$(${DOCKER_BIN} inspect -f '{{range .Mounts}}{{if eq .Destination "/etc/caddy/Caddyfile"}}{{.Source}}{{end}}{{end}}' signalflow-production-caddy-1 2>/dev/null || true)
-    if [ -n "${CADDY_HOST_FILE}" ] && [ -f "${CADDY_HOST_FILE}" ] && ! grep -q "rridx.fadhilrusydi.com" "${CADDY_HOST_FILE}"; then
-        printf "\n\nrridx.fadhilrusydi.com {\n    encode zstd gzip\n    reverse_proxy ruang_risiko_idx_app:8501\n}\n" >> "${CADDY_HOST_FILE}"
+    if [ -n "${CADDY_HOST_FILE}" ] && [ -f "${CADDY_HOST_FILE}" ]; then
+        if ! grep -q "rridx.fadhilrusydi.com" "${CADDY_HOST_FILE}"; then
+            printf "\n\nrridx.fadhilrusydi.com {\n    encode zstd gzip\n    reverse_proxy ruang_risiko_idx_app:8501 172.17.0.1:8501 {\n        lb_try_duration 3s\n    }\n}\n" >> "${CADDY_HOST_FILE}"
+        fi
     fi
 
     ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload 2>/dev/null || true
