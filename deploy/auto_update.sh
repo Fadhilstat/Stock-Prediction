@@ -74,9 +74,25 @@ if ${DOCKER_BIN} ps | grep -q 'caddy'; then
 
     CADDY_HOST_FILE=$(${DOCKER_BIN} inspect -f '{{range .Mounts}}{{if eq .Destination "/etc/caddy/Caddyfile"}}{{.Source}}{{end}}{{end}}' signalflow-production-caddy-1 2>/dev/null || true)
     if [ -n "${CADDY_HOST_FILE}" ] && [ -f "${CADDY_HOST_FILE}" ]; then
-        if ! grep -q "rridx.fadhilrusydi.com" "${CADDY_HOST_FILE}"; then
-            printf "\n\nrridx.fadhilrusydi.com {\n    encode zstd gzip\n    reverse_proxy ruang_risiko_idx_app:8501 172.17.0.1:8501 {\n        lb_try_duration 3s\n    }\n}\n" >> "${CADDY_HOST_FILE}"
-        fi
+        python3 -c "
+import sys, re
+path = sys.argv[1]
+try:
+    with open(path, 'r') as f:
+        content = f.read()
+    target_block = '''rridx.fadhilrusydi.com {
+    encode zstd gzip
+    reverse_proxy 172.17.0.1:8501
+}'''
+    if 'rridx.fadhilrusydi.com' in content:
+        content = re.sub(r'rridx\.fadhilrusydi\.com\s*\{[^}]*\}', target_block, content)
+    else:
+        content = content.rstrip() + '\n\n' + target_block + '\n'
+    with open(path, 'w') as f:
+        f.write(content)
+except Exception:
+    sys.exit(0)
+" "${CADDY_HOST_FILE}" 2>/dev/null || true
     fi
 
     ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload 2>/dev/null || true
