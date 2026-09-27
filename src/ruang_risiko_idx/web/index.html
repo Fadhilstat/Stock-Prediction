@@ -172,6 +172,7 @@
         <div class="suite-tabs">
           <button class="suite-tab active" data-tab="tab-sentiment">📰 Sentimen & Berita</button>
           <button class="suite-tab" data-tab="tab-bandar">📊 Broker Summary (Bandarmology)</button>
+          <button class="suite-tab" data-tab="tab-passport">🛡️ Pre-Buy Passport</button>
           <button class="suite-tab" data-tab="tab-hmm">🧠 HMM Regime</button>
           <button class="suite-tab" data-tab="tab-dcc">🌐 DCC-GARCH Contagion</button>
           <button class="suite-tab" data-tab="tab-copula">📐 Copula EVT Tail Risk</button>
@@ -179,6 +180,7 @@
           <button class="suite-tab" data-tab="tab-spillover">⚡ Diebold-Yilmaz Spillover</button>
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
+
 
 
         <!-- Tab 1: Sentiment & Macro -->
@@ -237,8 +239,59 @@
           </div>
         </div>
 
-        <!-- Tab 3: HMM Regime -->
+        <!-- Tab 3: Pre-Buy Risk Passport -->
+        <div class="tab-pane" id="tab-passport">
+          <div class="split-row">
+            <div class="panel-card">
+              <div class="card-header">
+                <h3>SIMULATOR PASSPORT PRA-EKSEKUSI</h3>
+                <span class="sub">Validasi matematis batas risiko sebelum submit order</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div>
+                  <label class="m-label">MODAL TRADING (IDR)</label>
+                  <input type="number" id="pass-capital" value="50000000" style="width:100%;margin-top:4px;background:var(--bg-primary);border:1px solid var(--border-color);color:var(--text-bright);padding:8px;border-radius:4px;font-family:var(--font-mono);">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                  <div>
+                    <label class="m-label">HARGA ENTRY (RP)</label>
+                    <input type="number" id="pass-entry" value="10450" style="width:100%;margin-top:4px;background:var(--bg-primary);border:1px solid var(--border-color);color:var(--text-bright);padding:8px;border-radius:4px;font-family:var(--font-mono);">
+                  </div>
+                  <div>
+                    <label class="m-label">STOP LOSS (RP)</label>
+                    <input type="number" id="pass-sl" value="10100" style="width:100%;margin-top:4px;background:var(--bg-primary);border:1px solid var(--border-color);color:var(--text-bright);padding:8px;border-radius:4px;font-family:var(--font-mono);">
+                  </div>
+                </div>
+                <div>
+                  <label class="m-label">TARGET PROFIT (RP)</label>
+                  <input type="number" id="pass-target" value="11200" style="width:100%;margin-top:4px;background:var(--bg-primary);border:1px solid var(--border-color);color:var(--text-bright);padding:8px;border-radius:4px;font-family:var(--font-mono);">
+                </div>
+                <button class="btn-action-primary" id="btn-run-passport" style="margin-top:8px;width:100%;justify-content:center;padding:10px;">
+                  🚀 Evaluasi Passport & Hitung Posisi
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-card" id="passport-result-card">
+              <div class="card-header">
+                <h3>SERTIFIKAT PASSPORT RISIKO</h3>
+                <span class="badge-sector" id="pass-cert-id">PASSPORT-CLEARED</span>
+              </div>
+              <div class="sentiment-score-card" style="margin-bottom:12px;">
+                <div class="big-score up" id="pass-decision">PASSPORT APPROVED</div>
+                <span class="score-sub" id="pass-summary-text">Order diverifikasi dan disetujui secara matematis.</span>
+              </div>
+              <div class="metric-row"><span>Ukuran Posisi Optimal:</span><strong class="up" id="pass-lots">14 Lot (Rp 14,630,000)</strong></div>
+              <div class="metric-row"><span>Risk-Reward Ratio:</span><strong id="pass-rrr">2.14 : 1</strong></div>
+              <div class="metric-row"><span>Capital at Risk:</span><strong id="pass-risk-pct">0.98% / Portofolio</strong></div>
+              <div class="metric-row"><span>Bandarmology Status:</span><strong class="up" id="pass-bandar">ACCUMULATION</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: HMM Regime -->
         <div class="tab-pane" id="tab-hmm">
+
 
           <div class="quant-grid">
             <div class="quant-info-card">

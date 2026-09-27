@@ -22,17 +22,28 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSentiment();
   loadSpillover();
   loadAuditHistory();
+  checkSyncStatus();
 
   // Periodic live fallback refresh every 4 seconds
   setInterval(() => {
     loadOrderbook(state.currentTicker, true);
   }, 4000);
+
+  // Periodic Git sync status check every 30 seconds
+  setInterval(checkSyncStatus, 30000);
 });
 
 
 function initEventListeners() {
+  // Pre-Buy Passport button
+  const passBtn = document.getElementById('btn-run-passport');
+  if (passBtn) {
+    passBtn.addEventListener('click', runPassportEvaluation);
+  }
+
   // Timeframe pills
   const pills = document.querySelectorAll('.timeframe-pills .pill');
+
   pills.forEach((pill) => {
     pill.addEventListener('click', (e) => {
       pills.forEach((p) => p.classList.remove('active'));
@@ -574,4 +585,57 @@ function showToast(msg) {
     toast.remove();
   }, 3500);
 }
+
+async function runPassportEvaluation() {
+  const cap = parseFloat(document.getElementById('pass-capital').value) || 50000000;
+  const entry = parseFloat(document.getElementById('pass-entry').value) || 10450;
+  const sl = parseFloat(document.getElementById('pass-sl').value) || 10100;
+  const tp = parseFloat(document.getElementById('pass-target').value) || 11200;
+
+  showToast('Mengevaluasi Pre-Buy Passport...');
+
+  try {
+    const res = await fetch('/api/v1/passport/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ticker: state.currentTicker,
+        capital_idr: cap,
+        entry_price: entry,
+        stop_loss_price: sl,
+        target_price: tp,
+      }),
+    });
+    if (!res.ok) return;
+    const cert = await res.json();
+
+    document.getElementById('pass-cert-id').innerText = cert.passport_id;
+    const decEl = document.getElementById('pass-decision');
+    decEl.innerText = cert.decision.replace(/_/g, ' ');
+    decEl.className = `big-score ${cert.decision === 'PASSPORT_APPROVED' ? 'up' : (cert.decision === 'PASSPORT_REJECTED' ? 'down' : 'tag-warn')}`;
+
+    document.getElementById('pass-summary-text').innerText = cert.summary_message;
+    document.getElementById('pass-lots').innerText = `${cert.suggested_lots} Lot (Rp ${cert.total_position_idr.toLocaleString('id-ID')})`;
+    document.getElementById('pass-rrr').innerText = `${cert.risk_reward_ratio}:1`;
+    document.getElementById('pass-risk-pct').innerText = `${cert.capital_at_risk_pct}% / Portofolio`;
+    document.getElementById('pass-bandar').innerText = cert.bandar_regime;
+
+    showToast(`Passport: ${cert.decision}`);
+  } catch (err) {
+    showToast(`Error evaluasi: ${err.message}`);
+  }
+}
+
+async function checkSyncStatus() {
+  try {
+    const res = await fetch('/api/v1/system/sync-status');
+    if (!res.ok) return;
+    const data = await res.json();
+    const tag = document.querySelector('.domain-tag');
+    if (tag && data.local_commit) {
+      tag.innerHTML = `rridx.fadhilrusydi.com • <span style="color:var(--color-up);font-weight:700">${data.local_commit}</span>`;
+    }
+  } catch (e) {}
+}
+
 

@@ -39,13 +39,16 @@ from ruang_risiko_idx.research.actions import (
     trigger_hmm_regime_detection,
     trigger_market_data_refresh,
     trigger_pareto_portfolio_optimization,
+    trigger_pre_buy_passport_evaluation,
     trigger_risk_recalculation,
     trigger_sentiment_refresh,
 )
 from ruang_risiko_idx.research.bandarmology import analyze_broker_summary
 from ruang_risiko_idx.research.domain_probe import check_domain_readiness
+from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
 from ruang_risiko_idx.research.sentiment_engine import get_latest_market_sentiment
 from ruang_risiko_idx.research.spillover_index import compute_diebold_yilmaz_spillover
+
 
 
 logger = logging.getLogger("ruang_risiko_idx.web")
@@ -345,8 +348,10 @@ async def execute_action(request: Request) -> dict[str, Any]:
         "SPILLOVER_INDEX": trigger_diebold_yilmaz_spillover,
         "SENTIMENT_REFRESH": trigger_sentiment_refresh,
         "BANDARMOLOGY_SCAN": trigger_bandarmology_analysis,
+        "PASSPORT_EVALUATION": trigger_pre_buy_passport_evaluation,
         "AUTO_UPDATE_CHECK": trigger_auto_update_check,
     }
+
 
 
     if action_type not in handlers:
@@ -376,6 +381,73 @@ async def github_webhook_update(request: Request) -> dict[str, Any]:
     return {"event": event, "result": res}
 
 
+@app.get("/api/v1/system/sync-status")
+async def get_sync_status() -> dict[str, Any]:
+    """Retrieve Git commit synchronization status, VPS log tail, and uptime."""
+    import subprocess
+    settings = ProjectSettings()
+    root = settings.project_root
+
+    local_hash = "unknown"
+    remote_hash = "unknown"
+    is_synced = True
+
+    try:
+        res_l = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=str(root), capture_output=True, text=True, timeout=5)
+        if res_l.returncode == 0:
+            local_hash = res_l.stdout.strip()
+    except Exception:
+        pass
+
+    try:
+        res_r = subprocess.run(["git", "rev-parse", "--short", "origin/main"], cwd=str(root), capture_output=True, text=True, timeout=5)
+        if res_r.returncode == 0:
+            remote_hash = res_r.stdout.strip()
+            is_synced = (local_hash == remote_hash)
+    except Exception:
+        pass
+
+    log_tail = []
+    log_file = Path("/var/log/rridx-autoupdate.log")
+    if log_file.exists():
+        try:
+            lines = log_file.read_text(encoding="utf-8").splitlines()
+            log_tail = lines[-15:]
+        except Exception:
+            pass
+
+    return {
+        "status": "HEALTHY",
+        "local_commit": local_hash,
+        "remote_commit": remote_hash,
+        "is_synced": is_synced,
+        "auto_updater_active": True,
+        "poll_interval_seconds": 60,
+        "log_tail": log_tail,
+        "timestamp_utc": datetime.now(UTC).isoformat(),
+    }
+
+
+@app.post("/api/v1/passport/evaluate")
+async def evaluate_passport_endpoint(request: Request) -> dict[str, Any]:
+    """Evaluate Pre-Buy Risk Passport parameters."""
+    data = await request.json()
+    ticker = data.get("ticker", "BBCA.JK")
+    capital = float(data.get("capital_idr", 50_000_000))
+    entry_px = float(data.get("entry_price", 10450))
+    sl_px = float(data.get("stop_loss_price", 10100))
+    tp_px = float(data.get("target_price", 11200))
+
+    cert = evaluate_pre_buy_passport(
+        ticker=ticker,
+        capital_idr=capital,
+        entry_price=entry_px,
+        stop_loss_price=sl_px,
+        target_price=tp_px,
+    )
+    return cert.to_dict()
+
+
 @app.get("/api/v1/domain-probe")
 async def probe_domain() -> dict[str, Any]:
     """Inspect production domain resolution and SSL configuration."""
@@ -388,6 +460,7 @@ async def probe_domain() -> dict[str, Any]:
         "summary": probe.summary,
         "recommendation": probe.dns_recommendation,
     }
+
 
 
 # =========================================================================

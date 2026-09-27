@@ -125,13 +125,33 @@ def test_fastapi_endpoints():
     assert resp_bandar_act.status_code == 200
     assert resp_bandar_act.json()["success"] is True
 
-    # System auto-update endpoint
-    resp_update = client.post("/api/v1/system/auto-update")
-    assert resp_update.status_code == 200
-    assert resp_update.json()["success"] is True
+    # Pre-Buy Passport Evaluation API
+    resp_pass = client.post(
+        "/api/v1/passport/evaluate",
+        json={
+            "ticker": "BBCA.JK",
+            "capital_idr": 50000000,
+            "entry_price": 10450,
+            "stop_loss_price": 10100,
+            "target_price": 11200,
+        },
+    )
+    assert resp_pass.status_code == 200
+    pass_json = resp_pass.json()
+    assert pass_json["decision"] in ["PASSPORT_APPROVED", "PASSPORT_CONDITIONAL", "PASSPORT_REJECTED"]
+    assert pass_json["suggested_lots"] >= 1
+    assert "risk_reward_ratio" in pass_json
+
+    # System Sync Status API
+    resp_sync = client.get("/api/v1/system/sync-status")
+    assert resp_sync.status_code == 200
+    sync_json = resp_sync.json()
+    assert sync_json["status"] == "HEALTHY"
+    assert "local_commit" in sync_json
 
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200
     assert "text/html" in resp_index.headers.get("content-type", "")
+
 

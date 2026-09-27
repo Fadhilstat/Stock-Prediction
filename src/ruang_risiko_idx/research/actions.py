@@ -739,6 +739,47 @@ def trigger_bandarmology_analysis(ticker: str = "BBCA.JK") -> dict[str, Any]:
     }
 
 
+def trigger_pre_buy_passport_evaluation(
+    ticker: str = "BBCA.JK",
+    capital_idr: float = 50_000_000,
+    entry_price: float = 10450,
+    stop_loss_price: float = 10100,
+    target_price: float = 11200,
+) -> dict[str, Any]:
+    """Execute pre-buy passport evaluation and position sizing."""
+    import time
+    from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
+
+    start = time.perf_counter()
+    cert = evaluate_pre_buy_passport(
+        ticker=ticker,
+        capital_idr=capital_idr,
+        entry_price=entry_price,
+        stop_loss_price=stop_loss_price,
+        target_price=target_price,
+    )
+    elapsed = (time.perf_counter() - start) * 1000.0
+
+    entry = record_action(
+        action_type="PASSPORT_EVALUATION",
+        status="SUCCESS",
+        summary_message=cert.summary_message,
+        duration_ms=elapsed,
+    )
+    return {
+        "success": True,
+        "passport_id": cert.passport_id,
+        "decision": cert.decision,
+        "confidence_score": cert.confidence_score,
+        "suggested_lots": cert.suggested_lots,
+        "total_position_idr": cert.total_position_idr,
+        "message": cert.summary_message,
+        "action_id": entry.action_id,
+        "certificate": cert.to_dict(),
+    }
+
+
+
 
 
 
