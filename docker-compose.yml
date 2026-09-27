@@ -14,14 +14,11 @@ services:
       - ./data:/app/data
       - ./reports:/app/reports
     ports:
-      - "127.0.0.1:8501:8501"
+      - "8501:8501"
     expose:
       - "8501"
     networks:
-      rridx_network:
-        aliases:
-          - ruang_risiko_idx_app
-          - app
+      - default
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/health"]
       interval: 30s
@@ -29,32 +26,6 @@ services:
       retries: 3
       start_period: 15s
 
-
-  caddy:
-    image: caddy:2-alpine
-    container_name: ruang_risiko_idx_proxy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      - DOMAIN=${CUSTOM_DOMAIN:-rridx.fadhilrusydi.com}
-      - TLS_EMAIL=${TLS_EMAIL:-admin@fadhilrusydi.com}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      app:
-        condition: service_healthy
-    networks:
-      - rridx_network
-
-volumes:
-  caddy_data:
-  caddy_config:
-
 networks:
-  rridx_network:
-    name: ruang-risiko-idx_rridx_network
-    driver: bridge
+  default:
+    name: rridx_network

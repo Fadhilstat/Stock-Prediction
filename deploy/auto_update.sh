@@ -54,18 +54,14 @@ if ! docker info &> /dev/null; then
     fi
 fi
 
-log "Purging any lingering or conflicting containers..."
+log "Recreating app container with FastAPI engine..."
 ${DOCKER_BIN} rm -f ruang_risiko_idx_app 2>/dev/null || true
-${DOCKER_BIN} ps -a --filter "name=ruang_risiko_idx" -q | xargs -r ${DOCKER_BIN} rm -f 2>/dev/null || true
-
-log "Rebuilding and restarting app container with FastAPI engine..."
-${DOCKER_COMPOSE} rm -f -s app 2>/dev/null || true
 ${DOCKER_COMPOSE} up -d --force-recreate --build app
 
 # Ensure edge Caddy network connection
 if ${DOCKER_BIN} ps | grep -q 'caddy'; then
+    ${DOCKER_BIN} network connect rridx_network signalflow-production-caddy-1 2>/dev/null || true
     ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network signalflow-production-caddy-1 2>/dev/null || true
-    ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network ruang_risiko_idx_proxy 2>/dev/null || true
 fi
 
 NEW_HASH=$(git rev-parse HEAD)
