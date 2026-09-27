@@ -210,6 +210,7 @@
           <button class="suite-tab" data-tab="tab-copula">📐 Copula EVT Tail Risk</button>
           <button class="suite-tab" data-tab="tab-pareto">🎯 Pareto Portfolio</button>
           <button class="suite-tab" data-tab="tab-spillover">⚡ Diebold-Yilmaz Spillover</button>
+          <button class="suite-tab" data-tab="tab-stress">🧪 Stress Lab & Slippage</button>
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
 
@@ -703,6 +704,89 @@
           </div>
         </div>
 
+        <!-- Tab: Stress Lab & Liquidity Shock Simulator -->
+        <div class="tab-pane" id="tab-stress">
+          <div class="sentiment-summary-grid">
+            <div class="sentiment-score-card">
+              <span class="card-title">Skor Kerentanan Gabungan (Composite Vulnerability)</span>
+              <div class="big-score down" id="stress-vuln-score">28.4</div>
+              <span class="score-sub" id="stress-vuln-rating">RESILIENCE: MODERATE DEFENSIVE</span>
+            </div>
+            <div class="sentiment-macro-card">
+              <span class="card-title">Protokol Uji Stres Krisis Sistemik</span>
+              <p>Menguji ketahanan portofolio saham terhadap 4 guncangan krisis makro dan menghitung biaya slippage non-linear orderbook.</p>
+              <p><strong>Aset Terpilih:</strong> <span id="stress-asset-label">BBCA.JK</span></p>
+            </div>
+          </div>
+
+          <!-- Orderbook Liquidity Impact Calculator -->
+          <div class="runtime-config-card" style="margin-top: 15px; border-left: 3px solid #00e5ff;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h5 style="color: #00e5ff; margin: 0;">KALKULATOR SLIPPAGE & DAMPAK LIKUIDITAS ORDERBOOK (NON-LINEAR SQUARE ROOT LAW)</h5>
+              <span class="status-pill status-healthy" id="liquidity-route-badge" style="background: rgba(0, 229, 255, 0.25); color: #00e5ff;">DIRECT MARKET</span>
+            </div>
+            <div class="config-grid" style="margin-top: 12px;">
+              <div class="config-item">
+                <label for="sim-order-size">Nilai Transaksi (IDR):</label>
+                <input type="number" id="sim-order-size" class="form-input" min="10000000" max="50000000000" step="50000000" value="250000000">
+              </div>
+              <div class="config-item" style="display: flex; align-items: flex-end; gap: 8px;">
+                <button type="button" class="btn-timeframe" onclick="document.getElementById('sim-order-size').value=50000000; simulateLiquidity();">50 Juta</button>
+                <button type="button" class="btn-timeframe" onclick="document.getElementById('sim-order-size').value=250000000; simulateLiquidity();">250 Juta</button>
+                <button type="button" class="btn-timeframe" onclick="document.getElementById('sim-order-size').value=1000000000; simulateLiquidity();">1 Miliar</button>
+                <button type="button" class="btn-timeframe" onclick="document.getElementById('sim-order-size').value=5000000000; simulateLiquidity();">5 Miliar</button>
+              </div>
+            </div>
+            <div class="config-actions" style="margin-top: 12px;">
+              <button class="btn-action-primary" id="btn-run-liquidity-sim">
+                <span class="icon">⚡</span> Simulasikan Dampak Eksekusi
+              </button>
+            </div>
+            <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); margin-top: 14px;">
+              <div class="metric-box">
+                <span class="m-label">Estimasi Harga Eksekusi</span>
+                <span class="m-value" id="sim-fill-price" style="color: #00e5ff;">Rp 10,475</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Slippage Eksekusi</span>
+                <span class="m-value down" id="sim-slippage-bps">12.4 bps</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Biaya Dampak Pasar (IDR)</span>
+                <span class="m-value down" id="sim-impact-cost">Rp 310,000</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Waktu Pemulihan Antrian (t½)</span>
+                <span class="m-value" id="sim-half-life" style="color: #ffd54f;">18.5 detik</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Canonical Macro Scenarios Matrix -->
+          <div class="panel-card" style="margin-top: 15px;">
+            <div class="card-header">
+              <h3>SIMULASI 4 SKENARIO KRISIS MAKROEKONOMI KANONIKAL</h3>
+            </div>
+            <div class="table-wrap">
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th>Skenario Krisis</th>
+                    <th>Deskripsi Guncangan</th>
+                    <th>Proyeksi Harga</th>
+                    <th>Ekspektasi Return %</th>
+                    <th>VaR 99% Terkondisi</th>
+                    <th>ES 99% Terkondisi</th>
+                    <th>Rating Ketahanan</th>
+                    <th>Rekomendasi Lindung Nilai (Hedging)</th>
+                  </tr>
+                </thead>
+                <tbody id="stress-scenarios-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <!-- Tab 7: Web Action Console -->
         <div class="tab-pane" id="tab-actions">
           <div class="actions-console-card">
@@ -765,6 +849,34 @@
                 <div class="btn-text">
                   <strong>Kalibrasi Ulang Foundation Model HF</strong>
                   <span>Re-evaluasi Amazon Chronos-T5 & Informer minimum error</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="FINBERT_CALIBRATE">
+                <span class="btn-icon">🔬</span>
+                <div class="btn-text">
+                  <strong>Kalibrasi FinBERT NLP & Entropi Shannon</strong>
+                  <span>Evaluasi ulang tingkat polarisasi dan konsensus berita finansial</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="BROKER_NETWORK_SCAN">
+                <span class="btn-icon">🕸️</span>
+                <div class="btn-text">
+                  <strong>Pindai Matriks Jaringan Broker Institusional</strong>
+                  <span>Deteksi Smart Money Index dan penyerapan likuiditas ritel</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="STRESS_TEST_SCENARIO">
+                <span class="btn-icon">🧪</span>
+                <div class="btn-text">
+                  <strong>Jalankan Uji Stres Krisis Makro</strong>
+                  <span>Simulasi guncangan The Fed, komoditas, dan perbankan sistemik</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="LIQUIDITY_SURFACE_CALIBRATE">
+                <span class="btn-icon">🌊</span>
+                <div class="btn-text">
+                  <strong>Kalibrasi Permukaan Likuiditas Orderbook</strong>
+                  <span>Estimasi parameter dampak pasar non-linear & slippage</span>
                 </div>
               </button>
             </div>

@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHfModelBenchmark(state.currentTicker);
   loadFinBERTSentiment(state.currentTicker);
   loadBrokerNetwork(state.currentTicker);
+  loadStressTest(state.currentTicker);
   initWebSocket(state.currentTicker);
   loadSentiment();
   loadSpillover();
@@ -123,6 +124,12 @@ function initEventListeners() {
     runHfBtn.addEventListener('click', runCustomHfForecast);
   }
 
+  // Liquidity Simulator Button
+  const simLiqBtn = document.getElementById('btn-run-liquidity-sim');
+  if (simLiqBtn) {
+    simLiqBtn.addEventListener('click', simulateLiquidity);
+  }
+
   // Ticker search filter
   const searchInput = document.getElementById('ticker-search');
   if (searchInput) {
@@ -214,6 +221,7 @@ function selectTicker(ticker) {
   loadHfModelBenchmark(ticker);
   loadFinBERTSentiment(ticker);
   loadBrokerNetwork(ticker);
+  loadStressTest(ticker);
   initWebSocket(ticker);
 
   const hmmLabel = document.getElementById('hmm-ticker-label');
@@ -650,6 +658,9 @@ async function executeAction(actionType) {
       }
       if (actionType === 'HF_MODEL_RECALIBRATE') {
         loadHfModelBenchmark(state.currentTicker);
+      }
+      if (actionType === 'STRESS_TEST_SCENARIO' || actionType === 'LIQUIDITY_SURFACE_CALIBRATE') {
+        loadStressTest(state.currentTicker);
       }
     } else {
       statusBox.innerHTML = `<span style="color:var(--color-down)">PERINGATAN / GAGAL:</span> ${data.message || data.detail || 'Operasi gagal'}`;
@@ -1189,6 +1200,102 @@ async function loadBrokerNetwork(ticker) {
     console.debug('Failed to load broker network', err);
   }
 }
+
+// -------------------------------------------------------------
+// Macro Stress Lab & Liquidity Shock Simulator
+// -------------------------------------------------------------
+async function loadStressTest(ticker) {
+  try {
+    const res = await fetch(`/api/v1/risk/stress-test/${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const lbl = document.getElementById('stress-asset-label');
+    if (lbl) lbl.innerText = ticker;
+
+    const vulnScore = document.getElementById('stress-vuln-score');
+    if (vulnScore) vulnScore.innerText = data.composite_vulnerability_score.toFixed(1);
+
+    const vulnRating = document.getElementById('stress-vuln-rating');
+    if (vulnRating) {
+      const score = data.composite_vulnerability_score;
+      const ratingText = score < 25 ? 'HIGH RESILIENCE (DEFENSIVE)' : score < 50 ? 'MODERATE DEFENSIVE' : 'ELEVATED VULNERABILITY';
+      vulnRating.innerText = `RESILIENCE: ${ratingText}`;
+      vulnRating.style.color = score < 35 ? '#00c076' : score < 60 ? '#ffb74d' : '#ff5252';
+    }
+
+    // Populate scenarios table
+    const scBody = document.getElementById('stress-scenarios-body');
+    if (scBody && data.scenarios) {
+      scBody.innerHTML = '';
+      data.scenarios.forEach((sc) => {
+        const tr = document.createElement('tr');
+        const isUp = sc.projected_return_pct >= 0;
+        tr.innerHTML = `
+          <td><strong>${sc.scenario_name}</strong></td>
+          <td style="font-size:11px;color:var(--text-secondary)">${sc.description}</td>
+          <td><strong>Rp ${Math.round(sc.projected_price).toLocaleString('id-ID')}</strong></td>
+          <td style="color:${isUp ? 'var(--color-up)' : 'var(--color-down)'};font-weight:700">${isUp ? '+' : ''}${sc.projected_return_pct}%</td>
+          <td style="color:#ff5252">${sc.conditional_var_99_pct}%</td>
+          <td style="color:#ff1744">${sc.conditional_es_99_pct}%</td>
+          <td><span class="status-pill" style="background:rgba(255,82,82,0.15);color:#ff8a80">${sc.resilience_rating.replace(/_/g, ' ')}</span></td>
+          <td style="font-size:11px;color:#82b1ff">${sc.hedging_recommendation}</td>
+        `;
+        scBody.appendChild(tr);
+      });
+    }
+
+    // If liquidity ladder exists, default simulate top tier
+    if (data.liquidity_ladder && data.liquidity_ladder.length > 1) {
+      updateLiquidityMetrics(data.liquidity_ladder[1]);
+    }
+  } catch (err) {
+    console.debug('Failed to load stress test', err);
+  }
+}
+
+async function simulateLiquidity() {
+  const orderInput = document.getElementById('sim-order-size');
+  const sizeIdr = orderInput ? parseFloat(orderInput.value) || 250000000 : 250000000;
+
+  try {
+    const res = await fetch('/api/v1/risk/liquidity-simulator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ticker: state.currentTicker,
+        order_size_idr: sizeIdr,
+      }),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    updateLiquidityMetrics(data);
+    showToast(`Dampak Likuiditas: ${data.slippage_bps} bps slippage`);
+  } catch (err) {
+    console.debug('Liquidity simulation failed', err);
+  }
+}
+
+function updateLiquidityMetrics(data) {
+  const fillEl = document.getElementById('sim-fill-price');
+  if (fillEl) fillEl.innerText = `Rp ${Math.round(data.expected_fill_price).toLocaleString('id-ID')}`;
+
+  const slipEl = document.getElementById('sim-slippage-bps');
+  if (slipEl) slipEl.innerText = `${data.slippage_bps} bps (${data.ticks_traversed} ticks)`;
+
+  const costEl = document.getElementById('sim-impact-cost');
+  if (costEl) costEl.innerText = `Rp ${Math.round(data.market_impact_cost_idr).toLocaleString('id-ID')}`;
+
+  const halfEl = document.getElementById('sim-half-life');
+  if (halfEl) halfEl.innerText = `${data.replenishment_half_life_seconds} detik`;
+
+  const badgeEl = document.getElementById('liquidity-route-badge');
+  if (badgeEl) {
+    badgeEl.innerText = data.execution_recommendation.replace(/_/g, ' ');
+    badgeEl.style.color = data.execution_recommendation === 'DIRECT_MARKET' ? '#00c076' : '#00e5ff';
+  }
+}
+
 
 
 

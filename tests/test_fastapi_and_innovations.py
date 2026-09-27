@@ -253,10 +253,47 @@ def test_fastapi_endpoints():
     assert resp_act_bn.status_code == 200
     assert resp_act_bn.json()["status"] == "SUCCESS"
 
+    # Macro Stress Testing API
+    resp_stress = client.get("/api/v1/risk/stress-test/BBCA.JK")
+    assert resp_stress.status_code == 200
+    stress_json = resp_stress.json()
+    assert stress_json["ticker"] == "BBCA.JK"
+    assert len(stress_json["scenarios"]) == 4
+    assert len(stress_json["liquidity_ladder"]) == 4
+    assert "composite_vulnerability_score" in stress_json
+
+    # Liquidity Impact Simulator API
+    resp_liq = client.post(
+        "/api/v1/risk/liquidity-simulator",
+        json={"ticker": "BBCA.JK", "order_size_idr": 500_000_000.0},
+    )
+    assert resp_liq.status_code == 200
+    liq_json = resp_liq.json()
+    assert liq_json["ticker"] == "BBCA.JK"
+    assert liq_json["slippage_bps"] > 0
+    assert liq_json["market_impact_cost_idr"] > 0
+    assert liq_json["replenishment_half_life_seconds"] > 0
+
+    # Actions for Stress Test and Liquidity Surface Calibrate
+    resp_act_st = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "STRESS_TEST_SCENARIO"},
+    )
+    assert resp_act_st.status_code == 200
+    assert resp_act_st.json()["status"] == "SUCCESS"
+
+    resp_act_lq = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "LIQUIDITY_SURFACE_CALIBRATE"},
+    )
+    assert resp_act_lq.status_code == 200
+    assert resp_act_lq.json()["status"] == "SUCCESS"
+
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200
     assert "text/html" in resp_index.headers.get("content-type", "")
+
 
 
 

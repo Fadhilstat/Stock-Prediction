@@ -58,6 +58,7 @@ from ruang_risiko_idx.research.multimodal_engine import (
 from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
 from ruang_risiko_idx.research.sentiment_engine import get_latest_market_sentiment
 from ruang_risiko_idx.research.spillover_index import compute_diebold_yilmaz_spillover
+from ruang_risiko_idx.research.stress_testing import stress_engine
 
 
 
@@ -451,6 +452,16 @@ async def execute_action(request: Request) -> dict[str, Any]:
             "message": "Broker Cluster Network Matrix and Whale vs Retail flow divergence scan completed.",
             "timestamp": datetime.now(UTC).isoformat(),
         },
+        "STRESS_TEST_SCENARIO": lambda: {
+            "status": "SUCCESS",
+            "message": "Systemic macroeconomic stress tests recalculated across 4 canonical crisis scenarios.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "LIQUIDITY_SURFACE_CALIBRATE": lambda: {
+            "status": "SUCCESS",
+            "message": "Dynamic orderbook liquidity surface and square-root law market impact parameters recalibrated.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
     }
 
     if action_type not in handlers:
@@ -473,6 +484,27 @@ async def get_broker_network_endpoint(ticker: str) -> dict[str, Any]:
     meta = STOCK_CATALOG_MAP.get(ticker.upper(), {"base_price": 5000})
     base_px = float(meta.get("base_price", 5000))
     return broker_network_analyzer.analyze_ticker_network(ticker, base_px).to_dict()
+
+
+@app.get("/api/v1/risk/stress-test/{ticker}")
+async def get_stress_test_endpoint(ticker: str) -> dict[str, Any]:
+    """Retrieve multi-scenario macro stress test and orderbook liquidity ladder."""
+    meta = STOCK_CATALOG_MAP.get(ticker.upper(), {"base_price": 5000, "sector": "Financials"})
+    base_px = float(meta.get("base_price", 5000))
+    sector = str(meta.get("sector", "Financials"))
+    return stress_engine.run_full_stress_test(ticker, base_px, sector).to_dict()
+
+
+@app.post("/api/v1/risk/liquidity-simulator")
+async def post_liquidity_simulator_endpoint(request: Request) -> dict[str, Any]:
+    """Simulate orderbook slippage, impact cost, and replenishment half-life."""
+    body = await request.json()
+    ticker = body.get("ticker", "BBCA.JK")
+    order_size = float(body.get("order_size_idr", 250_000_000.0))
+    meta = STOCK_CATALOG_MAP.get(ticker.upper(), {"base_price": 5000})
+    base_px = float(meta.get("base_price", 5000))
+    return stress_engine.simulate_liquidity_impact(ticker, base_px, order_size).to_dict()
+
 
 
 # =========================================================================

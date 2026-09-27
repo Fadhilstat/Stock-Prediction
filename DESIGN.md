@@ -421,5 +421,41 @@ The terminal traces liquidity flows across three structural participant tiers in
   - `DISTRIBUTION`: SMI $\in [-40.0, -10.0)$.
   - `RETAIL_BAGHOLDING`: SMI $< -40.0$ with retail aggressive net buying.
 
+---
+
+## 15. Non-Linear Microstructure Slippage & Orderbook Replenishment
+
+Execution of large blocks in emerging markets requires quantifying non-linear slippage before order submission:
+1. **Square-Root Law of Market Impact**:
+   $$I(Q, V) = Y \cdot \sigma \cdot \sqrt{\frac{Q}{V}}$$
+   where $Q$ is order value (IDR), $V$ is average daily volume, $\sigma$ is daily asset volatility, and $Y \approx 0.45$ is the empirical market constant.
+2. **Execution Slippage & Impact Cost**:
+   $$\text{Slippage (bps)} = \max\left(2.5, 10000 \cdot I(Q, V)\right)$$
+   $$\text{Impact Cost (IDR)} = Q \cdot \frac{\text{Slippage (bps)}}{10000}$$
+3. **Queue Replenishment Half-Life ($t_{1/2}$)**:
+   $$t_{1/2} = 8.5 \cdot \sqrt{\frac{Q}{5 \times 10^7}} \quad \text{seconds}$$
+   Estimates the duration required for resting passive orderbook queues to refill after aggressive market sweeps.
+4. **Algorithmic Execution Routing**:
+   - $Q \le 500\text{M IDR}$: `DIRECT_MARKET`
+   - $500\text{M} < Q \le 2\text{B IDR}$: `TWAP_15MIN`
+   - $Q > 2\text{B IDR}$: `ICEBERG_5_TRANCHES`
+
+---
+
+## 16. Systemic Macroeconomic Crisis Scenarios & Tail-Risk Stress Testing
+
+The terminal continuously projects equity resilience across 4 canonical crisis scenarios:
+1. **The Fed Hawkish Shock & Rupiah Devaluation**: USD/IDR $> 16,500$, +50 bps BI-Rate hike, massive capital outflow from interest-rate sensitive bluechips.
+2. **Global Commodity Benchmark Crash**: -22% Thermal Coal, -18% LME Nickel, triggering immediate revenue revisions for energy and metals exporters.
+3. **Domestic Banking Liquidity Crunch**: Interbank credit contraction, rising non-performing loan provisions, compressing bank net interest margins.
+4. **Emerging Market Taper Tantrum**: Sudden foreign institutional dump (exceeding 15 Trillion IDR net sell across index constituents).
+
+### Output Risk Bounds:
+- **Conditional Value-at-Risk ($\text{VaR}_{0.99}$)** and **Conditional Expected Shortfall ($\text{ES}_{0.99}$)** under stressed sector sensitivity matrices.
+- **Composite Vulnerability Score**:
+  $$\text{Vulnerability} = \min\left(100.0, 6.5 \cdot \overline{\text{ES}}_{0.99} + 0.45 \cdot \text{Slippage}_{\text{max}}\right)$$
+  Classified into `HIGH_RESILIENCE`, `MODERATE`, `VULNERABLE`, and `CRITICAL_TAIL_RISK`.
+
+
 
 
