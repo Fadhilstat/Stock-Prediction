@@ -64,7 +64,7 @@ ${DOCKER_COMPOSE} up -d --build app
 if ${DOCKER_BIN} ps | grep -q 'caddy'; then
     ${DOCKER_BIN} network connect rridx_network signalflow-production-caddy-1 2>/dev/null || true
     ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network signalflow-production-caddy-1 2>/dev/null || true
-    ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload 2>/dev/null || true
+    ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload 2>/dev/null || true
 fi
 
 NEW_HASH=$(git rev-parse HEAD)
