@@ -28,6 +28,9 @@ cd "${TARGET_DIR}"
 # Fetch remote changes
 git fetch origin main --quiet 2>/dev/null || exit 0
 
+LOCAL_HASH=$(git rev-parse HEAD)
+REMOTE_HASH=$(git rev-parse origin/main)
+
 # Resolve docker binary and compose early
 DOCKER_BIN="docker"
 DOCKER_COMPOSE="docker compose"
