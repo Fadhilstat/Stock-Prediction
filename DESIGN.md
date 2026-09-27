@@ -379,4 +379,47 @@ The terminal reflects the ergonomics of Stockbit and TradingView:
   - Background systemd timer (`rridx-autoupdate.timer`) checking GitHub repository every 60 seconds.
   - Automatic container recreation and seamless Caddy reverse proxy routing without requiring manual VPS terminal intervention.
 
+---
+
+## 13. Hugging Face FinBERT Sentiment Entropy & Market Polarization
+
+Financial markets often experience sharp regime shifts not from consensus news, but from information asymmetry and sentiment dispersion. To capture this dynamic, the system deploys a Hugging Face FinBERT NLP model (`ProsusAI/finbert`) with institutional vocabulary weighting:
+1. **Three-Way Probability Distribution**:
+   - Computes normalized probability mass vector $\mathbf{p} = [p_{\text{positive}}, p_{\text{neutral}}, p_{\text{negative}}]$ across corporate releases and macroeconomic news.
+2. **Shannon Information Entropy**:
+   $$H(S) = -\sum_{c \in \{\text{pos}, \text{neu}, \text{neg}\}} p_c \log_2(p_c)$$
+   - Quantifies the degree of market consensus versus uncertainty ($H(S) \in [0.0, 1.585]$). High entropy indicates institutional disagreement, preceding elevated volatility.
+3. **Market Polarization Index & Volatility Scale Multiplier**:
+   - Polarization is maximized when extreme positive and negative narratives collide:
+     $$\text{Polarization} = 4 \cdot p_{\text{pos}} \cdot p_{\text{neg}}$$
+   - Multiplier dynamically scales GARCH conditional standard deviation $\hat{\sigma}_t$:
+     $$k_{\sigma} = 1.0 + 0.25 \cdot \text{Polarization} + 0.35 \cdot \max(0, -\text{Polarity}_{\text{agg}})$$
+
+---
+
+## 14. Institutional Broker Cluster Network Matrix (Bandarmology Graph)
+
+The terminal traces liquidity flows across three structural participant tiers in the Indonesia Stock Exchange:
+1. **Tier 1 (Foreign Institutional Whales)**:
+   - Global investment banks and custody brokers (`ZP`, `CS`, `MS`, `KZ`, `RX`, `BK`, `AK`).
+2. **Tier 2 (Domestic Institutional Funds)**:
+   - Sovereign pension funds, insurance asset managers, and state-backed brokerages (`CC`, `OD`, `NI`, `LG`, `DX`).
+3. **Tier 3 (Retail Participant Gateways)**:
+   - High-volume retail retail brokerages (`YP`, `PD`, `XC`, `XL`, `KK`, `SQ`).
+
+### Core Metrics:
+- **Smart Money Index (SMI)**:
+  $$\text{SMI} = \frac{\text{NetFlow}_{\text{whale}} + \text{NetFlow}_{\text{fund}}}{\max(|\text{NetFlow}_{\text{whale}}| + |\text{NetFlow}_{\text{retail}}|, 1)} \times 100$$
+  Bounded in $[-100.0, +100.0]$.
+- **Absorption Ratio**:
+  $$\text{Ratio}_{\text{absorb}} = \frac{|\text{NetFlow}_{\text{whale}}|}{\max(|\text{NetFlow}_{\text{retail}}|, 10^6)}$$
+  Measures the intensity at which institutional whales absorb retail distribution.
+- **Institutional Phase Transitions**:
+  - `STEALTH_ACCUMULATION`: SMI $\ge +40.0$ and Absorption Ratio $> 1.5\text{x}$.
+  - `MARK_UP`: SMI $\in [+10.0, +40.0)$.
+  - `NEUTRAL_CHOPPY`: SMI $\in [-10.0, +10.0)$.
+  - `DISTRIBUTION`: SMI $\in [-40.0, -10.0)$.
+  - `RETAIL_BAGHOLDING`: SMI $< -40.0$ with retail aggressive net buying.
+
+
 

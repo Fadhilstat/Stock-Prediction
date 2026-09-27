@@ -401,6 +401,36 @@
               <p><strong>Rupiah (USD/IDR):</strong> <span id="macro-rupiah">Apresiasi Stabil (Rentang Rp 15.250 - Rp 15.450)</span></p>
             </div>
           </div>
+
+          <!-- FinBERT Sentiment Entropy & Market Polarization Card -->
+          <div class="runtime-config-card" style="margin-top: 15px; border-left: 3px solid #7c4dff;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h5 style="color: #b388ff; margin: 0;">KALIBRASI SENTIMEN FINBERT & ENTROPI INFORMASI SHANNON (HUGGING FACE NLP)</h5>
+              <span class="status-pill status-healthy" id="finbert-polarization-pill" style="background: rgba(124, 77, 255, 0.25); color: #b388ff;">CONSENSUS ALIGNED</span>
+            </div>
+            <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); margin-top: 12px;">
+              <div class="metric-box">
+                <span class="m-label">Probabilitas Positif</span>
+                <span class="m-value up" id="finbert-prob-pos">72.4%</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Probabilitas Netral</span>
+                <span class="m-value" id="finbert-prob-neu" style="color: #ffb74d;">18.5%</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Probabilitas Negatif</span>
+                <span class="m-value down" id="finbert-prob-neg">9.1%</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Shannon Entropy H(S)</span>
+                <span class="m-value" id="finbert-entropy" style="color: #00e5ff;">0.742 nats</span>
+              </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 12px; color: var(--text-secondary); line-height: 1.5;" id="finbert-explanation">
+              Mengevaluasi distribusi probabilitas sentimen berita keuangan emiten.
+            </div>
+          </div>
+
           <div class="news-feed" id="news-feed">
             <!-- News injected via JavaScript -->
           </div>
@@ -421,7 +451,58 @@
               <p><strong>Total Turnover:</strong> <span id="bandar-turnover">Rp 880.25 Miliar</span></p>
             </div>
           </div>
-          <div class="split-row">
+
+          <!-- Institutional Broker Cluster Network Matrix Card -->
+          <div class="runtime-config-card" style="margin-top: 15px; border-left: 3px solid #ffab00;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h5 style="color: #ffd54f; margin: 0;">MATRIKS JARINGAN BROKER INSTITUSIONAL & SMART MONEY DIVERGENCE</h5>
+              <span class="status-pill status-healthy" id="network-phase-pill" style="background: rgba(255, 171, 0, 0.25); color: #ffd54f;">STEALTH ACCUMULATION</span>
+            </div>
+            <div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr); margin-top: 12px;">
+              <div class="metric-box">
+                <span class="m-label">Smart Money Index</span>
+                <span class="m-value up" id="network-smi">+68.4</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Whale Inflow (Asing)</span>
+                <span class="m-value up" id="network-whale-flow">+Rp 142.0B</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Retail Outflow (Jual)</span>
+                <span class="m-value down" id="network-retail-flow">-Rp 68.2B</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Absorption Ratio</span>
+                <span class="m-value" id="network-absorption" style="color: #00e5ff;">2.08x</span>
+              </div>
+            </div>
+            <div style="margin-top: 10px; font-size: 12px; color: var(--text-secondary); line-height: 1.5;" id="network-narrative">
+              Arus likuiditas institusional vs transaksi ritel.
+            </div>
+
+            <div class="split-row" style="margin-top: 14px;">
+              <div style="flex: 1;">
+                <div style="font-size: 11px; font-weight: 700; color: #00e5ff; margin-bottom: 6px;">WHALE ASING (TIER 1)</div>
+                <div class="table-wrap">
+                  <table class="audit-table">
+                    <thead><tr><th>Kode</th><th>Broker</th><th>Net (Rp)</th><th>Share %</th></tr></thead>
+                    <tbody id="network-whales-body"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div style="flex: 1;">
+                <div style="font-size: 11px; font-weight: 700; color: #ffab00; margin-bottom: 6px;">RETAIL GATEWAY (TIER 3)</div>
+                <div class="table-wrap">
+                  <table class="audit-table">
+                    <thead><tr><th>Kode</th><th>Broker</th><th>Net (Rp)</th><th>Share %</th></tr></thead>
+                    <tbody id="network-retail-body"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="split-row" style="margin-top: 15px;">
             <div class="panel-card">
               <div class="card-header"><h3>TOP 5 BUYERS (AKUMULASI)</h3></div>
               <div class="table-wrap">

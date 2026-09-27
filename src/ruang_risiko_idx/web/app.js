@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadOrderbook(state.currentTicker);
   loadBrokerSummary(state.currentTicker);
   loadMultimodalPrediction(state.currentTicker);
+  loadHfModelBenchmark(state.currentTicker);
+  loadFinBERTSentiment(state.currentTicker);
+  loadBrokerNetwork(state.currentTicker);
   initWebSocket(state.currentTicker);
   loadSentiment();
   loadSpillover();
@@ -209,6 +212,8 @@ function selectTicker(ticker) {
   loadBrokerSummary(ticker);
   loadMultimodalPrediction(ticker);
   loadHfModelBenchmark(ticker);
+  loadFinBERTSentiment(ticker);
+  loadBrokerNetwork(ticker);
   initWebSocket(ticker);
 
   const hmmLabel = document.getElementById('hmm-ticker-label');
@@ -634,9 +639,18 @@ async function executeAction(actionType) {
         loadMarketSummary();
         loadTickerData(state.currentTicker, state.currentTimeframe);
       }
-      if (actionType === 'SENTIMENT_REFRESH') loadSentiment();
+      if (actionType === 'SENTIMENT_REFRESH' || actionType === 'FINBERT_CALIBRATE') {
+        loadSentiment();
+        loadFinBERTSentiment(state.currentTicker);
+      }
       if (actionType === 'SPILLOVER_INDEX') loadSpillover();
-      if (actionType === 'BANDARMOLOGY_SCAN') loadBrokerSummary(state.currentTicker);
+      if (actionType === 'BANDARMOLOGY_SCAN' || actionType === 'BROKER_NETWORK_SCAN') {
+        loadBrokerSummary(state.currentTicker);
+        loadBrokerNetwork(state.currentTicker);
+      }
+      if (actionType === 'HF_MODEL_RECALIBRATE') {
+        loadHfModelBenchmark(state.currentTicker);
+      }
     } else {
       statusBox.innerHTML = `<span style="color:var(--color-down)">PERINGATAN / GAGAL:</span> ${data.message || data.detail || 'Operasi gagal'}`;
       showToast(`Gagal: ${actionType}`);
@@ -1055,5 +1069,126 @@ async function runCustomHfForecast() {
     showToast('Gagal: ' + err.message);
   }
 }
+
+// -------------------------------------------------------------
+// Hugging Face FinBERT NLP & Shannon Information Entropy
+// -------------------------------------------------------------
+async function loadFinBERTSentiment(ticker) {
+  try {
+    const res = await fetch(`/api/v1/sentiment/finbert?ticker=${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const pill = document.getElementById('finbert-polarization-pill');
+    if (pill) {
+      pill.innerText = data.polarization_state.replace(/_/g, ' ');
+      pill.style.color = data.dominant_sentiment === 'POSITIVE' ? '#00c076' : data.dominant_sentiment === 'NEGATIVE' ? '#ff5252' : '#ffb74d';
+    }
+
+    const posEl = document.getElementById('finbert-prob-pos');
+    if (posEl) posEl.innerText = `${(data.positive_prob * 100).toFixed(1)}%`;
+
+    const neuEl = document.getElementById('finbert-prob-neu');
+    if (neuEl) neuEl.innerText = `${(data.neutral_prob * 100).toFixed(1)}%`;
+
+    const negEl = document.getElementById('finbert-prob-neg');
+    if (negEl) negEl.innerText = `${(data.negative_prob * 100).toFixed(1)}%`;
+
+    const entEl = document.getElementById('finbert-entropy');
+    if (entEl) entEl.innerText = `${data.shannon_entropy_nats.toFixed(3)} nats`;
+
+    const expEl = document.getElementById('finbert-explanation');
+    if (expEl) {
+      expEl.innerHTML = `Model: <strong>${data.model_card}</strong> | Pengali Skala Volatilitas: <strong style="color:#00e5ff">${data.volatility_scale_multiplier.toFixed(2)}x</strong>. Konsensus pasar: ${data.dominant_sentiment} dengan tingkat polarisasi ${data.polarization_state.toLowerCase().replace(/_/g, ' ')}.`;
+    }
+  } catch (err) {
+    console.debug('Failed to load FinBERT sentiment', err);
+  }
+}
+
+// -------------------------------------------------------------
+// Institutional Broker Cluster Network & Smart Money Tracking
+// -------------------------------------------------------------
+async function loadBrokerNetwork(ticker) {
+  try {
+    const res = await fetch(`/api/v1/market/broker-network/${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const phasePill = document.getElementById('network-phase-pill');
+    if (phasePill) {
+      phasePill.innerText = data.institutional_phase.replace(/_/g, ' ');
+      const isAcc = data.smart_money_index >= 0;
+      phasePill.style.color = isAcc ? '#00c076' : '#ff5252';
+    }
+
+    const smiEl = document.getElementById('network-smi');
+    if (smiEl) {
+      smiEl.innerText = `${data.smart_money_index >= 0 ? '+' : ''}${data.smart_money_index}`;
+      smiEl.className = `m-value ${data.smart_money_index >= 0 ? 'up' : 'down'}`;
+    }
+
+    const whaleEl = document.getElementById('network-whale-flow');
+    if (whaleEl) {
+      const netB = data.whale_net_flow_idr / 1e9;
+      whaleEl.innerText = `${netB >= 0 ? '+' : ''}Rp ${netB.toFixed(1)}B`;
+      whaleEl.className = `m-value ${netB >= 0 ? 'up' : 'down'}`;
+    }
+
+    const retEl = document.getElementById('network-retail-flow');
+    if (retEl) {
+      const netB = data.retail_net_flow_idr / 1e9;
+      retEl.innerText = `${netB >= 0 ? '+' : ''}Rp ${netB.toFixed(1)}B`;
+      retEl.className = `m-value ${netB >= 0 ? 'up' : 'down'}`;
+    }
+
+    const absEl = document.getElementById('network-absorption');
+    if (absEl) {
+      absEl.innerText = `${data.absorption_ratio}x`;
+    }
+
+    const narrEl = document.getElementById('network-narrative');
+    if (narrEl) {
+      narrEl.innerHTML = `<strong>Divergensi Aliran:</strong> ${data.cluster_divergence_message} (Skor Risiko Spoofing: <span style="color:${data.spoofing_risk_score > 0.4 ? '#ff5252' : '#00c076'}">${(data.spoofing_risk_score * 100).toFixed(0)}%</span>)`;
+    }
+
+    // Populate Whales
+    const whaleBody = document.getElementById('network-whales-body');
+    if (whaleBody && data.top_foreign_whales) {
+      whaleBody.innerHTML = '';
+      data.top_foreign_whales.forEach((w) => {
+        const tr = document.createElement('tr');
+        const isBuy = w.net_value_idr >= 0;
+        tr.innerHTML = `
+          <td><strong>${w.code}</strong></td>
+          <td>${w.name}</td>
+          <td style="color:${isBuy ? 'var(--color-up)' : 'var(--color-down)'}">${isBuy ? '+' : ''}Rp ${(w.net_value_idr / 1e9).toFixed(1)}B</td>
+          <td>${w.market_share_pct}%</td>
+        `;
+        whaleBody.appendChild(tr);
+      });
+    }
+
+    // Populate Retail
+    const retailBody = document.getElementById('network-retail-body');
+    if (retailBody && data.top_retail_brokers) {
+      retailBody.innerHTML = '';
+      data.top_retail_brokers.forEach((r) => {
+        const tr = document.createElement('tr');
+        const isBuy = r.net_value_idr >= 0;
+        tr.innerHTML = `
+          <td><strong>${r.code}</strong></td>
+          <td>${r.name}</td>
+          <td style="color:${isBuy ? 'var(--color-up)' : 'var(--color-down)'}">${isBuy ? '+' : ''}Rp ${(r.net_value_idr / 1e9).toFixed(1)}B</td>
+          <td>${r.market_share_pct}%</td>
+        `;
+        retailBody.appendChild(tr);
+      });
+    }
+  } catch (err) {
+    console.debug('Failed to load broker network', err);
+  }
+}
+
 
 

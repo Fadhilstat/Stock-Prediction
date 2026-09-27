@@ -212,7 +212,26 @@ def test_fastapi_endpoints():
     assert len(custom_fc_json["forecast_points"]) == 5
     assert custom_fc_json["conformal_coverage_pct"] == 95.0
 
-    # Execute Action with HF model recalibrate
+    # Hugging Face FinBERT Sentiment & Entropy API
+    resp_finbert = client.get("/api/v1/sentiment/finbert?ticker=BBCA.JK")
+    assert resp_finbert.status_code == 200
+    fb_json = resp_finbert.json()
+    assert fb_json["ticker"] == "BBCA.JK"
+    assert "positive_prob" in fb_json
+    assert "shannon_entropy_nats" in fb_json
+    assert fb_json["volatility_scale_multiplier"] >= 1.0
+
+    # Broker Cluster Network & Smart Money Tracking API
+    resp_bnet = client.get("/api/v1/market/broker-network/BBCA.JK")
+    assert resp_bnet.status_code == 200
+    bnet_json = resp_bnet.json()
+    assert bnet_json["ticker"] == "BBCA.JK"
+    assert -100.0 <= bnet_json["smart_money_index"] <= 100.0
+    assert len(bnet_json["top_foreign_whales"]) > 0
+    assert len(bnet_json["top_retail_brokers"]) > 0
+    assert bnet_json["absorption_ratio"] >= 0.0
+
+    # Execute Action with HF model recalibrate, FinBERT, and Broker Network scan
     resp_act_hf = client.post(
         "/api/v1/actions/execute",
         json={"action": "HF_MODEL_RECALIBRATE"},
@@ -220,9 +239,24 @@ def test_fastapi_endpoints():
     assert resp_act_hf.status_code == 200
     assert resp_act_hf.json()["status"] == "SUCCESS"
 
+    resp_act_fb = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "FINBERT_CALIBRATE"},
+    )
+    assert resp_act_fb.status_code == 200
+    assert resp_act_fb.json()["status"] == "SUCCESS"
+
+    resp_act_bn = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "BROKER_NETWORK_SCAN"},
+    )
+    assert resp_act_bn.status_code == 200
+    assert resp_act_bn.json()["status"] == "SUCCESS"
+
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200
     assert "text/html" in resp_index.headers.get("content-type", "")
+
 
 
