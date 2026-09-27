@@ -60,10 +60,16 @@ log "Recreating app container with FastAPI engine..."
 ${DOCKER_BIN} rm -f ruang_risiko_idx_app ruang-risiko-idx-app-1 2>/dev/null || true
 ${DOCKER_COMPOSE} up -d --build app
 
-# Ensure edge Caddy network connection and flush DNS
+# Ensure edge Caddy network connection, inject routing block if missing, and flush DNS
 if ${DOCKER_BIN} ps | grep -q 'caddy'; then
     ${DOCKER_BIN} network connect rridx_network signalflow-production-caddy-1 2>/dev/null || true
     ${DOCKER_BIN} network connect ruang-risiko-idx_rridx_network signalflow-production-caddy-1 2>/dev/null || true
+
+    CADDY_HOST_FILE=$(${DOCKER_BIN} inspect -f '{{range .Mounts}}{{if eq .Destination "/etc/caddy/Caddyfile"}}{{.Source}}{{end}}{{end}}' signalflow-production-caddy-1 2>/dev/null || true)
+    if [ -n "${CADDY_HOST_FILE}" ] && [ -f "${CADDY_HOST_FILE}" ] && ! grep -q "rridx.fadhilrusydi.com" "${CADDY_HOST_FILE}"; then
+        printf "\n\nrridx.fadhilrusydi.com {\n    encode zstd gzip\n    reverse_proxy ruang_risiko_idx_app:8501\n}\n" >> "${CADDY_HOST_FILE}"
+    fi
+
     ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || ${DOCKER_BIN} exec signalflow-production-caddy-1 caddy reload 2>/dev/null || true
 fi
 
