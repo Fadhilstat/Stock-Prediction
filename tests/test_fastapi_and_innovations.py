@@ -403,6 +403,39 @@ def test_fastapi_endpoints():
     assert resp_act_sec.status_code == 200
     assert resp_act_sec.json()["status"] == "SUCCESS"
 
+    # Dark Pool Pasar Negosiasi Crossing API
+    resp_cross = client.get("/api/v1/market/crossings/BBCA.JK")
+    assert resp_cross.status_code == 200
+    cross_data = resp_cross.json()
+    assert cross_data["ticker"] == "BBCA.JK"
+    assert "whale_accumulation_index" in cross_data
+    assert len(cross_data["recent_crossing_trades"]) >= 5
+    assert len(cross_data["top_crossing_pairs"]) >= 3
+
+    # Interactive Candlesticks & Conformal Cone API
+    resp_candles = client.get("/api/v1/market/candlesticks/BBCA.JK?days=30&forecast_horizon_days=7")
+    assert resp_candles.status_code == 200
+    candle_data = resp_candles.json()
+    assert candle_data["ticker"] == "BBCA.JK"
+    assert len(candle_data["candles"]) == 30
+    assert len(candle_data["forecast_cone"]) == 7
+    assert "execution_overlay" in candle_data
+
+    # Actions for Crossing Scan & Candlestick Cone Recalibration
+    resp_act_cross = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "SCAN_DARK_POOL_CROSSINGS"},
+    )
+    assert resp_act_cross.status_code == 200
+    assert resp_act_cross.json()["status"] == "SUCCESS"
+
+    resp_act_cone = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "RECALCULATE_CANDLESTICK_CONES"},
+    )
+    assert resp_act_cone.status_code == 200
+    assert resp_act_cone.json()["status"] == "SUCCESS"
+
     # Context handover endpoint
     resp_ctx = client.get("/context")
     assert resp_ctx.status_code == 200

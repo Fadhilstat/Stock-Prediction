@@ -567,6 +567,54 @@ Capital in the Indonesia Stock Exchange (IDX) continually rotates across sectors
 4. **Institutional Net Foreign Flow Overlay**:
    Integrates 5-day rolling net foreign institutional buying or selling (IDR Billion) to validate whether sector price momentum is supported by real institutional accumulation.
 
+---
+
+## 23. Institutional Dark Pool & Crossing Block Trade Detector
+
+### 23.1 Overview and Institutional Problem
+On the Indonesia Stock Exchange (IDX), substantial institutional position adjustments (by sovereign wealth funds, pension funds, and foreign investment banks) take place in the negotiated off-market board (*Pasar Negosiasi*) as block crossing trades. Standard continuous orderbook monitoring fails to capture these off-market transactions, blinding retail and traditional quant systems to institutional accumulation or distribution.
+
+### 23.2 Mathematical Formulation & Metrics
+1. **Crossing Volume Ratio**:
+   $$\text{Crossing Ratio (\%)} = \frac{V_{\text{nego}}}{V_{\text{reguler}}} \times 100$$
+   where $V_{\text{nego}}$ is the aggregated volume executed on the negotiated board, and $V_{\text{reguler}}$ is the continuous board volume.
+2. **Weighted Price Disparity**:
+   $$\Delta P_{\text{disparity}} = \frac{\bar{P}_{\text{nego}} - P_{\text{reg\_close}}}{P_{\text{reg\_close}}} \times 100$$
+   A significant premium ($\Delta P > 0$) implies aggressive institutional accumulation willing to pay above continuous market rates, while a discount ($\Delta P < 0$) indicates liquidity disposal.
+3. **Whale Accumulation Index (WAI)**:
+   $$\text{WAI} = \frac{\sum V_{\text{buy, foreign}} - \sum V_{\text{sell, foreign}}}{\text{Total Value}_{\text{nego}}} \times 100 \in [-100, +100]$$
+   Evaluates the net direction of foreign Tier-1 institutional brokerage houses (e.g. ZP, RX, CS, AK, BK).
+4. **Classification Heuristic**:
+   - $\text{WAI} \ge +20.0 \implies \text{STEALTH\_ACCUMULATION}$
+   - $\text{WAI} \le -20.0 \implies \text{INSTITUTIONAL\_DISTRIBUTION}$
+   - Otherwise $\implies \text{NEUTRAL\_REBALANCING}$
+
+---
+
+## 24. Interactive Candlestick Architecture & Conformal Prediction Overlay
+
+### 24.1 Overview and Purpose
+Professional trading operations require high-density visual telemetry combining historical price action with algorithmic forecast uncertainty bounds and risk-reward execution thresholds. The Interactive Candlestick Engine delivers sub-second rendering of multi-period OHLCV candlestick series with mathematical moving average overlays and conformal prediction envelopes.
+
+### 24.2 Visual Components and Overlay Calculations
+1. **Candlestick Geometric Rendering**:
+   - Up-Candle ($C_t \ge O_t$): Filled green body (`#00e676`) with thin high/low wicks.
+   - Down-Candle ($C_t < O_t$): Filled red body (`#ff5252`) with thin high/low wicks.
+2. **Mathematical Trend Smoothers**:
+   - **SMA20 (Cyan Line)**: $\text{SMA}_{20, t} = \frac{1}{20} \sum_{i=0}^{19} C_{t-i}$
+   - **EMA50 (Amber Dashed Line)**: $\text{EMA}_{50, t} = \alpha C_t + (1 - \alpha) \text{EMA}_{50, t-1}$ with $\alpha = \frac{2}{51}$.
+3. **Conformal Prediction Envelope**:
+   - Projects non-linear forward confidence boundaries:
+     $$\hat{y}_{t+h}^{\pm 95\%} = \hat{\mu}_{t+h} \pm z_{0.975} \times \sigma_{\text{daily}} \sqrt{h} \times P_t$$
+   - Shaded polygon visually communicates expanding uncertainty across forward horizons.
+4. **Dynamic Execution Corridors**:
+   - Overlays horizontal dashed reference lines directly onto the chart:
+     - **TP3 (Runner / Breakout)**: Amber dashed line (`#ffd54f`)
+     - **TP2 (Primary Swing Target)**: Cyan dashed line (`#00e5ff`)
+     - **TP1 (Break-Even Lock)**: Green dashed line (`#00e676`)
+     - **Stop Loss (ATR Calibrated)**: Red dashed line (`#ff5252`)
+
+
 
 
 

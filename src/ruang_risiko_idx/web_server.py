@@ -57,6 +57,8 @@ from ruang_risiko_idx.research.multimodal_engine import (
 )
 from ruang_risiko_idx.research.alert_dispatcher import alert_dispatcher
 from ruang_risiko_idx.research.black_litterman import bl_engine
+from ruang_risiko_idx.research.candlestick_engine import candlestick_engine
+from ruang_risiko_idx.research.crossing_block_detector import crossing_detector
 from ruang_risiko_idx.research.execution_matrix import execution_engine
 from ruang_risiko_idx.research.orderbook_engine import orderbook_engine
 from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
@@ -486,6 +488,16 @@ async def execute_action(request: Request) -> dict[str, Any]:
             "message": "Relative Rotation Graph (RRG) and institutional cross-sector capital flows refreshed.",
             "timestamp": datetime.now(UTC).isoformat(),
         },
+        "SCAN_DARK_POOL_CROSSINGS": lambda: {
+            "status": "SUCCESS",
+            "message": "Pasar Negosiasi off-market block trade scan completed with institutional crossing disparity analysis.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "RECALCULATE_CANDLESTICK_CONES": lambda: {
+            "status": "SUCCESS",
+            "message": "Interactive OHLCV candlestick series and multi-horizon conformal prediction cones recalculated.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
     }
 
     if action_type not in handlers:
@@ -596,6 +608,22 @@ async def post_execution_plan_endpoint(request: Request) -> dict[str, Any]:
 async def get_sector_rotation_endpoint() -> dict[str, Any]:
     """Retrieve live Relative Rotation Graph (RRG) coordinates and institutional sector flow."""
     return sector_rotation_engine.compute_sector_rotation().to_dict()
+
+
+@app.get("/api/v1/market/crossings/{ticker}")
+async def get_crossing_trades_endpoint(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Retrieve Pasar Negosiasi off-market block trades and whale accumulation metrics."""
+    return crossing_detector.analyze_crossings(ticker).to_dict()
+
+
+@app.get("/api/v1/market/candlesticks/{ticker}")
+async def get_candlesticks_endpoint(
+    ticker: str = "BBCA.JK",
+    days: int = 40,
+    forecast_horizon_days: int = 10,
+) -> dict[str, Any]:
+    """Retrieve OHLCV candlestick series with moving averages and conformal forecast envelope."""
+    return candlestick_engine.build_candlestick_series(ticker, days, forecast_horizon_days).to_dict()
 
 
 

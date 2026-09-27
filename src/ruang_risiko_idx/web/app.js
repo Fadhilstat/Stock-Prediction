@@ -110,6 +110,8 @@ function initEventListeners() {
         loadExecutionPlan(state.currentTicker);
       } else if (targetId === 'tab-sectors') {
         loadSectorRotation();
+      } else if (targetId === 'tab-crossing') {
+        loadCrossingTrades(state.currentTicker);
       } else if (targetId === 'tab-alerts') {
         loadLiveAlerts();
       } else if (targetId === 'tab-bl') {
@@ -117,6 +119,32 @@ function initEventListeners() {
       }
     });
   });
+
+  // Chart Mode Buttons (Area vs Candlestick + Conformal Cone)
+  const btnArea = document.getElementById('btn-chart-area');
+  const btnCandles = document.getElementById('btn-chart-candles');
+  if (btnArea && btnCandles) {
+    btnArea.addEventListener('click', () => {
+      state.chartMode = 'area';
+      btnArea.classList.add('active');
+      btnArea.style.background = 'rgba(0, 229, 255, 0.2)';
+      btnArea.style.color = '#00e5ff';
+      btnCandles.classList.remove('active');
+      btnCandles.style.background = 'rgba(255, 255, 255, 0.05)';
+      btnCandles.style.color = '#90a4ae';
+      loadTickerData(state.currentTicker, state.currentTimeframe);
+    });
+    btnCandles.addEventListener('click', () => {
+      state.chartMode = 'candles';
+      btnCandles.classList.add('active');
+      btnCandles.style.background = 'rgba(0, 229, 255, 0.2)';
+      btnCandles.style.color = '#00e5ff';
+      btnArea.classList.remove('active');
+      btnArea.style.background = 'rgba(255, 255, 255, 0.05)';
+      btnArea.style.color = '#90a4ae';
+      loadCandlestickChart(state.currentTicker);
+    });
+  }
 
   // Action Console Buttons
   document.querySelectorAll('.console-btn').forEach((btn) => {
@@ -275,6 +303,10 @@ function selectTicker(ticker) {
   loadBrokerNetwork(ticker);
   loadStressTest(ticker);
   loadExecutionPlan(ticker);
+  loadCrossingTrades(ticker);
+  if (state.chartMode === 'candles') {
+    loadCandlestickChart(ticker);
+  }
   initWebSocket(ticker);
 
   const hmmLabel = document.getElementById('hmm-ticker-label');
@@ -327,8 +359,12 @@ async function loadTickerData(ticker, timeframe) {
       }
     }
 
-    // Render SVG Area Spline Chart with Forecast Cone
-    renderSvgSplineChart(data);
+    // Render SVG Chart according to active mode
+    if (state.chartMode === 'candles') {
+      loadCandlestickChart(ticker);
+    } else {
+      renderSvgSplineChart(data);
+    }
   } catch (err) {
     console.error('Ticker data error:', err);
   }
@@ -1814,6 +1850,315 @@ async function loadSectorRotation() {
     console.debug('Failed to load sector rotation', err);
   }
 }
+
+// -------------------------------------------------------------
+// Interactive Candlestick Engine with Conformal Envelope Overlay
+// -------------------------------------------------------------
+async function loadCandlestickChart(ticker) {
+  try {
+    const res = await fetch(`/api/v1/market/candlesticks/${ticker}?days=35&forecast_horizon_days=10`);
+    if (!res.ok) return;
+    const data = await res.json();
+    renderSvgCandlestickChart(data);
+  } catch (err) {
+    console.error('Candlestick load error:', err);
+  }
+}
+
+function renderSvgCandlestickChart(data) {
+  const svg = document.getElementById('tv-chart');
+  if (!svg || !data.candles || data.candles.length === 0) return;
+
+  const candles = data.candles;
+  const n = candles.length;
+  const width = 900;
+  const height = 320;
+  const padBottom = 26;
+  const padTop = 26;
+
+  const hasCone = data.forecast_cone && data.forecast_cone.length > 0;
+  const histWidth = hasCone ? width * 0.74 : width - 15;
+  const forecastWidth = width - histWidth;
+
+  // Min and Max calculation
+  let minP = Math.min(...candles.map((c) => c.low));
+  let maxP = Math.max(...candles.map((c) => c.high));
+
+  if (hasCone) {
+    data.forecast_cone.forEach((pt) => {
+      minP = Math.min(minP, pt.lower_95);
+      maxP = Math.max(maxP, pt.upper_95);
+    });
+  }
+
+  // Include execution lines in scale
+  if (data.execution_overlay) {
+    const ov = data.execution_overlay;
+    if (ov.stop_loss) minP = Math.min(minP, ov.stop_loss);
+    if (ov.take_profit_3) maxP = Math.max(maxP, ov.take_profit_3);
+  }
+
+  minP *= 0.992;
+  maxP *= 1.008;
+  const range = maxP - minP || 1;
+
+  const getY = (val) => height - padBottom - ((val - minP) / range) * (height - padTop - padBottom);
+  const candleSpacing = histWidth / n;
+  const candleW = Math.max(4, candleSpacing * 0.65);
+
+  let svgContent = '';
+
+  // Background Grid Lines
+  for (let g = 0; g <= 4; g++) {
+    const yVal = minP + (range * g) / 4;
+    const yPx = getY(yVal);
+    svgContent += `
+      <line x1="0" y1="${yPx}" x2="${width}" y2="${yPx}" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+      <text x="${width - 65}" y="${yPx - 4}" fill="#546e7a" font-size="9" font-family="var(--font-mono)">Rp ${Math.round(yVal).toLocaleString('id-ID')}</text>
+    `;
+  }
+
+  // Execution Level Dashed Corridors
+  if (data.execution_overlay) {
+    const ov = data.execution_overlay;
+    const levels = [
+      { price: ov.take_profit_3, color: '#ffd54f', label: 'TP3 Runner' },
+      { price: ov.take_profit_2, color: '#00e5ff', label: 'TP2 Swing' },
+      { price: ov.take_profit_1, color: '#00e676', label: 'TP1 Break-Even' },
+      { price: ov.stop_loss, color: '#ff5252', label: 'Stop Loss ATR' },
+    ];
+
+    levels.forEach((lvl) => {
+      if (!lvl.price) return;
+      const yLvl = getY(lvl.price);
+      svgContent += `
+        <line x1="0" y1="${yLvl}" x2="${width}" y2="${yLvl}" stroke="${lvl.color}" stroke-dasharray="3,3" stroke-width="1.2" opacity="0.75" />
+        <text x="12" y="${yLvl - 4}" fill="${lvl.color}" font-size="9" font-family="var(--font-mono)" font-weight="600">${lvl.label}: Rp ${Math.round(lvl.price).toLocaleString('id-ID')}</text>
+      `;
+    });
+  }
+
+  // Conformal Forecast Cone Region
+  if (hasCone) {
+    const lastX = (n - 1) * candleSpacing + (candleSpacing / 2);
+    const lastY = getY(candles[n - 1].close);
+
+    let upper95Path = `M ${lastX} ${lastY}`;
+    let lower95Path = ``;
+    let medPath = `M ${lastX} ${lastY}`;
+
+    data.forecast_cone.forEach((pt, idx) => {
+      const x = histWidth + ((idx + 1) / data.forecast_cone.length) * forecastWidth;
+      const yUpper95 = getY(pt.upper_95);
+      const yLower95 = getY(pt.lower_95);
+      const yMed = getY(pt.median_forecast);
+
+      upper95Path += ` L ${x} ${yUpper95}`;
+      lower95Path = ` L ${x} ${yLower95}` + lower95Path;
+      medPath += ` L ${x} ${yMed}`;
+    });
+
+    const conePolygon = `${upper95Path} ${lower95Path} Z`;
+    svgContent += `
+      <!-- Conformal 95% Confidence Shaded Cone -->
+      <path d="${conePolygon}" fill="rgba(0, 229, 255, 0.12)" stroke="rgba(0, 229, 255, 0.3)" stroke-width="1" stroke-dasharray="2,2" />
+      <!-- Median Foundation Forecast Trajectory -->
+      <path d="${medPath}" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="3,3" />
+      <text x="${histWidth + 12}" y="${height - padBottom - 8}" fill="#00e5ff" font-size="10" font-family="var(--font-mono)" font-weight="700">🔮 Conformal 95% Envelope</text>
+    `;
+  }
+
+  // Candlestick Bars
+  candles.forEach((c, idx) => {
+    const cx = idx * candleSpacing + (candleSpacing / 2);
+    const yHigh = getY(c.high);
+    const yLow = getY(c.low);
+    const yOpen = getY(c.open);
+    const yClose = getY(c.close);
+
+    const isGreen = c.close >= c.open;
+    const candleColor = isGreen ? '#00e676' : '#ff5252';
+    const topBody = Math.min(yOpen, yClose);
+    const bodyHeight = Math.max(2, Math.abs(yClose - yOpen));
+
+    // Wick
+    svgContent += `
+      <line x1="${cx}" y1="${yHigh}" x2="${cx}" y2="${yLow}" stroke="${candleColor}" stroke-width="1.2" opacity="0.9" />
+      <rect x="${cx - candleW / 2}" y="${topBody}" width="${candleW}" height="${bodyHeight}" fill="${candleColor}" rx="1" />
+    `;
+  });
+
+  // Moving Average Lines (SMA20 and EMA50)
+  let smaPoints = [];
+  let emaPoints = [];
+  candles.forEach((c, idx) => {
+    const cx = idx * candleSpacing + (candleSpacing / 2);
+    if (c.sma20) smaPoints.push(`${cx},${getY(c.sma20)}`);
+    if (c.ema50) emaPoints.push(`${cx},${getY(c.ema50)}`);
+  });
+
+  if (smaPoints.length > 1) {
+    svgContent += `<polyline points="${smaPoints.join(' ')}" fill="none" stroke="#00e5ff" stroke-width="1.6" opacity="0.8" />`;
+  }
+  if (emaPoints.length > 1) {
+    svgContent += `<polyline points="${emaPoints.join(' ')}" fill="none" stroke="#ff9100" stroke-width="1.6" stroke-dasharray="4,2" opacity="0.8" />`;
+  }
+
+  svg.innerHTML = svgContent;
+
+  // Hover crosshair and HUD attachment for candlesticks
+  const wrapper = document.getElementById('chart-wrapper');
+  const crosshairV = document.getElementById('chart-crosshair-v');
+  const crosshairH = document.getElementById('chart-crosshair-h');
+  const axisX = document.getElementById('cursor-axis-x');
+  const axisY = document.getElementById('cursor-axis-y');
+  const tooltip = document.getElementById('chart-tooltip');
+
+  if (wrapper) {
+    wrapper.onmousemove = (e) => {
+      const rect = wrapper.getBoundingClientRect();
+      const mouseX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+      const idx = Math.min(n - 1, Math.max(0, Math.floor((mouseX / ((histWidth / width) * rect.width)) * n)));
+      const c = candles[idx];
+      if (!c) return;
+
+      const yClose = getY(c.close);
+
+      crosshairV.style.display = 'block';
+      crosshairV.style.left = `${mouseX}px`;
+
+      crosshairH.style.display = 'block';
+      crosshairH.style.top = `${yClose}px`;
+
+      axisX.style.display = 'block';
+      axisX.style.left = `${mouseX}px`;
+      axisX.innerText = c.date;
+
+      axisY.style.display = 'block';
+      axisY.style.top = `${yClose}px`;
+      axisY.innerText = `Rp ${c.close.toLocaleString('id-ID')}`;
+
+      tooltip.style.display = 'block';
+      const isGreen = c.close >= c.open;
+      const chgPct = (((c.close - c.open) / c.open) * 100.0).toFixed(2);
+      tooltip.innerHTML = `
+        <strong>${c.date}</strong> | 
+        O: Rp ${c.open.toLocaleString('id-ID')} | 
+        H: Rp ${c.high.toLocaleString('id-ID')} | 
+        L: Rp ${c.low.toLocaleString('id-ID')} | 
+        C: <span class="${isGreen ? 'up' : 'down'}">Rp ${c.close.toLocaleString('id-ID')} (${isGreen ? '+' : ''}${chgPct}%)</span> | 
+        Vol: ${(c.volume / 1e6).toFixed(2)}M
+      `;
+
+      // Update HUD
+      const hudPrice = document.getElementById('hud-cursor-price');
+      if (hudPrice) hudPrice.innerText = `Rp ${c.close.toLocaleString('id-ID')}`;
+      const hudDate = document.getElementById('hud-cursor-date');
+      if (hudDate) hudDate.innerText = c.date;
+      const hudDelta = document.getElementById('hud-cursor-delta');
+      if (hudDelta) {
+        hudDelta.innerText = `${isGreen ? '+' : ''}${chgPct}%`;
+        hudDelta.className = isGreen ? 'up' : 'down';
+      }
+    };
+
+    wrapper.onmouseleave = () => {
+      crosshairV.style.display = 'none';
+      crosshairH.style.display = 'none';
+      axisX.style.display = 'none';
+      axisY.style.display = 'none';
+      tooltip.style.display = 'none';
+    };
+  }
+}
+
+// -------------------------------------------------------------
+// Institutional Dark Pool & Pasar Negosiasi Block Trades Loader
+// -------------------------------------------------------------
+async function loadCrossingTrades(ticker) {
+  try {
+    const res = await fetch(`/api/v1/market/crossings/${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const wIndex = document.getElementById('whale-index-val');
+    if (wIndex) {
+      wIndex.innerText = `${data.whale_accumulation_index >= 0 ? '+' : ''}${data.whale_accumulation_index.toFixed(1)}`;
+      wIndex.className = `big-score ${data.whale_accumulation_index >= 0 ? 'up' : 'down'}`;
+    }
+
+    const wSent = document.getElementById('whale-sentiment-val');
+    if (wSent) wSent.innerText = data.stealth_sentiment.replace(/_/g, ' ');
+
+    const totalVal = document.getElementById('crossing-total-val');
+    if (totalVal) totalVal.innerText = data.negotiated_total_value_formatted;
+
+    const totalVol = document.getElementById('crossing-total-vol');
+    if (totalVol) totalVol.innerText = `${data.negotiated_total_volume_lots.toLocaleString('id-ID')} lot`;
+
+    const volRatio = document.getElementById('crossing-vol-ratio');
+    if (volRatio) volRatio.innerText = `${data.crossing_volume_ratio_pct.toFixed(1)}%`;
+
+    const disparity = document.getElementById('crossing-disparity-val');
+    if (disparity) {
+      const isUp = data.weighted_price_disparity_pct >= 0;
+      disparity.innerText = `${isUp ? '+' : ''}${data.weighted_price_disparity_pct.toFixed(2)}%`;
+      disparity.className = `t-value ${isUp ? 'up' : 'down'}`;
+    }
+
+    const avgPx = document.getElementById('crossing-avg-price');
+    if (avgPx) avgPx.innerText = `Rp ${Math.round(data.average_crossing_price).toLocaleString('id-ID')}`;
+
+    // Render Broker Pairs Badges
+    const pairsList = document.getElementById('crossing-pairs-list');
+    if (pairsList && data.top_crossing_pairs) {
+      pairsList.innerHTML = '';
+      data.top_crossing_pairs.forEach((p) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:8px 12px; border-radius:4px; border:1px solid rgba(255,255,255,0.06);';
+        item.innerHTML = `
+          <div style="font-family:var(--font-mono); font-weight:700; color:#eceff1;">${p.pair}</div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="font-family:var(--font-mono); color:#00e5ff; font-weight:600;">${p.value}</span>
+            <span class="status-pill" style="font-size:10px; padding:2px 6px;">${p.bias}</span>
+          </div>
+        `;
+        pairsList.appendChild(item);
+      });
+    }
+
+    // Render Recent Crossing Trades Table
+    const tbody = document.getElementById('crossing-trades-body');
+    if (tbody && data.recent_crossing_trades) {
+      tbody.innerHTML = '';
+      data.recent_crossing_trades.forEach((t) => {
+        const tr = document.createElement('tr');
+        const isPrem = t.premium_discount_pct >= 0;
+        const typeColor = t.trade_classification.includes('ACCUMULATION') ? '#00e676' : (t.trade_classification.includes('DISTRIBUTION') ? '#ff5252' : '#ffd54f');
+        tr.innerHTML = `
+          <td style="font-family:var(--font-mono);font-size:11px;">${t.timestamp}</td>
+          <td><strong style="color:${t.buyer_type === 'FOREIGN' ? '#00e5ff' : '#eceff1'}">${t.buyer_broker.split(' ')[0]}</strong> <span style="font-size:10px;color:#787b86">(${t.buyer_type[0]})</span></td>
+          <td><strong style="color:${t.seller_type === 'FOREIGN' ? '#00e5ff' : '#eceff1'}">${t.seller_broker.split(' ')[0]}</strong> <span style="font-size:10px;color:#787b86">(${t.seller_type[0]})</span></td>
+          <td style="font-family:var(--font-mono);font-weight:600">${t.price_formatted}</td>
+          <td style="font-family:var(--font-mono)">${t.volume_lots.toLocaleString('id-ID')}</td>
+          <td style="font-family:var(--font-mono);font-weight:600;color:#00e5ff">${t.value_idr_formatted}</td>
+          <td><span class="status-pill" style="background:${typeColor}22;color:${typeColor};border:1px solid ${typeColor}55;font-size:10px;">${t.trade_classification}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    const verdictEl = document.getElementById('crossing-verdict-text');
+    if (verdictEl && data.institutional_verdict) {
+      verdictEl.innerText = data.institutional_verdict;
+    }
+
+    showToast('Data Pasar Negosiasi & Dark Pool Dimuat');
+  } catch (err) {
+    console.debug('Failed to load crossing trades', err);
+  }
+}
+
 
 
 
