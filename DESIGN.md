@@ -667,6 +667,69 @@ Rather than relying on generic sentiment polarity, institutional quantitative an
 ### 27.2 Quantified Impact Score
 Each event is mapped to an impact severity vector $s \in [-1.0, +1.0]$ and an expected persistence horizon ($H \in \{1\text{D\_IMMEDIATE}, 5\text{D\_SWING}, 20\text{D\_STRUCTURAL}\}$).
 
+---
+
+## 28. Hugging Face Chronos-Bolt & PatchTST Multi-Horizon Foundation Forecaster
+
+### 28.1 Architectural Design and Zero-Shot Transfer
+Modern time-series foundation models pre-trained on diverse financial, macroeconomic, and industrial datasets exhibit superior zero-shot generalization compared to narrow models. The Chronos & PatchTST ensemble combines:
+1. **Amazon Chronos-Bolt**: Tokenized time-series transformer quantizing continuous price sequences into discrete language tokens.
+2. **IBM Granite PatchTST**: Patch-based channel-independent transformer dividing sequences into contiguous non-overlapping patches to capture localized sub-trends.
+3. **XGBoost-GARCH Residual Booster**: Heteroskedastic volatility conditioner correcting for extreme IDX leptokurtic distribution tails.
+
+### 28.2 Mathematical Formulation & Quantile Coverage
+1. **Inverse-RMSE Stacking Weights**:
+   $$w_i = \frac{1 / \sqrt{\text{RMSE}_i}}{\sum_{j=1}^M 1 / \sqrt{\text{RMSE}_j}}$$
+2. **Multi-Horizon Quantile Paths**:
+   For step $k \in \{1, \dots, H\}$:
+   $$q_{50}(k) = P_{\text{base}} \times \prod_{t=1}^k (1 + \mu_{\text{drift}, t})$$
+   $$q_{\alpha}(k) = q_{50}(k) + z_{\alpha} \times \sigma_{\text{daily}} \sqrt{k}$$
+3. **Conformal 95% Confidence Envelope**:
+   Ensures non-parametric finite-sample coverage guarantees minimizing out-of-sample prediction intervals.
+
+---
+
+## 29. Order Flow Cumulative Volume Delta (CVD) & Volume Footprint Profile Engine
+
+### 29.1 Microstructure Order Flow Dynamics
+Standard candlestick charts hide intra-bar aggression. The Cumulative Volume Delta (CVD) engine deconstructs continuous tape transactions into:
+1. **Ask Lift ($V_{\text{ask}}$)**: Market buy orders crossing the spread to fill resting asks (buyer aggression).
+2. **Bid Hit ($V_{\text{bid}}$)**: Market sell orders crossing the spread to fill resting bids (seller aggression).
+
+### 29.2 Mathematical Formulation & Footprint Topology
+1. **Cumulative Volume Delta**:
+   $$\Delta_t = V_{\text{ask}, t} - V_{\text{bid}, t}$$
+   $$\text{CVD}_T = \sum_{t=1}^T \Delta_t$$
+2. **Divergence Regimes**:
+   - **Bullish Absorption**: Price creates lower low while CVD creates higher low. Indicates institutional passive limit buy orders absorbing aggressive selling.
+   - **Bearish Exhaustion**: Price creates higher high while CVD creates lower high. Indicates buying power depletion against institutional passive supply.
+3. **Point of Control (POC) & Value Area (VA)**:
+   - **POC**: Tick price level with the highest aggregated volume in the session:
+     $$P_{\text{POC}} = \arg\max_{P} \left( V_{\text{ask}}(P) + V_{\text{bid}}(P) \right)$$
+   - **Value Area (70% Volume Band)**: Defined by $[P_{\text{VAL}}, P_{\text{VAH}}]$ encompassing 70% of total bar volume.
+
+---
+
+## 30. Autonomous Portfolio Rebalancing Execution Guard & Friction Minimizer
+
+### 30.1 Portfolio Churning & Friction Drag Mitigation
+Frequent rebalancing degrades net compound returns through exchange fees, broker commissions, and market impact. The Rebalance Guard enforces mathematical execution barriers to ensure trading occurs only when alpha exceeds total friction.
+
+### 30.2 Mathematical Guard Formulation
+1. **Minimum Rebalance Drift Trigger**:
+   $$\max_{i} |\Delta w_i| = \max_i |w_i^{\text{current}} - w_i^{\text{target}}| \ge \theta_{\text{tolerance}} \quad (\theta = 2.5\%)$$
+2. **Full IDX Friction Accounting**:
+   $$\text{Commission}_{\text{buy}} = V_{\text{buy}} \times (0.0015 + 0.00043)$$
+   $$\text{Commission}_{\text{sell}} = V_{\text{sell}} \times (0.0025 + 0.00043)$$
+   $$\text{PPh}_{\text{final}} = V_{\text{sell}} \times 0.0010$$
+3. **Almgren-Chriss Price Impact Estimation**:
+   $$I_{\text{impact}} = \gamma \times \sigma_{\text{daily}} \times \sqrt{\frac{Q_{\text{trade}}}{\text{ADV}}}$$
+4. **Algorithmic Tranche Slicing**:
+   - Small slices ($< 200$ lots): Passive VWAP limit placement.
+   - Medium slices ($200 - 500$ lots): TWAP execution staggered across 3 sessions.
+   - Large slices ($> 500$ lots): Pasar Negosiasi crossing routing to prevent regular board slippage.
+
+
 
 
 

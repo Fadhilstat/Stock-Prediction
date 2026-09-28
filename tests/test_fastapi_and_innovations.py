@@ -499,6 +499,64 @@ def test_fastapi_endpoints():
     assert resp_ctx.status_code == 200
     assert "RUANG RISIKO IDX" in resp_ctx.text
 
+    # Chronos & PatchTST Foundation Ensemble Forecast API
+    resp_chronos = client.get("/api/v1/forecast/chronos/BBCA.JK?horizon_days=5")
+    assert resp_chronos.status_code == 200
+    chronos_data = resp_chronos.json()
+    assert chronos_data["ticker"] == "BBCA.JK"
+    assert chronos_data["forecast_horizon_days"] == 5
+    assert len(chronos_data["models_in_ensemble"]) == 3
+    assert len(chronos_data["forecast_points"]) == 5
+    assert chronos_data["directional_hit_rate_pct"] > 60.0
+    assert chronos_data["recommended_target_idr"] > 0
+
+    # Order Flow CVD and Volume Footprint API
+    resp_cvd = client.get("/api/v1/market/orderflow-cvd/BBCA.JK")
+    assert resp_cvd.status_code == 200
+    cvd_data = resp_cvd.json()
+    assert cvd_data["ticker"] == "BBCA.JK"
+    assert len(cvd_data["footprint_nodes"]) > 0
+    assert len(cvd_data["recent_bars"]) == 5
+    assert cvd_data["point_of_control_idr"] > 0
+    assert cvd_data["value_area_high_idr"] >= cvd_data["value_area_low_idr"]
+
+    # Autonomous Portfolio Rebalancing Execution Guard API
+    resp_reb = client.post(
+        "/api/v1/portfolio/rebalance-guard",
+        json={
+            "portfolio_equity_idr": 150_000_000.0,
+            "drift_tolerance_pct": 2.0,
+        },
+    )
+    assert resp_reb.status_code == 200
+    reb_data = resp_reb.json()
+    assert reb_data["portfolio_equity_idr"] == 150_000_000.0
+    assert reb_data["rebalance_triggered"] is True
+    assert len(reb_data["recommended_orders"]) > 0
+    assert reb_data["net_drag_bps"] > 0
+
+    # Batch 8 Action Console Triggers
+    resp_act_chronos = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "RUN_CHRONOS_ENSEMBLE"},
+    )
+    assert resp_act_chronos.status_code == 200
+    assert resp_act_chronos.json()["status"] == "SUCCESS"
+
+    resp_act_cvd = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "ANALYZE_ORDERFLOW_CVD"},
+    )
+    assert resp_act_cvd.status_code == 200
+    assert resp_act_cvd.json()["status"] == "SUCCESS"
+
+    resp_act_guard = client.post(
+        "/api/v1/actions/execute",
+        json={"action": "EVALUATE_REBALANCE_GUARD"},
+    )
+    assert resp_act_guard.status_code == 200
+    assert resp_act_guard.json()["status"] == "SUCCESS"
+
     # Serve index HTML
     resp_index = client.get("/")
     assert resp_index.status_code == 200

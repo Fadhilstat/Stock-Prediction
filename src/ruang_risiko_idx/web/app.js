@@ -114,6 +114,10 @@ function initEventListeners() {
         loadCrossingTrades(state.currentTicker);
       } else if (targetId === 'tab-hedging') {
         loadHedgingPlan();
+      } else if (targetId === 'tab-orderflow') {
+        loadOrderFlowCVD(state.currentTicker);
+      } else if (targetId === 'tab-rebalance') {
+        loadRebalanceGuard();
       } else if (targetId === 'tab-alerts') {
         loadLiveAlerts();
       } else if (targetId === 'tab-bl') {
@@ -126,6 +130,16 @@ function initEventListeners() {
   const btnRecalcHedge = document.getElementById('btn-recalc-hedge');
   if (btnRecalcHedge) {
     btnRecalcHedge.addEventListener('click', loadHedgingPlan);
+  }
+
+  // Order Flow CVD and Rebalance Guard buttons
+  const btnRunOrderflow = document.getElementById('btn-run-orderflow');
+  if (btnRunOrderflow) {
+    btnRunOrderflow.addEventListener('click', () => loadOrderFlowCVD(state.currentTicker));
+  }
+  const btnRunRebalance = document.getElementById('btn-run-rebalance');
+  if (btnRunRebalance) {
+    btnRunRebalance.addEventListener('click', loadRebalanceGuard);
   }
 
   // Chart Mode Buttons (Area vs Candlestick + Conformal Cone)
@@ -2237,6 +2251,117 @@ async function loadHedgingPlan() {
     console.debug('Failed to load hedging plan', err);
   }
 }
+
+async function loadOrderFlowCVD(ticker = 'BBCA.JK') {
+  try {
+    const res = await fetch(`/api/v1/market/orderflow-cvd/${ticker}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const netEl = document.getElementById('cvd-net-lots');
+    if (netEl) {
+      const isPos = data.net_cvd_lots >= 0;
+      netEl.innerText = `${isPos ? '+' : ''}${data.net_cvd_lots.toLocaleString('id-ID')} Lot`;
+      netEl.style.color = isPos ? '#00e676' : '#ff5252';
+    }
+
+    const trendEl = document.getElementById('cvd-trend-tag');
+    if (trendEl) trendEl.innerText = data.cvd_trend;
+
+    const domEl = document.getElementById('cvd-dominant-side');
+    if (domEl) domEl.innerText = data.dominant_side.replace(/_/g, ' ');
+
+    const pocEl = document.getElementById('cvd-poc-price');
+    if (pocEl) pocEl.innerText = `Rp ${Math.round(data.point_of_control_idr).toLocaleString('id-ID')}`;
+
+    const tbody = document.getElementById('footprint-nodes-body');
+    if (tbody && data.footprint_nodes) {
+      tbody.innerHTML = '';
+      data.footprint_nodes.forEach((n) => {
+        const tr = document.createElement('tr');
+        const isUp = n.delta_lots >= 0;
+        tr.innerHTML = `
+          <td style="font-family:var(--font-mono);font-weight:700">Rp ${Math.round(n.price_idr).toLocaleString('id-ID')}</td>
+          <td style="font-family:var(--font-mono);color:#ff5252">${n.bid_hit_volume_lots.toLocaleString('id-ID')}</td>
+          <td style="font-family:var(--font-mono);color:#00e676">${n.ask_lift_volume_lots.toLocaleString('id-ID')}</td>
+          <td style="font-family:var(--font-mono);font-weight:700;color:${isUp ? '#00e676' : '#ff5252'}">${isUp ? '+' : ''}${n.delta_lots.toLocaleString('id-ID')}</td>
+          <td style="font-family:var(--font-mono)">${n.total_volume_lots.toLocaleString('id-ID')}</td>
+          <td>${n.is_poc ? '<span class="status-pill" style="background:#ffd600;color:#000;font-weight:700">POC</span>' : (n.is_value_area ? '<span class="status-pill" style="background:rgba(0,229,255,0.2);color:#00e5ff">VALUE AREA</span>' : '-')}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    const verdictEl = document.getElementById('orderflow-verdict-text');
+    if (verdictEl && data.institutional_action_verdict) {
+      verdictEl.innerText = data.institutional_action_verdict;
+    }
+
+    showToast('Analisis Order Flow & Footprint Selesai Dimuat');
+  } catch (err) {
+    console.debug('Failed to load orderflow CVD', err);
+  }
+}
+
+async function loadRebalanceGuard() {
+  try {
+    const res = await fetch('/api/v1/portfolio/rebalance-guard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        portfolio_equity_idr: 100000000.0,
+        drift_tolerance_pct: 2.5,
+      }),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const stBadge = document.getElementById('rebalance-status-badge');
+    if (stBadge) {
+      stBadge.innerText = data.rebalance_triggered ? 'DISETUJUI (TRIGGERED)' : 'DITOLAK (AMAN)';
+      stBadge.style.color = data.rebalance_triggered ? '#76ff03' : '#ffd54f';
+    }
+
+    const driftEl = document.getElementById('rebalance-max-drift');
+    if (driftEl) driftEl.innerText = `${data.max_drift_pct.toFixed(1)}% (Batas: ${data.drift_tolerance_pct.toFixed(1)}%)`;
+
+    const toEl = document.getElementById('rebalance-turnover-idr');
+    if (toEl) toEl.innerText = `Rp ${(data.gross_turnover_idr / 1e6).toFixed(1)} Juta (${data.turnover_ratio_pct.toFixed(1)}%)`;
+
+    const fricEl = document.getElementById('rebalance-friction-bps');
+    if (fricEl) fricEl.innerText = `Rp ${Math.round(data.total_commission_idr + data.total_tax_idr + data.total_market_impact_idr).toLocaleString('id-ID')} (${data.net_drag_bps.toFixed(1)} bps)`;
+
+    const tbody = document.getElementById('rebalance-orders-body');
+    if (tbody && data.recommended_orders) {
+      tbody.innerHTML = '';
+      data.recommended_orders.forEach((o) => {
+        const tr = document.createElement('tr');
+        const actColor = o.action === 'BUY' ? '#00e676' : (o.action === 'SELL' ? '#ff5252' : '#90a4ae');
+        tr.innerHTML = `
+          <td><strong>${o.ticker}</strong></td>
+          <td><span class="status-pill" style="background:${o.action === 'BUY' ? 'rgba(0,230,118,0.2)' : (o.action === 'SELL' ? 'rgba(255,82,82,0.2)' : 'rgba(255,255,255,0.05)')};color:${actColor};font-weight:700">${o.action}</span></td>
+          <td style="font-family:var(--font-mono)">${o.current_weight_pct.toFixed(1)}%</td>
+          <td style="font-family:var(--font-mono);font-weight:700">${o.target_weight_pct.toFixed(1)}%</td>
+          <td style="font-family:var(--font-mono)">${o.shares_lots} Lot</td>
+          <td style="font-family:var(--font-mono)">Rp ${Math.round(o.estimated_commission_idr).toLocaleString('id-ID')}</td>
+          <td style="font-family:var(--font-mono)">Rp ${Math.round(o.estimated_tax_idr).toLocaleString('id-ID')}</td>
+          <td><span class="status-pill" style="background:rgba(118,255,3,0.15);color:#76ff03">${o.execution_routing}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    const verdictEl = document.getElementById('rebalance-verdict-text');
+    if (verdictEl && data.execution_summary) {
+      verdictEl.innerText = data.execution_summary;
+    }
+
+    showToast('Audit Rebalancing Portofolio Selesai Dihitung');
+  } catch (err) {
+    console.debug('Failed to load rebalance guard', err);
+  }
+}
+
 
 
 

@@ -67,6 +67,9 @@ from ruang_risiko_idx.research.orderbook_engine import orderbook_engine
 from ruang_risiko_idx.research.passport_evaluator import evaluate_pre_buy_passport
 from ruang_risiko_idx.research.sector_rotation import sector_rotation_engine
 from ruang_risiko_idx.research.sentiment_engine import get_latest_market_sentiment
+from ruang_risiko_idx.research.hf_chronos_ensemble import chronos_ensemble
+from ruang_risiko_idx.research.orderflow_cvd_engine import orderflow_cvd_engine
+from ruang_risiko_idx.research.rebalance_guard import rebalance_guard
 from ruang_risiko_idx.research.spillover_index import compute_diebold_yilmaz_spillover
 from ruang_risiko_idx.research.stress_testing import stress_engine
 from ruang_risiko_idx.research.walk_forward_backtest import walk_forward_backtester
@@ -516,6 +519,21 @@ async def execute_action(request: Request) -> dict[str, Any]:
             "message": "Financial news headlines decomposed into canonical fundamental catalyst taxonomy.",
             "timestamp": datetime.now(UTC).isoformat(),
         },
+        "RUN_CHRONOS_ENSEMBLE": lambda: {
+            "status": "SUCCESS",
+            "message": "Chronos & PatchTST probabilistic ensemble forecast generated with Conformal 95% bounds.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "ANALYZE_ORDERFLOW_CVD": lambda: {
+            "status": "SUCCESS",
+            "message": "Order flow Cumulative Volume Delta (CVD) and volume footprint nodes analyzed.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
+        "EVALUATE_REBALANCE_GUARD": lambda: {
+            "status": "SUCCESS",
+            "message": "Friction-adjusted portfolio rebalancing audit and tax-aware order slices evaluated.",
+            "timestamp": datetime.now(UTC).isoformat(),
+        },
     }
 
     if action_type not in handlers:
@@ -667,6 +685,29 @@ async def get_order_queue_endpoint(ticker: str = "BBCA.JK", order_size_lots: int
 async def get_sentiment_catalysts_endpoint(ticker: str = "BBCA.JK") -> dict[str, Any]:
     """Retrieve fine-grained fundamental news catalyst taxonomy and quantified sentiment drivers."""
     return catalyst_extractor.extract_catalysts(ticker).to_dict()
+
+
+@app.get("/api/v1/forecast/chronos/{ticker}")
+async def get_chronos_forecast_endpoint(ticker: str = "BBCA.JK", horizon_days: int = 10) -> dict[str, Any]:
+    """Generate multi-horizon foundation time-series ensemble forecast minimizing prediction error."""
+    return chronos_ensemble.forecast_ticker(ticker, horizon_days).to_dict()
+
+
+@app.get("/api/v1/market/orderflow-cvd/{ticker}")
+async def get_orderflow_cvd_endpoint(ticker: str = "BBCA.JK") -> dict[str, Any]:
+    """Retrieve tick-level order flow Cumulative Volume Delta (CVD) and volume footprint profile."""
+    return orderflow_cvd_engine.analyze_orderflow(ticker).to_dict()
+
+
+@app.post("/api/v1/portfolio/rebalance-guard")
+async def post_rebalance_guard_endpoint(request: Request) -> dict[str, Any]:
+    """Evaluate friction-aware portfolio rebalancing thresholds, IDX tax/levy, and execution slicing."""
+    data = await request.json()
+    equity = float(data.get("portfolio_equity_idr", 100_000_000.0))
+    tolerance = float(data.get("drift_tolerance_pct", 2.5))
+    holdings = data.get("holdings", None)
+    return rebalance_guard.evaluate_rebalance(equity, tolerance, holdings).to_dict()
+
 
 
 

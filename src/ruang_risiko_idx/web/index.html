@@ -223,6 +223,8 @@
           <button class="suite-tab" data-tab="tab-sectors">🔄 Rotasi Sektor RRG</button>
           <button class="suite-tab" data-tab="tab-crossing">🐋 Dark Pool Pasar Nego</button>
           <button class="suite-tab" data-tab="tab-hedging">🛡️ Dynamic Beta Hedging</button>
+          <button class="suite-tab" data-tab="tab-orderflow">📊 Order Flow & CVD</button>
+          <button class="suite-tab" data-tab="tab-rebalance">⚖️ Rebalance Guard</button>
           <button class="suite-tab" data-tab="tab-actions">⚙️ Web Action Console</button>
         </div>
 
@@ -1315,6 +1317,136 @@
           </div>
         </div>
 
+        <!-- Tab: Order Flow CVD & Volume Footprint Profile -->
+        <div class="tab-pane" id="tab-orderflow">
+          <div class="multimodal-hero-card">
+            <div class="mm-header-row">
+              <div class="mm-title-group">
+                <span class="badge-sector" style="background: rgba(0, 229, 255, 0.2); color: #00e5ff;">MIKROSTRUKTUR TIK ORDER FLOW</span>
+                <h3>CUMULATIVE VOLUME DELTA (CVD) & FOOTPRINT PROFILE</h3>
+                <span class="mm-timestamp" id="orderflow-timestamp">Live Telemetry</span>
+              </div>
+              <div class="mm-badge-group">
+                <button class="btn-mm-run" id="btn-run-orderflow" style="background: #00e5ff; color: #000; font-weight: 600;">
+                  ⚡ Analisis Ulang CVD
+                </button>
+              </div>
+            </div>
+
+            <!-- CVD Metric Grid -->
+            <div class="grid-4" style="margin-top: 16px;">
+              <div class="metric-pill">
+                <span class="lbl">Net Cumulative Delta</span>
+                <strong id="cvd-net-lots" style="color: #00e676;">+0 Lot</strong>
+              </div>
+              <div class="metric-pill">
+                <span class="lbl">Tren Akumulasi Delta</span>
+                <strong id="cvd-trend-tag">ACCUMULATING</strong>
+              </div>
+              <div class="metric-pill">
+                <span class="lbl">Kontrol Dominan</span>
+                <strong id="cvd-dominant-side">BUYER_CONTROL</strong>
+              </div>
+              <div class="metric-pill">
+                <span class="lbl">Point of Control (POC)</span>
+                <strong id="cvd-poc-price" style="color: #ffd600;">Rp 10,425</strong>
+              </div>
+            </div>
+
+            <!-- Footprint Table -->
+            <div class="holdings-table-container" style="margin-top: 16px;">
+              <h4>DEKOMPOSISI FOOTPRINT PER FRAKSI HARGA</h4>
+              <div class="table-scroll">
+                <table class="holdings-table">
+                  <thead>
+                    <tr>
+                      <th>Harga Tik (Rp)</th>
+                      <th>Bid Hit (Jual Agresif)</th>
+                      <th>Ask Lift (Beli Agresif)</th>
+                      <th>Delta Tik (Lot)</th>
+                      <th>Total Volume (Lot)</th>
+                      <th>Status Profil</th>
+                    </tr>
+                  </thead>
+                  <tbody id="footprint-nodes-body">
+                    <!-- Injected via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="verdict-banner" style="margin-top: 16px; padding: 12px 16px; background: rgba(0, 229, 255, 0.08); border-left: 3px solid #00e5ff; border-radius: 4px;">
+              <span id="orderflow-verdict-text" style="color: #eceff1; font-size: 13px;">Memuat analisis order flow CVD...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Autonomous Portfolio Rebalance Guard -->
+        <div class="tab-pane" id="tab-rebalance">
+          <div class="multimodal-hero-card">
+            <div class="mm-header-row">
+              <div class="mm-title-group">
+                <span class="badge-sector" style="background: rgba(118, 255, 3, 0.2); color: #76ff03;">GOVERNANSI EKSEKUSI PORTOFOLIO</span>
+                <h3>AUTONOMOUS REBALANCING EXECUTION GUARD</h3>
+                <span class="mm-timestamp" id="rebalance-timestamp">Audit Telemetry</span>
+              </div>
+              <div class="mm-badge-group">
+                <button class="btn-mm-run" id="btn-run-rebalance" style="background: #76ff03; color: #000; font-weight: 600;">
+                  ⚖️ Audit Rebalancing
+                </button>
+              </div>
+            </div>
+
+            <!-- Parameters & Metrics Grid -->
+            <div class="grid-4" style="margin-top: 16px;">
+              <div class="metric-pill">
+                <span class="lbl">Status Rebalance</span>
+                <strong id="rebalance-status-badge" style="color: #76ff03;">DISETUJUI</strong>
+              </div>
+              <div class="metric-pill">
+                <span class="lbl">Deviasi Maksimum</span>
+                <strong id="rebalance-max-drift">6.0% (Batas: 2.5%)</strong>
+              </div>
+              <div class="metric-pill">
+                <span class="lbl">Estimasi Turnover</span>
+                <strong id="rebalance-turnover-idr">Rp 15,000,000 (15.0%)</strong>
+              </div>
+              <div class="metric-pill">
+                <span class="lbl">Total Friksi & Dampak</span>
+                <strong id="rebalance-friction-bps" style="color: #ffab40;">Rp 41,250 (4.1 bps)</strong>
+              </div>
+            </div>
+
+            <!-- Order Slices Table -->
+            <div class="holdings-table-container" style="margin-top: 16px;">
+              <h4>INSTRUKSI EKSEKUSI TRANCHE BERDASARKAN FRIKSI & PAJAK IDX</h4>
+              <div class="table-scroll">
+                <table class="holdings-table">
+                  <thead>
+                    <tr>
+                      <th>Emiten</th>
+                      <th>Aksi</th>
+                      <th>Bobot Saat Ini</th>
+                      <th>Bobot Target</th>
+                      <th>Estimasi Lot</th>
+                      <th>Komisi & Levy</th>
+                      <th>PPh Final (0.1%)</th>
+                      <th>Rute Eksekusi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rebalance-orders-body">
+                    <!-- Injected via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="verdict-banner" style="margin-top: 16px; padding: 12px 16px; background: rgba(118, 255, 3, 0.08); border-left: 3px solid #76ff03; border-radius: 4px;">
+              <span id="rebalance-verdict-text" style="color: #eceff1; font-size: 13px;">Memuat audit rebalancing...</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Tab 7: Web Action Console -->
         <div class="tab-pane" id="tab-actions">
           <div class="actions-console-card">
@@ -1482,6 +1614,27 @@
                 <div class="btn-text">
                   <strong>Dekomposisi Katalis Berita Fundamental</strong>
                   <span>Klasifikasikan dividen, laba kuartal, regulasi, dan makro FX</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="RUN_CHRONOS_ENSEMBLE">
+                <span class="btn-icon">🤖</span>
+                <div class="btn-text">
+                  <strong>Ensemble Chronos & PatchTST HF</strong>
+                  <span>Prediksi multi-horizon dengan Conformal bounds 95%</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="ANALYZE_ORDERFLOW_CVD">
+                <span class="btn-icon">📊</span>
+                <div class="btn-text">
+                  <strong>Analisis Order Flow & Delta CVD</strong>
+                  <span>Hitung divergensi CVD dan Point of Control (POC) volume</span>
+                </div>
+              </button>
+              <button class="console-btn" data-action="EVALUATE_REBALANCE_GUARD">
+                <span class="btn-icon">⚖️</span>
+                <div class="btn-text">
+                  <strong>Audit Rebalancing Portofolio</strong>
+                  <span>Evaluasi ambang batas drift dan optimasi friksi pajak IDX</span>
                 </div>
               </button>
             </div>
